@@ -93,7 +93,7 @@ For example, given a `Book` class with name and author properties, a
 entities:
 
 ```java
-public interface BookRepository extends CrudRepository<Person, Long> {
+public interface BookRepository extends CrudRepository<Book, Long> {
 }
 ```
 
@@ -106,7 +106,7 @@ by using the following JavaConfig:
 
 ```java
 @Configuration
-@EnableTarantoolRepositories(basePackageClasses = PersonRepository.class)
+@EnableTarantoolRepositories(basePackageClasses = BookRepository.class)
 class ApplicationConfig extends AbstractTarantoolDataConfiguration {
 
 	@Override
@@ -125,20 +125,20 @@ This will find the repository interface and register a proxy object in the conta
 @Service
 public class MyService {
 
-  private final PersonRepository repository;
+  private final BookRepository repository;
 
   @Autowired
-  public MyService(PersonRepository repository) {
+  public MyService(BookRepository repository) {
     this.repository = repository;
   }
 
   public void doWork() {
-    Person person = new Person();
-    person.setFirstname("Alexey");
-    person.setLastname("Kuzin");
-    person = repository.save(person);
+    Book book = new Book();
+    book.setName("Le Petit Prince");
+    book.setAuthor("Antoine de Saint-Exupéry");
+    book = repository.save(book);
 
-    List<Person> allPersons = repository.findAll();
+    List<Book> allBooks = repository.findAll();
   }
 }
 ```
