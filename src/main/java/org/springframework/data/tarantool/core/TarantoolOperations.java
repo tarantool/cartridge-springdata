@@ -1,7 +1,7 @@
 package org.springframework.data.tarantool.core;
 
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
-import org.springframework.data.tarantool.core.query.Query;
+import org.springframework.data.tarantool.core.query.support.Query;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -117,6 +117,28 @@ public interface TarantoolOperations {
      */
     @Nullable
     <T, ID> T removeById(ID id, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one entity as result.
+     *
+     * @param functionName callable API function name
+     * @param parameters function parameters
+     * @param entityType Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T call(String functionName, Object[] parameters, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns a list of entities as result.
+     *
+     * @param functionName callable API function name
+     * @param parameters function parameters
+     * @param entityType Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
      * Return the entity converter used for this instance

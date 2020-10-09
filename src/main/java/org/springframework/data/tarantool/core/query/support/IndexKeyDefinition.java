@@ -1,4 +1,4 @@
-package org.springframework.data.tarantool.core.query;
+package org.springframework.data.tarantool.core.query.support;
 
 /**
  * Class-container for index key parts definitions

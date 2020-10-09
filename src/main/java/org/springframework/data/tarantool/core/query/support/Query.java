@@ -1,4 +1,4 @@
-package org.springframework.data.tarantool.core.query;
+package org.springframework.data.tarantool.core.query.support;
 
 import io.tarantool.driver.api.TarantoolIndexQuery;
 import org.springframework.data.domain.Sort;

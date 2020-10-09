@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.tarantool.core.DefaultTarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolTemplate;
-import io.tarantool.driver.TarantoolClient;
+import io.tarantool.driver.api.TarantoolClient;
 import org.springframework.data.tarantool.core.convert.MappingTarantoolConverter;
 import org.springframework.data.tarantool.core.convert.TarantoolCustomConversions;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;

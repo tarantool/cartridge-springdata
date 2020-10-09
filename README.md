@@ -41,18 +41,14 @@ TBA soon
 ### Maven configuration
 
 The Tarantool Spring Data connector depends on the new asynchronous
-Tarantool driver:
+Tarantool Cartridge driver:
 
 ```xml
 <dependency>
   <groupId>io.tarantool</groupId>
-  <artifactId>driver</artifactId>
+  <artifactId>cartridge-driver</artifactId>
 </dependency>
 ```
-
-Download and install it using `mvn install` from
-[Github](https://github.com/akudiyar/tarantool-java-driver) (a temporary
-measure until the first release is published to Maven Central).
 
 Download and build this project via `mvn install` (a temporary measure
 until the first release is published to Maven Central).
@@ -141,6 +137,32 @@ public class MyService {
     List<Book> allBooks = repository.findAll();
   }
 }
+```
+
+#### Proxy methods in repositories
+
+Consider we need to write a complex query in Lua, wotking with sharded data in Tarantool Cartridge. In this case
+we can expose this query as a public API function and map that function on a repository method via the `@Query`
+annotation:
+
+```java
+public interface BookRepository extends CrudRepository<Book, Long> {
+    @Query(function = "find_by_complex_query")
+    List<Book> findByYearGreaterThenProxy(Integer year);
+}
+```
+
+The corresponding function in on Tarantool Cartridge router may look like (uses the
+[tarantool/crud](https://github.com/tarantool/crud) module):
+
+```lua
+    local crud = require('crud')
+
+    ...
+
+    function find_by_complex_query(year)
+        return crud.pairs():filter(function(b) return b.year > year end):totable()
+    end
 ```
 
 ## Contributing to Spring Data Tarantool

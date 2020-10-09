@@ -3,4 +3,4 @@
  */
 
 @org.springframework.lang.NonNullApi
-package org.springframework.data.tarantool.core.query;
+package org.springframework.data.tarantool.core.query.support;

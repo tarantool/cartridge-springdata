@@ -1,22 +1,25 @@
 package org.springframework.data.tarantool.core;
 
-import io.tarantool.driver.TarantoolClient;
+import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolIndexQuery;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.TarantoolSelectOptions;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.exceptions.TarantoolException;
+import io.tarantool.driver.mappers.TarantoolCallResultMapper;
+import io.tarantool.driver.mappers.TarantoolCallResultMapperFactory;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
-import org.springframework.data.tarantool.core.query.Query;
+import org.springframework.data.tarantool.core.query.support.Query;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -26,10 +29,11 @@ import java.util.stream.Collectors;
 
 public class TarantoolTemplate implements TarantoolOperations {
 
-    private TarantoolClient tarantoolClient;
-    private TarantoolMappingContext mappingContext;
-    private TarantoolConverter converter;
-    private TarantoolExceptionTranslator exceptionTranslator;
+    private final TarantoolClient tarantoolClient;
+    private final TarantoolMappingContext mappingContext;
+    private final TarantoolConverter converter;
+    private final TarantoolExceptionTranslator exceptionTranslator;
+    private final TarantoolCallResultMapperFactory tarantoolResultMapperFactory;
 
     public TarantoolTemplate(TarantoolClient tarantoolClient,
                              TarantoolMappingContext mappingContext,
@@ -38,6 +42,8 @@ public class TarantoolTemplate implements TarantoolOperations {
         this.mappingContext = mappingContext;
         this.converter = converter;
         this.exceptionTranslator = new DefaultTarantoolExceptionTranslator();
+        this.tarantoolResultMapperFactory =
+                new TarantoolCallResultMapperFactory(tarantoolClient.getConfig().getMessagePackMapper());
     }
 
     @Override
@@ -133,7 +139,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entity, "Entity must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
-        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entity.getClass());
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() -> {
             try {
                 return tarantoolClient
@@ -151,7 +157,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entity, "Entity must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
-        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entity.getClass());
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() -> {
             try {
                 return tarantoolClient
@@ -180,6 +186,44 @@ public class TarantoolTemplate implements TarantoolOperations {
 
         TarantoolIndexQuery query = idQueryFromEntity(id).toIndexQuery();
         return removeInternal(query, entityClass);
+    }
+
+    @Override
+    public <T> T call(String functionName, Object[] parameters, Class<T> entityType) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(entityType, "Type must not be null!");
+
+        List<T> result = callForList(functionName, parameters, entityType);
+        return result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(entityClass, "Type must not be null!");
+
+
+        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
+            try {
+                return tarantoolClient.call(
+                        functionName,
+                        Arrays.asList(parameters),
+                        tarantoolClient.getConfig().getMessagePackMapper(),
+                        getResultMapperForEntity(entityClass)
+                );
+            } catch (TarantoolException e) {
+                throw exceptionTranslator.translateExceptionIfPossible(e);
+            }
+        });
+        return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
+    }
+
+    private <T> TarantoolCallResultMapper<TarantoolTuple> getResultMapperForEntity(Class<T> entityClass) {
+        // TODO cache and lookup
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
+                .getSpaceByName(entityMetadata.getSpaceName());
+        return tarantoolResultMapperFactory.withDefaultTupleValueConverter(spaceMetadata.orElse(null));
     }
 
     private <T> T removeInternal(TarantoolIndexQuery query, Class<T> entityClass) {

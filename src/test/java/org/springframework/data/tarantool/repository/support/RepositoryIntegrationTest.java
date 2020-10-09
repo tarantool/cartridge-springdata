@@ -61,6 +61,12 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
         });
     }
 
+    @Test
+    public void testFindByYear() {
+        List<Book> books = bookRepository.findByYearGreaterThenProxy(1000);
+        assertThat(books.size()).isGreaterThan(0);
+    }
+
 //    @Test
 //    public void testFindByYear() {
 //        List<Book> books = bookRepository.findByYearGreaterThan(1000);
