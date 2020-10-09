@@ -1,0 +1,10 @@
+org.springframework.data.tarantool
+org.springframework.data.tarantool.config
+org.springframework.data.tarantool.core
+org.springframework.data.tarantool.core.convert
+org.springframework.data.tarantool.core.mapping
+org.springframework.data.tarantool.core.query
+org.springframework.data.tarantool.core.query.support
+org.springframework.data.tarantool.repository
+org.springframework.data.tarantool.repository.config
+org.springframework.data.tarantool.repository.support
