@@ -45,8 +45,8 @@
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/akudiyar/spring-data-tarantool.git</connection>
-        <developerConnection>scm:git:ssh://github.com:akudiyar/spring-data-tarantool.git</developerConnection>
+        <connection>scm:git:git@github.com/akudiyar/spring-data-tarantool.git</connection>
+        <developerConnection>scm:git:git@github.com:akudiyar/spring-data-tarantool.git</developerConnection>
         <url>http://github.com/akudiyar/spring-data-tarantool/tree/master</url>
     </scm>
 
@@ -216,6 +216,8 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <releaseProfiles>release</releaseProfiles>
                     <goals>deploy</goals>
+                    <indentSize>4</indentSize>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
         </plugins>
