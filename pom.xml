@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <description>Spring Data module for Tarantool</description>
     <url>https://github.com/akudiyar/spring-data-tarantool</url>
 
@@ -48,7 +46,8 @@
         <connection>scm:git:git@github.com/akudiyar/spring-data-tarantool.git</connection>
         <developerConnection>scm:git:git@github.com:akudiyar/spring-data-tarantool.git</developerConnection>
         <url>http://github.com/akudiyar/spring-data-tarantool/tree/master</url>
-    </scm>
+      <tag>v0.1.0</tag>
+  </scm>
 
     <properties>
         <spring.version>5.2.6.RELEASE</spring.version>
