@@ -4,16 +4,10 @@
 
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <description>Spring Data module for Tarantool</description>
     <url>https://github.com/akudiyar/spring-data-tarantool</url>
-
-    <parent>
-        <groupId>org.springframework.data.build</groupId>
-        <artifactId>spring-data-parent</artifactId>
-        <version>2.2.7.RELEASE</version>
-    </parent>
 
     <licenses>
         <license>
@@ -85,6 +79,11 @@
             <artifactId>driver</artifactId>
             <version>${driver.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.14</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -143,6 +142,11 @@
                         <phase>process-test-resources</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.12.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
