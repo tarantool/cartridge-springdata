@@ -2,12 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Spring Data Tarantool</name>
+    <description>Spring Data module for Tarantool and Tarantool Cartridge for Tarantool versions 1.10+</description>
+    <url>https://tarantool.io</url>
+
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <description>Spring Data module for Tarantool</description>
-    <url>https://github.com/akudiyar/spring-data-tarantool</url>
 
     <licenses>
         <license>
