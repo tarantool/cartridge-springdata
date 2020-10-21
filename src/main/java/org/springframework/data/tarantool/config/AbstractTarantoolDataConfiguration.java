@@ -169,7 +169,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
         return mappingContext;
     }
 
-    @Bean("customConversions")
+    @Bean("tarantoolCustomConversions")
     public TarantoolCustomConversions customConversions() {
         return new TarantoolCustomConversions(customConverters());
     }
