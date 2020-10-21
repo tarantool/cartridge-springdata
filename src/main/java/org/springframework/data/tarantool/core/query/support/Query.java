@@ -29,14 +29,17 @@ public class Query {
 
     /**
      * Basic constructor with specified index.
+     *
+     * @param indexDefinition index metadata
      */
     public Query(IndexDefinition indexDefinition) {
         this.indexDefinition = indexDefinition;
     }
 
     /**
-     * Creates new instance of {@link Query} with given {@link Sort}
-     * @param sort
+     * Creates new instance of {@link Query} with given {@link Sort}.
+     *
+     * @param sort sort metadata
      */
     public Query(Sort sort) {
         this.sort = sort;

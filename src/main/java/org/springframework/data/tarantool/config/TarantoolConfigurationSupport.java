@@ -45,7 +45,7 @@ public abstract class TarantoolConfigurationSupport {
      *
      * @see #getMappingBasePackages()
      * @return Set of classes marked with {@link Tuple} annotations
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException if the entity scan fails
      */
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
@@ -64,7 +64,7 @@ public abstract class TarantoolConfigurationSupport {
      *
      * @param basePackage must not be {@literal null}.
      * @return Set of classes marked either with {@link Tuple} or {@link Persistent} annotations
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException if the entity scan fails
      */
     protected Set<Class<?>> scanForEntities(String basePackage) throws ClassNotFoundException {
 
@@ -76,14 +76,15 @@ public abstract class TarantoolConfigurationSupport {
 
         if (StringUtils.hasText(basePackage)) {
 
-            ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(
-                    false);
+            ClassPathScanningCandidateComponentProvider componentProvider =
+                    new ClassPathScanningCandidateComponentProvider(false);
             componentProvider.addIncludeFilter(new AnnotationTypeFilter(Tuple.class));
             componentProvider.addIncludeFilter(new AnnotationTypeFilter(Persistent.class));
 
             for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
-                initialEntitySet
-                        .add(ClassUtils.forName(candidate.getBeanClassName(), TarantoolConfigurationSupport.class.getClassLoader()));
+                initialEntitySet.add(
+                        ClassUtils.forName(candidate.getBeanClassName(),
+                                TarantoolConfigurationSupport.class.getClassLoader()));
             }
         }
 
@@ -93,7 +94,7 @@ public abstract class TarantoolConfigurationSupport {
     /**
      * Configures whether to abbreviate field names for domain objects by configuring a
      * {@link CamelCaseAbbreviatingFieldNamingStrategy} on the {@link TarantoolMappingContext} instance created.
-     * For advanced customization needs, consider overriding {@link #mappingTarantoolConverter()}.
+     * For advanced customization needs, consider overriding {@link #fieldNamingStrategy()}.
      *
      * @return {@code true} if the fields must be abbreviated. Default is {@code false}.
      */

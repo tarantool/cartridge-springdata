@@ -35,6 +35,8 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * Override {@link #tarantoolClientConfig(TarantoolCredentials)} to configure client settings and
      * {@link #tarantoolClusterAddressProvider()}} to configure the Tarantool server address.
      *
+     * @param tarantoolClientConfig Tarantool client configuration
+     * @param tarantoolClusterAddressProvider Tarantool cluster address provider
      * @return a client instance.
      * @see #tarantoolClientConfig(TarantoolCredentials)
      * @see #configureClientConfig(TarantoolClientConfig.Builder)
@@ -58,11 +60,13 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     }
 
     /**
-     * Return the {@link TarantoolClientConfig} used to create the actual {@literal TarantoolClient}. <br />
-     * Override either this method, or use {@link #configureClientConfig(TarantoolClientConfig.Builder)}
-     * to alter the setup.
+     * Return the {@link TarantoolClientConfig} used to create the actual {@literal TarantoolClient}.
      *
-     * @return Default client configuration.
+     * Override either this method, or use {@link #configureClientConfig(TarantoolClientConfig.Builder)}
+     * for altering the setup.
+     *
+     * @param tarantoolCredentials credentials for a user defined on target Tarantool instance
+     * @return default client configuration
      */
     @Bean("tarantoolConfig")
     public TarantoolClientConfig tarantoolClientConfig(TarantoolCredentials tarantoolCredentials) {
@@ -84,6 +88,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     /**
      * Configure the cluster nodes addresses provider by overriding this method. This provider may be
      * used in {@link #tarantoolClient(TarantoolClientConfig, TarantoolClusterAddressProvider)}
+     *
      * @return cluster address provider instance
      */
     @Bean("tarantoolClusterAddressProvider")
@@ -120,6 +125,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * Create a {@link TarantoolRepositoryOperationsMapping} instance.
      *
      * @param tarantoolTemplate a {@link TarantoolTemplate} instance
+     * @return a {@link TarantoolRepositoryOperationsMapping} instance
      */
     @Bean("tarantoolRepositoryOperationsMapping")
     public TarantoolRepositoryOperationsMapping tarantoolRepositoryOperationsMapping(
@@ -142,7 +148,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     /**
      * Creates a {@link MappingTarantoolConverter} instance for the specified type conversions
      *
-     * @param tarantoolMappingContext
+     * @param tarantoolMappingContext a {@link TarantoolMappingContext} instance
      * @return an {@link MappingTarantoolConverter} instance
      * @see #customConversions()
      */
@@ -156,7 +162,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      *
      * @see #getMappingBasePackages()
      * @return TarantoolMappingContext instance
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException if the entity scan fails
      */
     @Bean("tarantoolMappingContext")
     public TarantoolMappingContext tarantoolMappingContext() throws ClassNotFoundException {
@@ -169,6 +175,12 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
         return mappingContext;
     }
 
+    /**
+     * Creates an instance of {@link TarantoolCustomConversions} for customizing the conversion from some Java objects
+     * into the objects which have internal mapping in the driver (like primitive types, Tarantool tuples, etc)
+     *
+     * @return a {@link TarantoolCustomConversions} instance
+     */
     @Bean("tarantoolCustomConversions")
     public TarantoolCustomConversions customConversions() {
         return new TarantoolCustomConversions(customConverters());
@@ -176,6 +188,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
 
     /**
      * Override this method for providing custom conversions
+     *
      * @return list of custom conversions
      */
     protected List<?> customConverters() {
@@ -183,7 +196,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     }
 
     /**
-     * Returns the default exception translator
+     * Returns the default driver-to-Spring exception translator
      *
      * @return exception translator
      */

@@ -34,30 +34,41 @@ public @interface EnableTarantoolRepositories {
      * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations e.g.:
      * {@code @EnableTarantoolRepositories("org.my.pkg")} instead of
      * {@code @EnableTarantoolRepositories(basePackages="org.my.pkg")}.
+     *
+     * @return array of package names to scan
      */
     String[] value() default {};
 
     /**
-     * Base packages to scan for annotated components. {@link #value()} is an alias for (and mutually exclusive with) this
-     * attribute. Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
+     * Base packages to scan for annotated components. {@link #value()} is an alias for (and mutually exclusive with)
+     * this attribute. Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
+     *
+     * @return array of package names to scan
      */
     String[] basePackages() default {};
 
     /**
-     * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for annotated components. The
-     * package of each class specified will be scanned. Consider creating a special no-op marker class or interface in
-     * each package that serves no purpose other than being referenced by this attribute.
+     * Type-safe alternative to {@link #basePackages()} for specifying the packages to scan for annotated components.
+     * The package of each class specified will be scanned. Consider creating a special no-op marker class or interface
+     * in each package that serves no purpose other than being referenced by this attribute.
+     *
+     * @return array of package classes to scan
      */
     Class<?>[] basePackageClasses() default {};
 
     /**
      * Specifies which types are eligible for component scanning. Further narrows the set of candidate components from
-     * everything in {@link #basePackages()} to everything in the base packages that matches the given filter or filters.
+     * everything in {@link #basePackages()} to everything in the base packages that matches the given filter or
+     * filters.
+     *
+     * @return array of filters for including components for scanning
      */
     Filter[] includeFilters() default {};
 
     /**
      * Specifies which types are not eligible for component scanning.
+     *
+     * @return array of filters for excluding components from scanning
      */
     Filter[] excludeFilters() default {};
 
@@ -98,7 +109,6 @@ public @interface EnableTarantoolRepositories {
      * Configure the repository base class to be used to create repository proxies for this particular configuration.
      *
      * @return {@link DefaultRepositoryBaseClass} by default.
-     * @since 1.8
      */
     Class<?> repositoryBaseClass() default SimpleTarantoolRepository.class;
 

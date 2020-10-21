@@ -29,7 +29,7 @@ public class TarantoolJsr310Converters {
     /**
      * Returns the converters to be registered
      *
-     * @return
+     * @return collection of JSR 310 converters
      */
     public static Collection<Converter<?, ?>> getConvertersToRegister() {
         List<Converter<?, ?>> converters = new ArrayList<>();

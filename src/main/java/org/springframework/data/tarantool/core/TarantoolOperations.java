@@ -18,6 +18,7 @@ public interface TarantoolOperations {
      * specified type. Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
+     * @param <T> target entity type
      * @param query Query object that incapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The converted object
@@ -30,6 +31,7 @@ public interface TarantoolOperations {
      * Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
+     * @param <T> target entity type
      * @param query Query object that incapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
@@ -41,6 +43,8 @@ public interface TarantoolOperations {
      * Target space will be derived automatically from the entity class.
      * Default converter {@link } will be used unless a custom one is specified. -- TODO
      *
+     * @param <T> target entity type
+     * @param <ID> target entity index type
      * @param id Entity identifier
      * @param entityType Desired type of the result object
      * @return The converted object
@@ -52,6 +56,7 @@ public interface TarantoolOperations {
      * from the entity class.
      * Default converter {@link } will be used unless a custom one is specified. -- TODO
      *
+     * @param <T> target entity type
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -62,6 +67,7 @@ public interface TarantoolOperations {
      * found are returned and removed from the space. Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
+     * @param <T> target entity type
      * @param query Query object that incapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
@@ -73,6 +79,7 @@ public interface TarantoolOperations {
      * Count the number of records matching the specified query. The space is determined automatically
      * from the entity class.
      *
+     * @param <T> target entity type
      * @param query Query object that incapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return Number of records
@@ -82,6 +89,7 @@ public interface TarantoolOperations {
     /**
      * Insert a record into a space. The space is determined automatically by the entity class.
      *
+     * @param <T> target entity type
      * @param entity The object to save
      * @param entityType Desired type of the result object
      * @return The inserted object
@@ -92,6 +100,7 @@ public interface TarantoolOperations {
      * Save a record into a space. The space is determined automatically by the entity class. If the record doesn't
      * exist, it will be inserted.
      *
+     * @param <T> target entity type
      * @param entity The object to save
      * @param entityType Desired type of the result object
      * @return The inserted object
@@ -101,6 +110,7 @@ public interface TarantoolOperations {
     /**
      * Remove a record from a space corresponding to the specified entity type.
      *
+     * @param <T> target entity type
      * @param entity Target entity (must have the id property)
      * @param entityType Desired type of the result object
      * @return Removed entity value
@@ -111,6 +121,8 @@ public interface TarantoolOperations {
     /**
      * Remove a record from a space corresponding to the specified entity type.
      *
+     * @param <T> target entity type
+     * @param <ID> target entity index type
      * @param id Target entity ID
      * @param entityType Desired type of the result object
      * @return Removed entity value
@@ -121,6 +133,7 @@ public interface TarantoolOperations {
     /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
+     * @param <T> target entity type
      * @param functionName callable API function name
      * @param parameters function parameters
      * @param entityType Desired type of the result object
@@ -132,6 +145,7 @@ public interface TarantoolOperations {
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
+     * @param <T> target entity type
      * @param functionName callable API function name
      * @param parameters function parameters
      * @param entityType Desired type of the result object
