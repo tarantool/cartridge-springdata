@@ -1,7 +1,5 @@
 package org.springframework.data.tarantool;
 
-import io.tarantool.driver.StandaloneTarantoolClient;
-import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.TarantoolClientConfig;
 import io.tarantool.driver.TarantoolServerAddress;
 import io.tarantool.driver.auth.SimpleTarantoolCredentials;
@@ -10,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.tarantool.config.AbstractTarantoolDataConfiguration;
 import org.springframework.data.tarantool.repository.BookRepository;
@@ -35,24 +34,21 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
     protected String password;
 
     @Override
-    public TarantoolClient tarantoolClient() {
-        TarantoolCredentials credentials = new SimpleTarantoolCredentials(
-                //"guest", "");
-                username, password);
+    protected void configureClientConfig(TarantoolClientConfig.Builder builder) {
+        builder
+            .withConnectTimeout(1000 * 5)
+            .withReadTimeout(1000 * 5)
+            .withRequestTimeout(1000 * 5);
+    }
 
-        TarantoolServerAddress serverAddress = new TarantoolServerAddress(
-                host, port);
+    @Bean("tarantoolCredentials")
+    @Override
+    public TarantoolCredentials tarantoolCredentials() {
+        return new SimpleTarantoolCredentials(username, password);
+    }
 
-        TarantoolClientConfig config = new TarantoolClientConfig.Builder()
-                .withCredentials(credentials)
-                .withConnectTimeout(1000 * 5)
-                .withReadTimeout(1000 * 5)
-                .withRequestTimeout(1000 * 5)
-                .build();
-
-        log.info("Attempting connect to Tarantool");
-        TarantoolClient client = new StandaloneTarantoolClient(config, serverAddress);
-        log.info("Successfully connected to Tarantool, version = {}", client.getVersion());
-        return client;
+    @Override
+    protected TarantoolServerAddress tarantoolServerAddress() {
+        return new TarantoolServerAddress(host, port);
     }
 }

@@ -1,9 +1,12 @@
 package org.springframework.data.tarantool.config;
 
-import io.tarantool.driver.StandaloneTarantoolClient;
+import io.tarantool.driver.ClusterTarantoolClient;
 import io.tarantool.driver.TarantoolClientConfig;
+import io.tarantool.driver.TarantoolClusterAddressProvider;
 import io.tarantool.driver.TarantoolServerAddress;
-import io.tarantool.driver.core.TarantoolConnectionSelectionStrategies.RoundRobinStrategyFactory;
+import io.tarantool.driver.auth.SimpleTarantoolCredentials;
+import io.tarantool.driver.auth.TarantoolCredentials;
+import io.tarantool.driver.core.TarantoolConnectionSelectionStrategies.ParallelRoundRobinStrategyFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.tarantool.core.DefaultTarantoolExceptionTranslator;
@@ -27,19 +30,31 @@ import java.util.List;
 public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfigurationSupport {
 
     /**
-     * Create a {@link TarantoolClient} instance. Constructs a {@link StandaloneTarantoolClient} instance by default.
-     * Override {@link #tarantoolClientConfig()} to configure connection details and {@link #tarantoolServerAddress()}
-     * to configure the Tarantool server address.
+     * Create a cluster {@link TarantoolClient} instance. Constructs a {@link ClusterTarantoolClient}
+     * instance by default.
+     * Override {@link #tarantoolClientConfig(TarantoolCredentials)} to configure client settings and
+     * {@link #tarantoolClusterAddressProvider()}} to configure the Tarantool server address.
      *
      * @return a client instance.
-     * @see #tarantoolClientConfig()
+     * @see #tarantoolClientConfig(TarantoolCredentials)
      * @see #configureClientConfig(TarantoolClientConfig.Builder)
-     * @see #tarantoolServerAddress()
+     * @see #tarantoolClusterAddressProvider()
      */
-    @Bean(destroyMethod = "close")
-    public TarantoolClient tarantoolClient() {
-        return new StandaloneTarantoolClient(
-                tarantoolClientConfig(), () -> tarantoolServerAddress(), RoundRobinStrategyFactory.INSTANCE);
+    @Bean(name = "clusterTarantoolClient", destroyMethod = "close")
+    public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
+                                           TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
+        return new ClusterTarantoolClient(
+                tarantoolClientConfig, tarantoolClusterAddressProvider, ParallelRoundRobinStrategyFactory.INSTANCE);
+    }
+
+    /**
+     * Creaate an intance of {@link TarantoolCredentials} for using in {@link TarantoolClientConfig}.
+     *
+     * @return a credentials instance
+     */
+    @Bean("tarantoolCredentials")
+    public TarantoolCredentials tarantoolCredentials() {
+        return new SimpleTarantoolCredentials();
     }
 
     /**
@@ -49,8 +64,10 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      *
      * @return Default client configuration.
      */
-    protected TarantoolClientConfig tarantoolClientConfig() {
-        TarantoolClientConfig.Builder builder = new TarantoolClientConfig.Builder();
+    @Bean("tarantoolConfig")
+    public TarantoolClientConfig tarantoolClientConfig(TarantoolCredentials tarantoolCredentials) {
+        TarantoolClientConfig.Builder builder = new TarantoolClientConfig.Builder()
+                .withCredentials(tarantoolCredentials);
         configureClientConfig(builder);
         return builder.build();
     }
@@ -65,7 +82,17 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     }
 
     /**
-     * Override this method for providing a Tarantool server address for the default single server client instance
+     * Configure the cluster nodes addresses provider by overriding this method. This provider may be
+     * used in {@link #tarantoolClient(TarantoolClientConfig, TarantoolClusterAddressProvider)}
+     * @return cluster address provider instance
+     */
+    @Bean("tarantoolClusterAddressProvider")
+    public TarantoolClusterAddressProvider tarantoolClusterAddressProvider() {
+        return () -> Collections.singletonList(tarantoolServerAddress());
+    }
+
+    /**
+     * Override this method for providing a Tarantool server address for the default cluster client instance
      *
      * @return Tarantool server address
      */
@@ -80,9 +107,9 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * @param mappingContext mapping context, contains information about defined entities
      * @param converter type converter, converts data between entities and Tarantool tuples
      * @return a {@link TarantoolTemplate} instance.
-     * @see #tarantoolClient()
+     * @see #tarantoolClient(TarantoolClientConfig, TarantoolClusterAddressProvider)
      */
-    @Bean
+    @Bean("tarantoolTemplate")
     public TarantoolTemplate tarantoolTemplate(TarantoolClient tarantoolClient,
                                                TarantoolMappingContext mappingContext,
                                                MappingTarantoolConverter converter) {
@@ -94,8 +121,9 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      *
      * @param tarantoolTemplate a {@link TarantoolTemplate} instance
      */
-    @Bean
-    public TarantoolRepositoryOperationsMapping tarantoolRepositoryOperationsMapping(TarantoolTemplate tarantoolTemplate) {
+    @Bean("tarantoolRepositoryOperationsMapping")
+    public TarantoolRepositoryOperationsMapping tarantoolRepositoryOperationsMapping(
+            TarantoolTemplate tarantoolTemplate) {
         // create a base mapping that associates all repositories to the default template
         TarantoolRepositoryOperationsMapping baseMapping = new TarantoolRepositoryOperationsMapping(tarantoolTemplate);
         // let the user tune it
@@ -118,7 +146,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * @return an {@link MappingTarantoolConverter} instance
      * @see #customConversions()
      */
-    @Bean
+    @Bean("mappingTarantoolConverter")
     public MappingTarantoolConverter mappingTarantoolConverter(TarantoolMappingContext tarantoolMappingContext) {
         return new MappingTarantoolConverter(tarantoolMappingContext, customConversions());
     }
@@ -130,7 +158,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * @return TarantoolMappingContext instance
      * @throws ClassNotFoundException
      */
-    @Bean
+    @Bean("tarantoolMappingContext")
     public TarantoolMappingContext tarantoolMappingContext() throws ClassNotFoundException {
 
         TarantoolMappingContext mappingContext = new TarantoolMappingContext();
@@ -141,7 +169,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
         return mappingContext;
     }
 
-    @Bean
+    @Bean("customConversions")
     public TarantoolCustomConversions customConversions() {
         return new TarantoolCustomConversions(customConverters());
     }
@@ -150,7 +178,6 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * Override this method for providing custom conversions
      * @return list of custom conversions
      */
-    @Bean
     protected List<?> customConverters() {
         return Collections.emptyList();
     }
