@@ -40,3 +40,7 @@ end
 function find_by_complex_query(year)
     return s:pairs():filter(function(b) return b.year > year end):totable()
 end
+
+function update_by_complex_query(id, year)
+    return {s:update(id, {{'=', 'year', year}})}
+end

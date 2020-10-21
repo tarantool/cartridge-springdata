@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexey Kuzin
@@ -65,6 +66,19 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     public void testFindByYear() {
         List<Book> books = bookRepository.findByYearGreaterThenProxy(1000);
         assertThat(books.size()).isGreaterThan(0);
+    }
+
+    @Test
+    public void testUpdateYear() {
+        Book book = Book.builder()
+                .id(777).name("Red and Black")
+                .uniqueKey("udf99").author("Stendal").year(1999).build();
+        Book newBook = bookRepository.save(book);
+        bookRepository.updateYear(777, 2000);
+        Optional<Book> one = bookRepository.findById(777);
+        assertTrue(one.isPresent());
+        Book bookFromRepository = one.get();
+        assertThat(bookFromRepository.getYear()).isEqualTo(2000);
     }
 
 //    @Test
