@@ -7,4 +7,5 @@ org.springframework.data.tarantool.core.query
 org.springframework.data.tarantool.core.query.support
 org.springframework.data.tarantool.repository
 org.springframework.data.tarantool.repository.config
+org.springframework.data.tarantool.repository.query
 org.springframework.data.tarantool.repository.support
