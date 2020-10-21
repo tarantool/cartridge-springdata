@@ -15,7 +15,7 @@ Tarantool database driver.
 
 |`spring-data-tarantool` Version | Spring Boot Version
 | :----------- | :----: |
-|1.0.0 | 2.2.x
+|0.1.x | 2.2.x
 
 The Tarantool Database documentation is located at
 [tarantool.io](https://www.tarantool.io/en/doc/latest/reference/)
@@ -24,7 +24,7 @@ Feel free to join the [Tarantool community chat](https://t.me/tarnatool)
 in Telegram (or its counterpart [in Russian](https://t.me/tarnatoolru))
 if you have any questions about Tarantool database or Spring Data Tarantool.
 
-Detailed questions can be asked on StackOverslow using the
+Detailed questions can be asked on StackOverflow using the
 [tarantool](https://stackoverflow.com/questions/tagged/tarantool) tag.
 
 Documentation and StackOverflow links will be added in the nearest future.
@@ -40,26 +40,22 @@ TBA soon
 
 ### Maven configuration
 
-The Tarantool Spring Data connector depends on the new asynchronous
-Tarantool Cartridge driver:
-
-```xml
-<dependency>
-  <groupId>io.tarantool</groupId>
-  <artifactId>cartridge-driver</artifactId>
-</dependency>
-```
-
-Download and build this project via `mvn install` (a temporary measure
-until the first release is published to Maven Central).
-
 Add the Maven dependency:
 
 ```xml
 <dependency>
   <groupId>io.tarantool</groupId>
   <artifactId>spring-data-tarantool</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.1.3</version>
+</dependency>
+```
+
+This module depends on the new asynchronous Tarantool Cartridge driver:
+
+```xml
+<dependency>
+  <groupId>io.tarantool</groupId>
+  <artifactId>cartridge-driver</artifactId>
 </dependency>
 ```
 
@@ -81,7 +77,7 @@ provides a generic repository programming model. It will automatically
 create a repository proxy for you that adds implementations of finder
 methods you specify on an interface.
 
-Only simple CRUD operations including entity ID are suported at the
+Only simple CRUD operations including entity ID are supported at the
 moment (will be fixed soon).
 
 For example, given a `Book` class with name and author properties, a
@@ -89,7 +85,7 @@ For example, given a `Book` class with name and author properties, a
 entities:
 
 ```java
-public interface BookRepository extends CrudRepository<Book, Long> {
+public interface BookRepository extends TarantoolRepository<Book, Long> {
 }
 ```
 
@@ -106,7 +102,7 @@ by using the following JavaConfig:
 class ApplicationConfig extends AbstractTarantoolDataConfiguration {
 
 	@Override
-    protected TarantoolServerAddress tarantoolServerAdress() {
+    protected TarantoolServerAddress tarantoolServerAddress() {
     	return new TarantoolServerAddress("localhost", 3301);
     }
 }
@@ -141,7 +137,7 @@ public class MyService {
 
 #### Proxy methods in repositories
 
-Consider we need to write a complex query in Lua, wotking with sharded data in Tarantool Cartridge. In this case
+Consider we need to write a complex query in Lua, working with sharded data in Tarantool Cartridge. In this case
 we can expose this query as a public API function and map that function on a repository method via the `@Query`
 annotation:
 
