@@ -19,7 +19,7 @@ public interface TarantoolOperations {
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
      * @param <T> target entity type
-     * @param query Query object that incapsulates the search criteria
+     * @param query Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The converted object
      */
@@ -32,7 +32,7 @@ public interface TarantoolOperations {
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
      * @param <T> target entity type
-     * @param query Query object that incapsulates the search criteria
+     * @param query Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -68,7 +68,7 @@ public interface TarantoolOperations {
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
      * @param <T> target entity type
-     * @param query Query object that incapsulates the search criteria
+     * @param query Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -80,7 +80,7 @@ public interface TarantoolOperations {
      * from the entity class.
      *
      * @param <T> target entity type
-     * @param query Query object that incapsulates the search criteria
+     * @param query Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return Number of records
      */

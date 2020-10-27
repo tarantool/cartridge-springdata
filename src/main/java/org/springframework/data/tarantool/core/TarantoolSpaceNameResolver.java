@@ -7,7 +7,7 @@ package org.springframework.data.tarantool.core;
  */
 public interface TarantoolSpaceNameResolver {
     /**
-     * Taske a class and determine the space name for it
+     * Taste a class and determine the space name for it
      * @param entityType tuple entity class
      * @param <T> entity type
      * @return space name

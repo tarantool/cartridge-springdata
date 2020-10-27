@@ -34,8 +34,7 @@ public class TarantoolRepositoryOperationsMapping {
      * {@link TarantoolOperations}.
      *
      * @param repositoryInterface the repository interface {@link Class}.
-     * @param tarantoolOperations the CouchbaseOperations to use.
-     * @return the mapping, for chaining.
+     * @param tarantoolOperations the {@link TarantoolOperations} to use.
      */
     private void map(Class<?> repositoryInterface, TarantoolOperations tarantoolOperations) {
         byRepository.put(repositoryInterface.getName(), tarantoolOperations);
@@ -47,7 +46,6 @@ public class TarantoolRepositoryOperationsMapping {
      *
      * @param entityClass the domain type's {@link Class}.
      * @param tarantoolOperations the {@link TarantoolOperations} to use.
-     * @return the mapping, for chaining.
      */
     private void mapEntity(Class<?> entityClass, TarantoolOperations tarantoolOperations) {
         byEntity.put(entityClass.getName(), tarantoolOperations);

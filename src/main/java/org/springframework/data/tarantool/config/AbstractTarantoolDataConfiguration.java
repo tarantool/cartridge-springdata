@@ -50,7 +50,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     }
 
     /**
-     * Creaate an intance of {@link TarantoolCredentials} for using in {@link TarantoolClientConfig}.
+     * Create an instance of {@link TarantoolCredentials} for using in {@link TarantoolClientConfig}.
      *
      * @return a credentials instance
      */
