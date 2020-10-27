@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.TarantoolCartridgeContainer;
 import org.testcontainers.containers.TarantoolContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -18,7 +19,11 @@ public class BaseIntegrationTest {
 
     @ClassRule
     @Container
-    private static final TarantoolContainer tarantoolContainer = new TarantoolContainer();
+    private static final TarantoolCartridgeContainer tarantoolContainer =
+        new TarantoolCartridgeContainer("cartridge/instances.yml", "cartridge/topology.lua")
+            .withDirectoryBinding("cartridge")
+            .withReuse(true)
+            .withRouterPassword("testapp-cluster-cookie");
 
     @BeforeAll
     public static void setUp() throws Exception {

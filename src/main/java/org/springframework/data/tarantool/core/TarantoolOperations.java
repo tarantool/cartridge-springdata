@@ -1,7 +1,7 @@
 package org.springframework.data.tarantool.core;
 
+import io.tarantool.driver.api.conditions.Conditions;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
-import org.springframework.data.tarantool.core.query.support.Query;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public interface TarantoolOperations {
      * @return The converted object
      */
     @Nullable
-    <T> T findOne(Query query, Class<T> entityType);
+    <T> T findOne(Conditions query, Class<T> entityType);
 
     /**
      * Map the results of a query over a space for the entity class to a List of the specified type.
@@ -36,7 +36,7 @@ public interface TarantoolOperations {
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
-    <T> List<T> find(Query query, Class<T> entityType);
+    <T> List<T> find(Conditions query, Class<T> entityType);
 
     /**
      * Get an entity by the given id and map it to an object of the given type.
@@ -49,6 +49,7 @@ public interface TarantoolOperations {
      * @param entityType Desired type of the result object
      * @return The converted object
      */
+    @Nullable
     <T, ID> T findById(ID id, Class<T> entityType);
 
     /**
@@ -73,7 +74,7 @@ public interface TarantoolOperations {
      * @return The list of converted objects
      */
     @Nullable
-    <T> List<T> findAndRemove(Query query, Class<T> entityType);
+    <T> List<T> findAndRemove(Conditions query, Class<T> entityType);
 
     /**
      * Count the number of records matching the specified query. The space is determined automatically
@@ -84,7 +85,7 @@ public interface TarantoolOperations {
      * @param entityType Desired type of the result object
      * @return Number of records
      */
-    <T> Long count(Query query, Class<T> entityType);
+    <T> Long count(Conditions query, Class<T> entityType);
 
     /**
      * Insert a record into a space. The space is determined automatically by the entity class.
@@ -94,6 +95,7 @@ public interface TarantoolOperations {
      * @param entityType Desired type of the result object
      * @return The inserted object
      */
+    @Nullable
     <T> T insert(T entity, Class<T> entityType);
 
     /**
@@ -105,6 +107,7 @@ public interface TarantoolOperations {
      * @param entityType Desired type of the result object
      * @return The inserted object
      */
+    @Nullable
     <T> T save(T entity, Class<T> entityType);
 
     /**

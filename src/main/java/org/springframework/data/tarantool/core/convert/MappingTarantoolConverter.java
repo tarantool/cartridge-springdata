@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.core.convert;
 
+import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,6 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentProperty;
-import org.springframework.data.tarantool.core.query.support.IndexDefinition;
-import org.springframework.data.tarantool.core.query.support.IndexKeyDefinition;
-import org.springframework.data.tarantool.core.query.support.Query;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -146,14 +144,14 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
             return;
         }
 
-        if (target instanceof Query) {
-            writeIndexQueryInternal(source, (Query) target);
-        } else {
+        if (target instanceof Conditions) {
+            writeIndexQueryInternal(source, (Conditions) target);
+        } else if (target instanceof TarantoolTuple) {
             writeTupleInternal(source, (TarantoolTuple) target);
         }
     }
 
-    private void writeIndexQueryInternal(Object source, Query target) {
+    private void writeIndexQueryInternal(Object source, Conditions target) {
         TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
         Object idValue = source;
         if (entity != null) {
@@ -164,13 +162,16 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
             }
 
             idValue = propertyAccessor.getProperty(idProperty);
+            if (idValue == null) {
+                throw new MappingException("ID property value is null");
+            }
         }
         Optional<Class<?>> basicTargetType = conversions.getCustomWriteTarget(idValue.getClass());
         if (basicTargetType.isPresent()) {
             idValue = conversionService.convert(source, basicTargetType.get());
         }
-        IndexKeyDefinition indexKeyDef = new IndexKeyDefinition(idValue);
-        target.setIndexDefinition(new IndexDefinition(IndexDefinition.PRIMARY, Collections.singletonList(indexKeyDef)));
+
+        target.andIndexEquals(0, Collections.singletonList(idValue));
     }
 
     /**

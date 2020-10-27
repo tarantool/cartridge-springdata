@@ -1,20 +1,18 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.TarantoolClient;
-import io.tarantool.driver.api.TarantoolIndexQuery;
 import io.tarantool.driver.api.TarantoolResult;
-import io.tarantool.driver.api.TarantoolSelectOptions;
+import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
-import io.tarantool.driver.exceptions.TarantoolException;
 import io.tarantool.driver.mappers.TarantoolCallResultMapper;
 import io.tarantool.driver.mappers.TarantoolCallResultMapperFactory;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
-import org.springframework.data.tarantool.core.query.support.Query;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -47,40 +45,26 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T findOne(Query query, Class<T> entityClass) {
+    public <T> T findOne(Conditions query, Class<T> entityClass) {
         Assert.notNull(query, "Query must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                TarantoolSelectOptions options = new TarantoolSelectOptions.Builder().build();
-                return tarantoolClient
-                        .space(entity.getSpaceName())
-                        .select(query.toIndexQuery(), options);
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entity.getSpaceName()).select(query)
+        );
         return mapFirstToEntity(result, entityClass);
     }
 
     @Override
-    public <T> List<T> find(Query query, Class<T> entityClass) {
+    public <T> List<T> find(Conditions query, Class<T> entityClass) {
         Assert.notNull(query, "Query must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                TarantoolSelectOptions options = new TarantoolSelectOptions.Builder().build();
-                return tarantoolClient
-                        .space(entity.getSpaceName())
-                        .select(query.toIndexQuery(), options);
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entity.getSpaceName()).select(query)
+        );
         return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
     }
 
@@ -91,15 +75,8 @@ public class TarantoolTemplate implements TarantoolOperations {
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                TarantoolIndexQuery query = idQueryFromEntity(id).toIndexQuery();
-                TarantoolSelectOptions options = new TarantoolSelectOptions.Builder().withLimit(1).build();
-                return tarantoolClient
-                        .space(entity.getSpaceName())
-                        .select(query, options);
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
+            Conditions query = idQueryFromEntity(id).withLimit(1);
+            return tarantoolClient.space(entity.getSpaceName()).select(query);
         });
         return mapFirstToEntity(result, entityClass);
     }
@@ -109,27 +86,20 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entityClass, "Type must not be null!");
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                TarantoolSelectOptions options = new TarantoolSelectOptions.Builder().build();
-                return tarantoolClient
-                        .space(entity.getSpaceName())
-                        .select(options);
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entity.getSpaceName()).select(Conditions.any())
+        );
         return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
     }
 
     @Override
-    public <T> List<T> findAndRemove(Query query, Class<T> entityType) {
+    public <T> List<T> findAndRemove(Conditions query, Class<T> entityType) {
         List<T> entities = find(query, entityType);
         return entities.stream().map(e -> remove(e, entityType)).collect(Collectors.toList());
     }
 
     @Override
-    public <T> Long count(Query query, Class<T> entityType) {
+    public <T> Long count(Conditions query, Class<T> entityType) {
         // not supported in the driver yet. TODO change this when implemented in the driver
         throw new NotImplementedException();
     }
@@ -140,15 +110,9 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entityClass, "Type must not be null!");
 
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                return tarantoolClient
-                        .space(entityMetadata.getSpaceName())
-                        .insert(mapToTuple(entity, entityMetadata));
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entityMetadata.getSpaceName()).insert(mapToTuple(entity, entityMetadata))
+        );
         return mapFirstToEntity(result, entityClass);
     }
 
@@ -158,15 +122,9 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entityClass, "Type must not be null!");
 
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                return tarantoolClient
-                        .space(entityMetadata.getSpaceName())
-                        .replace(mapToTuple(entity, entityMetadata));
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entityMetadata.getSpaceName()).replace(mapToTuple(entity, entityMetadata))
+        );
         return mapFirstToEntity(result, entityClass);
     }
 
@@ -175,7 +133,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entity, "Entity must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
-        TarantoolIndexQuery query = idQueryFromEntity(entity).toIndexQuery();
+        Conditions query = idQueryFromEntity(entity);
         return removeInternal(query, entityClass);
     }
 
@@ -184,7 +142,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(id, "ID must not be null!");
         Assert.notNull(entityClass, "Type must not be null!");
 
-        TarantoolIndexQuery query = idQueryFromEntity(id).toIndexQuery();
+        Conditions query = idQueryFromEntity(id);
         return removeInternal(query, entityClass);
     }
 
@@ -194,7 +152,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entityType, "Type must not be null!");
 
         List<T> result = callForList(functionName, parameters, entityType);
-        return result.size() > 0 ? result.get(0) : null;
+        return result != null && result.size() > 0 ? result.get(0) : null;
     }
 
     @Override
@@ -202,19 +160,13 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(entityClass, "Type must not be null!");
 
-
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                return tarantoolClient.call(
-                        functionName,
-                        Arrays.asList(parameters),
-                        tarantoolClient.getConfig().getMessagePackMapper(),
-                        getResultMapperForEntity(entityClass)
-                );
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.call(
+                functionName,
+                Arrays.asList(parameters),
+                tarantoolClient.getConfig().getMessagePackMapper(),
+                getResultMapperForEntity(entityClass))
+        );
         return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
     }
 
@@ -226,27 +178,21 @@ public class TarantoolTemplate implements TarantoolOperations {
         return tarantoolResultMapperFactory.withDefaultTupleValueConverter(spaceMetadata.orElse(null));
     }
 
-    private <T> T removeInternal(TarantoolIndexQuery query, Class<T> entityClass) {
+    @Nullable
+    private <T> T removeInternal(Conditions query, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            try {
-                return tarantoolClient
-                        .space(entityMetadata.getSpaceName())
-                        .delete(query);
-            } catch (TarantoolException e) {
-                throw exceptionTranslator.translateExceptionIfPossible(e);
-            }
-        });
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+            tarantoolClient.space(entityMetadata.getSpaceName()).delete(query)
+        );
         return mapFirstToEntity(result, entityClass);
     }
 
-    private <T> Query idQueryFromEntity(T entity) {
-        Query query = new Query();
+    private <T> Conditions idQueryFromEntity(T entity) {
+        Conditions query = Conditions.any();
         getConverter().write(entity, query);
         return query;
     }
 
-    @Nullable
     private <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {
         return mapToEntity(tuples.stream()
                     .findFirst()
@@ -254,7 +200,7 @@ public class TarantoolTemplate implements TarantoolOperations {
                 entityClass);
     }
 
-    private <T> T mapToEntity(TarantoolTuple tuple, Class<T> entityClass) {
+    private <T> T mapToEntity(@Nullable TarantoolTuple tuple, Class<T> entityClass) {
         return getConverter().read(entityClass, tuple);
     }
 
@@ -276,8 +222,17 @@ public class TarantoolTemplate implements TarantoolOperations {
     private <R> R executeSync(Supplier<CompletableFuture<R>> func) {
         try {
             return func.get().get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new DataRetrievalFailureException(e.getMessage());
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                DataAccessException wrapped = exceptionTranslator
+                        .translateExceptionIfPossible((RuntimeException) e.getCause());
+                if (wrapped != null) {
+                    throw wrapped;
+                }
+            }
+            throw new DataRetrievalFailureException(e.getMessage(), e.getCause());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
