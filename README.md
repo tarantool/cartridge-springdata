@@ -15,7 +15,15 @@ Tarantool database driver.
 
 |`spring-data-tarantool` Version | Spring Boot Version
 | :----------- | :----: |
-|0.1.x | 2.2.x
+|0.x.x | 2.2.x
+
+## Tarantool compatibility
+
+|`spring-data-tarantool` Version | Tarantool Version
+| :----------- | :----: |
+| 0.x.x | 1.10.x, 2.x
+
+## References
 
 The Tarantool Database documentation is located at
 [tarantool.io](https://www.tarantool.io/en/doc/latest/reference/)
@@ -46,16 +54,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>io.tarantool</groupId>
   <artifactId>spring-data-tarantool</artifactId>
-  <version>0.1.3</version>
-</dependency>
-```
-
-This module depends on the new asynchronous Tarantool Cartridge driver:
-
-```xml
-<dependency>
-  <groupId>io.tarantool</groupId>
-  <artifactId>cartridge-driver</artifactId>
+  <version>0.2.0</version>
 </dependency>
 ```
 
@@ -93,17 +92,47 @@ Extending `CrudRepository` causes CRUD methods being pulled into the
 interface so that you can easily save and find single entities and
 collections of them.
 
-You can have Spring automatically create a proxy for the interface
-by using the following JavaConfig:
+Let's assume that you have the [tarantool/crud](https://github.com/tarantool/crud) module installed in yor Cartridge
+application and there is an active 'crud-router' role on your router. Put the following settings in your application
+properties:
+
+| Property name      | Example value | Description
+| :----------------  | :-----------  | :---------
+| tarantool.host     | localhost            | Cartridge router host
+| tarantool.port     | 3301                 | Cartridge router port
+| tarantool.username | admin                | Default username for API access, may be different
+| tarantool.password | myapp-cluster-cookie | Password for API access, see you Cartridge application configuration
+
+Than you can have Spring automatically create a proxy for the repository interface by using the following JavaConfig:
 
 ```java
 @Configuration
 @EnableTarantoolRepositories(basePackageClasses = BookRepository.class)
 class ApplicationConfig extends AbstractTarantoolDataConfiguration {
 
-	@Override
+    @Value("${tarantool.host}")
+    protected String host;
+    @Value("${tarantool.port}")
+    protected int port;
+    @Value("${tarantool.username}")
+    protected String username;
+    @Value("${tarantool.password}")
+    protected String password;
+
+    @Override
     protected TarantoolServerAddress tarantoolServerAddress() {
-    	return new TarantoolServerAddress("localhost", 3301);
+        return new TarantoolServerAddress(host, port);
+    }
+
+    @Override
+    public TarantoolCredentials tarantoolCredentials() {
+        return new SimpleTarantoolCredentials(username, password);
+    }
+
+    @Override
+    public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
+                                           TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
+        return new ProxyTarantoolClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider));
     }
 }
 ```
@@ -153,11 +182,12 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
 
 ```lua
     local crud = require('crud')
+    local fun = require('fun')
 
     ...
 
     function find_by_complex_query(year)
-        return crud.pairs():filter(function(b) return b.year > year end):totable()
+        return fun.iter(crud.pairs('books')):filter(function(b) return b[6] and b[6] > year end):totable()
     end
 ```
 
