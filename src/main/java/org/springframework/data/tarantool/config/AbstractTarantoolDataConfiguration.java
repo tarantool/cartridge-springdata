@@ -9,6 +9,7 @@ import io.tarantool.driver.auth.TarantoolCredentials;
 import io.tarantool.driver.core.TarantoolConnectionSelectionStrategies.ParallelRoundRobinStrategyFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.tarantool.core.DefaultTarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolTemplate;
@@ -18,6 +19,7 @@ import org.springframework.data.tarantool.core.convert.TarantoolCustomConversion
 import org.springframework.data.tarantool.core.convert.TarantoolMapTypeAliasAccessor;
 import org.springframework.data.tarantool.core.convert.TarantoolTupleTypeMapper;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
+import org.springframework.data.tarantool.core.mapping.TarantoolSimpleTypes;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
 import java.util.Collections;
@@ -156,8 +158,9 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      */
     @Bean("mappingTarantoolConverter")
     public MappingTarantoolConverter mappingTarantoolConverter(TarantoolMappingContext tarantoolMappingContext,
-                                                               TarantoolMapTypeAliasAccessor typeAliasAccessor) {
-        return new MappingTarantoolConverter(tarantoolMappingContext, typeAliasAccessor, customConversions());
+                                                               TarantoolMapTypeAliasAccessor typeAliasAccessor,
+                                                               CustomConversions customConversions) {
+        return new MappingTarantoolConverter(tarantoolMappingContext, typeAliasAccessor, customConversions);
     }
 
     /**
@@ -183,7 +186,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
 
         TarantoolMappingContext mappingContext = new TarantoolMappingContext();
         mappingContext.setInitialEntitySet(getInitialEntitySet());
-        mappingContext.setSimpleTypeHolder(customConversions().getSimpleTypeHolder());
+        mappingContext.setSimpleTypeHolder(TarantoolSimpleTypes.HOLDER);
         mappingContext.setFieldNamingStrategy(fieldNamingStrategy());
 
         return mappingContext;

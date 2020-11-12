@@ -50,6 +50,7 @@ local function init_space()
                 {name = 'name', type = 'string'},
                 {name = 'tags', type = 'array'},
                 {name = 'addresses', type = 'any'},
+                {name = 'lastVisitTime', type = 'unsigned'},
             },
             if_not_exists = true,
         }

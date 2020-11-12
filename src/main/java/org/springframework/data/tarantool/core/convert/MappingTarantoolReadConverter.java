@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Mapping converter for Tarantool for reading objects from tuples
@@ -159,17 +160,17 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
 
             TypeInformation<?> propType = property.getTypeInformation();
             Class<?> propClass = propType.getType();
+            Optional<Class<?>> customTargetClass = conversions.getCustomWriteTarget(propClass);
             Object value;
-            if (conversions.isSimpleType(propClass)) {
-                value = source.getObject(property.getFieldName(), propClass).orElse(null);
-            } else if (propType.isCollectionLike()) {
+            if (propType.isCollectionLike()) {
                 value = source.getList(property.getFieldName());
             } else if (propType.isMap()) {
                 value = source.getMap(property.getFieldName());
-            } else if (conversions.hasCustomReadTarget(String.class, propClass)) {
-                value = source.getString(property.getFieldName());
-            } else if (conversions.hasCustomReadTarget(Number.class, propClass)) {
-                value = source.getLong(property.getFieldName());
+            } else if (customTargetClass.isPresent() &&
+                    conversions.hasCustomReadTarget(customTargetClass.get(), propClass)) {
+                value = source.getObject(property.getFieldName(), customTargetClass.get()).orElse(null);
+            } else if (conversions.isSimpleType(propClass)) {
+                value = source.getObject(property.getFieldName(), propClass).orElse(null);
             } else {
                 value = convertCustomType(source.getMap(property.getFieldName()), propType);
             }

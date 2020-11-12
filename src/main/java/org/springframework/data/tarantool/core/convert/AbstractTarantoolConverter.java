@@ -29,7 +29,8 @@ public abstract class AbstractTarantoolConverter implements TarantoolConverter, 
      * @param conversions Custom type conversions, can be {@literal null}
      */
     public AbstractTarantoolConverter(@Nullable CustomConversions conversions) {
-        this.conversionService = new DefaultConversionService();
+        this.conversionService = new GenericConversionService();
+        DefaultConversionService.addCollectionConverters(conversionService);
         this.conversions = conversions == null ? new TarantoolCustomConversions(Collections.emptyList()) : conversions;
     }
 
