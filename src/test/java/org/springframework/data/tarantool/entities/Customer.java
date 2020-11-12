@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.tarantool.core.mapping.Tuple;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,4 +29,6 @@ public class Customer {
     private List<String> tags;
 
     private Map<String, Address> addresses;
+
+    private LocalDateTime lastVisitTime;
 }
