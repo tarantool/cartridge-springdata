@@ -5,13 +5,13 @@ import org.springframework.data.convert.TypeAliasAccessor;
 import org.springframework.data.mapping.Alias;
 
 /**
- * Actually reads and writes type alias into a tuple
+ * Reads and writes type alias into a tuple
  *
  * @author Alexey Kuzin
  */
 public class TarantoolTupleTypeAliasAccessor implements TypeAliasAccessor<TarantoolTuple> {
 
-    private String typeKey;
+    private final String typeKey;
 
     public TarantoolTupleTypeAliasAccessor(final String typeKey) {
         this.typeKey = typeKey;

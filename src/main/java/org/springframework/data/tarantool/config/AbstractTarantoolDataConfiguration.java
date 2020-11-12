@@ -15,6 +15,8 @@ import org.springframework.data.tarantool.core.TarantoolTemplate;
 import io.tarantool.driver.api.TarantoolClient;
 import org.springframework.data.tarantool.core.convert.MappingTarantoolConverter;
 import org.springframework.data.tarantool.core.convert.TarantoolCustomConversions;
+import org.springframework.data.tarantool.core.convert.TarantoolMapTypeAliasAccessor;
+import org.springframework.data.tarantool.core.convert.TarantoolTupleTypeMapper;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
@@ -153,8 +155,20 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * @see #customConversions()
      */
     @Bean("mappingTarantoolConverter")
-    public MappingTarantoolConverter mappingTarantoolConverter(TarantoolMappingContext tarantoolMappingContext) {
-        return new MappingTarantoolConverter(tarantoolMappingContext, customConversions());
+    public MappingTarantoolConverter mappingTarantoolConverter(TarantoolMappingContext tarantoolMappingContext,
+                                                               TarantoolMapTypeAliasAccessor typeAliasAccessor) {
+        return new MappingTarantoolConverter(tarantoolMappingContext, typeAliasAccessor, customConversions());
+    }
+
+    /**
+     * Creates a {@link TarantoolMapTypeAliasAccessor} instance for retrieving the serialized object type from
+     * nested maps
+     *
+     * @return a {@link TarantoolMapTypeAliasAccessor} instance
+     */
+    @Bean("typeAliasAccessor")
+    public TarantoolMapTypeAliasAccessor typeAliasAccessor() {
+        return new TarantoolMapTypeAliasAccessor(TarantoolTupleTypeMapper.DEFAULT_TYPE_KEY);
     }
 
     /**

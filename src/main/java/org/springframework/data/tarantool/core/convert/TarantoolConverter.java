@@ -1,6 +1,7 @@
 package org.springframework.data.tarantool.core.convert;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 
 /**
@@ -9,6 +10,13 @@ import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
  * @author Alexey Kuzin
  */
 public interface TarantoolConverter extends TarantoolWriter<Object>, TarantoolReader<Object> {
+    /**
+     * Return the custom conversions.
+     *
+     * @return custom conversions
+     */
+    CustomConversions getCustomConversions();
+
     /**
      * Return the conversion service.
      *

@@ -1,4 +1,4 @@
-package org.springframework.data.tarantool.repository;
+package org.springframework.data.tarantool.entities;
 
 import lombok.Builder;
 import lombok.Data;

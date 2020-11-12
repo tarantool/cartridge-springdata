@@ -1,4 +1,5 @@
 local vshard = require('vshard')
+local pool = require('cartridge.pool')
 
 -- function to get cluster schema
 local function crud_get_schema()
@@ -44,6 +45,28 @@ end
 
 function update_by_complex_query(id, year)
 	return crud.update('test_space', id, {{'=', 'year', year}})
+end
+
+local function get_uriList()
+	local uriLider, err = cartridge.rpc_get_candidates('app.roles.api_storage', {leader_only=true})
+	if err ~= nil then
+		return nil, err
+	end
+	return uriLider
+end
+
+function book_find_list_by_name(names)
+	local books_list = {}
+	local books_by_storage, err = pool.map_call('find_books_by_name', { names }, { uri_list = get_uriList() })
+	if err then
+		return nil, err
+	end
+	for _, books in pairs(books_by_storage) do
+		for _, book in pairs(books) do
+			table.insert(books_list, book)
+		end
+	end
+	return books_list
 end
 
 local function init(opts)

@@ -53,6 +53,11 @@ public abstract class AbstractTarantoolConverter implements TarantoolConverter, 
     }
 
     @Override
+    public CustomConversions getCustomConversions() {
+        return conversions;
+    }
+
+    @Override
     public ConversionService getConversionService() {
         return conversionService;
     }

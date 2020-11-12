@@ -2,11 +2,14 @@ package org.springframework.data.tarantool;
 
 import org.junit.ClassRule;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.TarantoolCartridgeContainer;
 import org.testcontainers.containers.TarantoolContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -17,17 +20,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class BaseIntegrationTest {
 
-    @ClassRule
-    @Container
-    private static final TarantoolCartridgeContainer tarantoolContainer =
-        new TarantoolCartridgeContainer("cartridge/instances.yml", "cartridge/topology.lua")
-            .withDirectoryBinding("cartridge")
-            .withReuse(true)
-            .withRouterPassword("testapp-cluster-cookie");
+    private static Logger logger  = LoggerFactory.getLogger(BaseIntegrationTest.class);
+
+    protected static final TarantoolCartridgeContainer tarantoolContainer =
+            (TarantoolCartridgeContainer) new TarantoolCartridgeContainer("cartridge/instances.yml", "cartridge/topology.lua")
+                    .withDirectoryBinding("cartridge")
+                    .withReuse(true)
+                    .withRouterPassword("testapp-cluster-cookie")
+                    .withLogConsumer(new Slf4jLogConsumer(logger));
 
     @BeforeAll
-    public static void setUp() throws Exception {
-        tarantoolContainer.executeScript("test.lua").get();
+    static void startContainer() {
+        if (!tarantoolContainer.isRunning()) {
+            tarantoolContainer.start();
+        }
     }
 
     @DynamicPropertySource

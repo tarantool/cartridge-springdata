@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.core.convert;
 
+import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.springframework.data.convert.EntityWriter;
 
 /**
@@ -8,5 +9,5 @@ import org.springframework.data.convert.EntityWriter;
  * @param <T> entity type
  * @author Alexey Kuzin
  */
-public interface TarantoolWriter<T> extends EntityWriter<T, Object> {
+public interface TarantoolWriter<T> extends EntityWriter<T, TarantoolTuple> {
 }
