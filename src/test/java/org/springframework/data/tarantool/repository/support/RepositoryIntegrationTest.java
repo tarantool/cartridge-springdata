@@ -1,12 +1,14 @@
 package org.springframework.data.tarantool.repository.support;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
-import org.springframework.data.tarantool.repository.Book;
+import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.repository.BookRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Autowired
     BookRepository bookRepository;
+
+    @BeforeAll
+    public static void setUp() throws Exception {
+        tarantoolContainer.executeScript("test.lua").get();
+    }
 
     @Test
     public void findOne_shouldReturnNullForNonExistingKey() {
@@ -63,9 +70,23 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    public void testFindAll() {
+        List<Book> books = (List<Book>) bookRepository.findAll();
+        assertThat(books.size()).isGreaterThanOrEqualTo(3);
+    }
+
+    @Test
     public void testFindByYear() {
         List<Book> books = bookRepository.findByYearGreaterThenProxy(1000);
         assertThat(books.size()).isGreaterThan(0);
+    }
+
+    @Test
+    public void testComplexQueryWithMapReduce() {
+        List<Book> books = bookRepository.getListByName(Arrays.asList("Don Quixote", "War and Peace"));
+        assertThat(books.size()).isEqualTo(2);
+        assertThat(books.get(0).getAuthor()).isEqualTo("Miguel de Cervantes");
+        assertThat(books.get(0).getYear()).isEqualTo(1605);
     }
 
     @Test

@@ -10,14 +10,18 @@ import io.tarantool.driver.mappers.TarantoolCallResultMapperFactory;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
+import org.springframework.data.tarantool.core.mapping.TarantoolPersistentProperty;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -187,10 +191,27 @@ public class TarantoolTemplate implements TarantoolOperations {
         return mapFirstToEntity(result, entityClass);
     }
 
-    private <T> Conditions idQueryFromEntity(T entity) {
-        Conditions query = Conditions.any();
-        getConverter().write(entity, query);
-        return query;
+    private <T> Conditions idQueryFromEntity(T source) {
+        TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
+        Object idValue = source;
+        if (entity != null) {
+            PersistentPropertyAccessor<?> propertyAccessor = entity.getPropertyAccessor(source);
+            TarantoolPersistentProperty idProperty = entity.getIdProperty();
+            if (idProperty == null) {
+                throw new MappingException("No ID property specified on entity " + source.getClass());
+            }
+
+            idValue = propertyAccessor.getProperty(idProperty);
+            if (idValue == null) {
+                throw new MappingException("ID property value is null");
+            }
+        }
+        Optional<Class<?>> basicTargetType = converter.getCustomConversions().getCustomWriteTarget(idValue.getClass());
+        if (basicTargetType.isPresent()) {
+            idValue = converter.getConversionService().convert(source, basicTargetType.get());
+        }
+
+        return Conditions.indexEquals(0, Collections.singletonList(idValue));
     }
 
     private <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {

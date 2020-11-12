@@ -8,15 +8,15 @@ import org.springframework.data.convert.DefaultTypeMapper;
  *
  * @author Alexey Kuzin
  */
-public class DefaultTarantoolTypeMapper extends DefaultTypeMapper<TarantoolTuple> {
+public class TarantoolTupleTypeMapper extends DefaultTypeMapper<TarantoolTuple> {
 
     public static final String DEFAULT_TYPE_KEY = "_class";
 
-    public DefaultTarantoolTypeMapper() {
+    public TarantoolTupleTypeMapper() {
         super(new TarantoolTupleTypeAliasAccessor(DEFAULT_TYPE_KEY));
     }
 
-    public DefaultTarantoolTypeMapper(final String typeKey) {
+    public TarantoolTupleTypeMapper(final String typeKey) {
         super(new TarantoolTupleTypeAliasAccessor(typeKey));
     }
 }
