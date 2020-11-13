@@ -111,6 +111,19 @@ public interface TarantoolOperations {
     <T> T save(T entity, Class<T> entityType);
 
     /**
+     * Update all records selected by the specified conditions. The space is determined automatically by the
+     * entity class. Warning: executing this operation on a large data set may cause OutOfMemory error or take
+     * significant time to complete.
+     *
+     * @param query tuple selection conditions
+     * @param entity entity with new data for update
+     * @param entityClass target class of the result objects
+     * @param <T> target entity type
+     * @return list of updated objects
+     */
+    <T> List<T> update(Conditions query, T entity, Class<T> entityClass);
+
+    /**
      * Remove a record from a space corresponding to the specified entity type.
      *
      * @param <T> target entity type
