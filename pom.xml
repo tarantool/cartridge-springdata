@@ -48,7 +48,7 @@
     <properties>
         <spring.version>5.2.6.RELEASE</spring.version>
         <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <driver.version>0.3.0</driver.version>
+        <driver.version>0.3.2</driver.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <logging.config>${project.basedir}/src/test/resources/logback-test.xml</logging.config>

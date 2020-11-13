@@ -1,6 +1,7 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.api.tuple.operations.TupleOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,40 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
 //    @Test
-//    void testUpdate() {
-//        tarantoolOperations.update(Conditions.equals("name", "Vasya"), TupleOperations.set("balance", 100));
+//    public void testFunctionAcceptingObject() {
+//        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address", new Address[]{vasya.getAddresses().get("home")}, Customer.class);
+//        assertTrue(byCity != null && byCity.size() > 0);
 //    }
+
+    @Test
+    void testUpdateOne() {
+        Address newAddress = Address.builder().city("Vladimir").street("Moskovskaya").number(123).build();
+        Customer vasyaUpdated = Customer.builder()
+                .addresses(Collections.singletonMap("home", newAddress))
+                .build();
+        List<Customer> updates = tarantoolOperations.update(
+                Conditions.equals("name", "Vasya"),
+                vasyaUpdated, Customer.class);
+        assertEquals("Vladimir", updates.get(0).getAddresses().get("home").getCity());
+
+        Customer newVasya = tarantoolOperations.findById(1, Customer.class);
+        assertEquals("Vladimir", newVasya.getAddresses().get("home").getCity());
+    }
+
+    @Test
+    void testUpdateMany() {
+        Address newAddress = Address.builder().city("Vladimir").street("Moskovskaya").number(123).build();
+        Customer vasyaUpdated = Customer.builder()
+                .addresses(Collections.singletonMap("home", newAddress))
+                .build();
+        List<Customer> updates = tarantoolOperations.update(
+                Conditions.any(),
+                vasyaUpdated, Customer.class);
+        assertTrue(updates.size() > 0);
+        for (Customer update : updates) {
+            assertEquals("Vladimir", update.getAddresses().get("home").getCity());
+            Customer updated = tarantoolOperations.findById(update.getId(), Customer.class);
+            assertEquals("Vladimir", updated.getAddresses().get("home").getCity());
+        }
+    }
 }

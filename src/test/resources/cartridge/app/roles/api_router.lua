@@ -1,5 +1,8 @@
 local vshard = require('vshard')
 local pool = require('cartridge.pool')
+local errors = require('errors')
+
+local AssertionError = errors.new_class('AssertionError')
 
 -- function to get cluster schema
 local function crud_get_schema()
@@ -45,6 +48,10 @@ end
 
 function update_by_complex_query(id, year)
 	return crud.update('test_space', id, {{'=', 'year', year}})
+end
+
+function find_customer_by_address(address)
+	return crud.select('customers', {{'=', "addresses.home.city", address.city}})
 end
 
 local function get_uriList()
