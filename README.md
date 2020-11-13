@@ -1,5 +1,7 @@
 # Spring Data Tarantool
 
+[![cartridge-springdata:ubuntu/master Actions Status](https://github.com/tarantool/cartridge-springdata/workflows/ubuntu-master/badge.svg)](https://github.com/tarantool/cartridge-springdata/actions)
+
 The primary goal of the [Spring Data](https://projects.spring.io/spring-data)
 project is to make it easier to build Spring-powered applications that
 use new data access technologies such as non-relational databases,
@@ -54,7 +56,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>io.tarantool</groupId>
   <artifactId>spring-data-tarantool</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
