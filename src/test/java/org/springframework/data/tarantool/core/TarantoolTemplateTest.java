@@ -99,6 +99,22 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
     @Test
+    void testReadNullInNestedObject() {
+        Customer zhuzha = Customer.builder()
+                .id(4L)
+                .name("Tanya")
+                .tags(Arrays.asList("one", "two"))
+                .addresses(null)
+                .lastVisitTime(LocalDateTime.now())
+                .build();
+
+        Customer zhuzhaSaved = tarantoolOperations.save(zhuzha, Customer.class);
+        Customer zhuzhaNew = tarantoolOperations.findById(4, Customer.class);
+        assertEquals(null, zhuzhaNew.getAddresses());
+        assertEquals(null, zhuzhaNew.getWorkAddress());
+    }
+
+    @Test
     void testUpdateMany() {
         Address newAddress = Address.builder().city("Vladimir").street("Moskovskaya").number(123).build();
         Customer vasyaUpdated = Customer.builder()

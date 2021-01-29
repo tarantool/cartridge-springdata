@@ -203,6 +203,10 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
         }
 
         private <R> R convertCustomType(Map<String, Object> source, TypeInformation<?> propertyType) {
+            if (source == null) {
+                return null;
+            }
+            
             TypeInformation<?> typeToUse = mapTypeMapper.readType(source, propertyType);
             TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(typeToUse);
             if (shouldDefaultToMap(source, entity)) {
