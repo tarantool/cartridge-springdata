@@ -23,7 +23,7 @@ public class BaseIntegrationTest {
     private static Logger logger  = LoggerFactory.getLogger(BaseIntegrationTest.class);
 
     protected static final TarantoolCartridgeContainer tarantoolContainer =
-            (TarantoolCartridgeContainer) new TarantoolCartridgeContainer("cartridge/instances.yml", "cartridge/topology.lua")
+            new TarantoolCartridgeContainer("cartridge/instances.yml", "cartridge/topology.lua")
                     .withDirectoryBinding("cartridge")
                     .withReuse(true)
                     .withRouterPassword("testapp-cluster-cookie")
