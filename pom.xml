@@ -48,7 +48,8 @@
     <properties>
         <spring.version>5.2.6.RELEASE</spring.version>
         <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <driver.version>0.3.2</driver.version>
+        <driver.version>0.3.3</driver.version>
+        <testcontainers.version>0.4.0</testcontainers.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <logging.config>${project.basedir}/src/test/resources/logback-test.xml</logging.config>
@@ -103,7 +104,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.15.0-rc2</version>
+            <version>1.15.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -126,7 +127,7 @@
         <dependency>
             <groupId>io.tarantool</groupId>
             <artifactId>testcontainers-java-tarantool</artifactId>
-            <version>0.2.0</version>
+            <version>${testcontainers.version}</version>
         </dependency>
     </dependencies>
 

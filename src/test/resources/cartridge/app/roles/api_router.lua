@@ -17,8 +17,8 @@ local function crud_get_schema()
 				field_count = space.field_count,
 				id = space.id,
 				name = space.name,
-				index = {},
-				_format = space._format,
+				indexes = {},
+				format = space._format,
 			}
 
 			for i, space_index in pairs(space.index) do
@@ -30,7 +30,7 @@ local function crud_get_schema()
 						type = space_index.type,
 						parts = space_index.parts,
 					}
-					table.insert(space_copy.index, index_copy)
+					table.insert(space_copy.indexes, index_copy)
 				end
 			end
 

@@ -56,6 +56,11 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
     @Override
     public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
                                            TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
-        return new ProxyTarantoolClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider));
+        return new ProxyTarantoolClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider)) {
+            @Override
+            public String getGetSchemaFunctionName() {
+                return "crud_get_schema";
+            }
+        };
     }
 }
