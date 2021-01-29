@@ -30,5 +30,7 @@ public class Customer {
 
     private Map<String, Address> addresses;
 
+    private Address workAddress;
+
     private LocalDateTime lastVisitTime;
 }
