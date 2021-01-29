@@ -212,7 +212,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
                 @Override
                 public <T> T getPropertyValue(TarantoolPersistentProperty property) {
                     TypeInformation<?> propType = property.getTypeInformation();
-                    return readValue(source.get(property.getName()), propType);
+                    return readValue(source.get(property.getFieldName()), propType);
                 }
             };
             EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
