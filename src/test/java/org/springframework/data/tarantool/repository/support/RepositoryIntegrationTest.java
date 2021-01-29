@@ -82,6 +82,21 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    public void testFindByEntity() {
+        Optional<Book> book = bookRepository.findById(3);
+        assertThat(book.isPresent()).isTrue();
+        List<Book> books = bookRepository.findByBook(book.get());
+        assertThat(books.size()).isEqualTo(1);
+        assertThat(books.get(0).getName()).isEqualTo("War and Peace");
+    }
+
+//    @Test
+//    public void testFindByYear() {
+//        List<Book> books = bookRepository.findByYearGreaterThan(1000);
+//        assertThat(books.size()).isGreaterThan(0);
+//    }
+
+    @Test
     public void testComplexQueryWithMapReduce() {
         List<Book> books = bookRepository.getListByName(Arrays.asList("Don Quixote", "War and Peace"));
         assertThat(books.size()).isEqualTo(2);
@@ -101,10 +116,4 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
         Book bookFromRepository = one.get();
         assertThat(bookFromRepository.getYear()).isEqualTo(2000);
     }
-
-//    @Test
-//    public void testFindByYear() {
-//        List<Book> books = bookRepository.findByYearGreaterThan(1000);
-//        assertThat(books.size()).isGreaterThan(0);
-//    }
 }

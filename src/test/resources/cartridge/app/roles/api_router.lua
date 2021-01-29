@@ -50,8 +50,13 @@ function update_by_complex_query(id, year)
 	return crud.update('test_space', id, {{'=', 'year', year}})
 end
 
-function find_customer_by_address(address)
-	return crud.select('customers', {{'=', "addresses.home.city", address.city}})
+-- -- blocked by https://github.com/tarantool/crud/issues/106
+--function find_customer_by_address(address)
+--	return crud.select('customers', {{'=', "addresses.home.city", address.city}})
+--end
+
+function find_by_entity(book)
+	return crud.select('test_space', {{'=', 'id', book.id}})
 end
 
 local function get_uriList()
@@ -74,6 +79,20 @@ function book_find_list_by_name(names)
 		end
 	end
 	return books_list
+end
+
+function find_customer_by_address(address)
+	local customer_list = {}
+	local customers_by_storage, err = pool.map_call('find_customer_by_address', { address }, { uri_list = get_uriList() })
+	if err then
+		return nil, err
+	end
+	for _, customers in pairs(customers_by_storage) do
+		for _, customer in pairs(customers) do
+			table.insert(customer_list, customer)
+		end
+	end
+	return customer_list
 end
 
 local function init(opts)

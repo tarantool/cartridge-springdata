@@ -15,6 +15,9 @@ public interface BookRepository extends TarantoolRepository<Book, Integer> {
     @Query(function = "find_by_complex_query")
     List<Book> findByYearGreaterThenProxy(Integer year);
 
+    @Query(function = "find_by_entity")
+    List<Book> findByBook(Book book);
+
     @Query(function = "update_by_complex_query")
     void updateYear(Integer id, Integer year);
 

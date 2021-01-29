@@ -3,7 +3,6 @@ package org.springframework.data.tarantool.core.convert;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityWriter;
@@ -19,6 +18,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,37 +33,51 @@ import java.util.stream.Collectors;
  *
  * @author Alexey Kuzin
  */
-public class MappingTarantoolWriteConverter implements EntityWriter<Object, TarantoolTuple> {
+public class MappingTarantoolWriteConverter implements EntityWriter<Object, Object> {
 
     private final TarantoolTupleTypeMapper typeMapper;
     private final TarantoolMappingContext mappingContext;
     private final CustomConversions conversions;
     private final GenericConversionService conversionService;
+    private final TarantoolMapTypeMapper mapTypeMapper;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public MappingTarantoolWriteConverter(TarantoolTupleTypeMapper typeMapper,
-                                          TarantoolMappingContext mappingContext,
+    public MappingTarantoolWriteConverter(TarantoolMappingContext mappingContext,
+                                          TarantoolTupleTypeMapper typeMapper,
                                           CustomConversions conversions,
                                           GenericConversionService conversionService) {
 
         this.typeMapper = typeMapper;
         this.mappingContext = mappingContext;
+        this.mapTypeMapper = new TarantoolMapTypeMapper();
         this.conversions = conversions;
         this.conversionService = conversionService;
     }
 
     @Override
-    public void write(Object source, TarantoolTuple target) {
+    public void write(Object source, Object target) {
         if (source == null) {
             return;
         }
 
+        if (target instanceof TarantoolTuple) {
+            write(source, (TarantoolTuple) target);
+        } else if (source instanceof Collection && target instanceof Collection) {
+            write((Collection<Object>) source, (Collection<Object>) target);
+        } else {
+            throw new MappingException(
+                    String.format("Unknown write target [%s]", ObjectUtils.nullSafeClassName(target)));
+        }
+    }
+
+    private void write(Object source, TarantoolTuple target) {
         Optional<Class<?>> customTarget = conversions.getCustomWriteTarget(source.getClass(), target.getClass());
 
         if (customTarget.isPresent()) {
             TarantoolTuple result = conversionService.convert(source, TarantoolTuple.class);
             setFields(target, result);
+            typeMapper.writeType(ClassUtils.getUserClass(source.getClass()), target);
             return;
         }
 
@@ -71,43 +85,35 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Tara
         if (entity == null) {
             throw new MappingException("No mapping metadata found for entity ".concat(source.getClass().getName()));
         }
-        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
-        TarantoolPersistentProperty idProperty = entity.getIdProperty();
-        if (idProperty != null && !target.getField(idProperty.getFieldName()).isPresent()) {
-            try {
-                Object id = accessor.getProperty(idProperty);
-                target.putObject(idProperty.getFieldName(), id);
-            } catch (ConversionException e) {
-                logger.warn("Failed to convert id property '{}'. {}", idProperty.getFieldName(), e.getMessage());
-            }
-        }
 
-        TypeInformation<?> type = ClassTypeInformation.from(source.getClass());
-        addCustomTypeKeyIfNecessary(type, source, target);
+        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
 
         Map<String, Object> convertedProperties = convertProperties(entity, accessor);
         convertedProperties.forEach(target::putObject);
     }
 
+    private void write(Collection<Object> parameters, Collection<Object> mappedParameters) {
+        mappedParameters.clear();
+
+        for (Object parameter: parameters) {
+            if (parameter == null) {
+                mappedParameters.add(null);
+            } else {
+                TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(parameter.getClass());
+                TypeInformation<?> type;
+                if (entity == null) {
+                    type = ClassTypeInformation.from(parameter.getClass());
+                } else {
+                    type = entity.getTypeInformation();
+                }
+                mappedParameters.add(getValueToWrite(parameter, type));
+            }
+        }
+    }
+
     private void setFields(TarantoolTuple target, TarantoolTuple other) {
         target.getFields().clear();
         target.getFields().addAll(other.getFields());
-    }
-
-    /**
-     * Adds custom type information to the given {@link TarantoolTuple} if necessary.
-     *
-     * @param source must not be {@literal null}.
-     * @param target must not be {@literal null}.
-     */
-    private void addCustomTypeKeyIfNecessary(TypeInformation<?> type, Object source, TarantoolTuple target) {
-        TypeInformation<?> actualType = type != null ? type.getActualType() : null;
-        Class<?> reference = actualType == null ? Object.class : actualType.getType();
-        Class<?> valueType = ClassUtils.getUserClass(source.getClass());
-
-        if (!valueType.equals(reference)) {
-            typeMapper.writeType(valueType, target);
-        }
     }
 
     private Map<String, Object> convertProperties(TarantoolPersistentEntity<?> entity,
@@ -210,12 +216,18 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Tara
     }
 
     private Map<String, Object> convertCustomType(Object source, TypeInformation<?> type) {
-        Assert.notNull(source, "Given map must not be null!");
+        Assert.notNull(source, "Given source must not be null!");
         Assert.notNull(type, "Given type must not be null!");
 
         TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
-        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
+        if (entity == null) {
+            throw new MappingException("No mapping metadata found for entity ".concat(source.getClass().getName()));
+        }
 
-        return convertProperties(entity, accessor);
+        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
+        Map<String, Object> result = convertProperties(entity, accessor);
+
+        mapTypeMapper.writeType(ClassUtils.getUserClass(source.getClass()), result);
+        return result;
     }
 }

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -76,11 +77,11 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         );
     }
 
-//    @Test
-//    public void testFunctionAcceptingObject() {
-//        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address", new Address[]{vasya.getAddresses().get("home")}, Customer.class);
-//        assertTrue(byCity != null && byCity.size() > 0);
-//    }
+    @Test
+    public void testFunctionAcceptingObject() {
+        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address", new Address[]{vasya.getAddresses().get("home")}, Customer.class);
+        assertTrue(byCity != null && byCity.size() > 0);
+    }
 
     @Test
     void testUpdateOne() {
