@@ -56,7 +56,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>io.tarantool</groupId>
   <artifactId>spring-data-tarantool</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.1</version>
 </dependency>
 ```
 
@@ -86,9 +86,31 @@ For example, given a `Book` class with name and author properties, a
 entities:
 
 ```java
+@Tuple("books")
+public class Book {
+    @Id
+    private Integer id;
+
+    @Field(name = "unique_key")
+    private String uniqueKey;
+
+    @Field(name = "book_name")
+    private String name;
+
+    private String author;
+
+    private Integer year;
+}
+```
+
+```java
 public interface BookRepository extends TarantoolRepository<Book, Long> {
 }
 ```
+
+The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples, and
+the `@Field` annotations provide custom names for the fields. It is necessary to have at least one field marked with the
+`@Id` annotation.
 
 Extending `CrudRepository` causes CRUD methods being pulled into the
 interface so that you can easily save and find single entities and
@@ -189,9 +211,11 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
     ...
 
     function find_by_complex_query(year)
-        return fun.iter(crud.pairs('books')):filter(function(b) return b[6] and b[6] > year end):totable()
+        return crud.pairs('books'):filter(function(b) return b[6] and b[6] > year end):totable()
     end
 ```
+
+See more examples in the module tests.
 
 ## Contributing to Spring Data Tarantool
 
