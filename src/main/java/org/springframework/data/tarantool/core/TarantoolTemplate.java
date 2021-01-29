@@ -23,6 +23,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -207,6 +208,11 @@ public class TarantoolTemplate implements TarantoolOperations {
 
     @Override
     public <T> T call(String functionName, Object[] parameters, Class<T> entityType) {
+        return call(functionName, Arrays.asList(parameters), entityType);
+    }
+
+    @Override
+    public <T> T call(String functionName, List<?> parameters, Class<T> entityType) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(entityType, "Entity class must not be null!");
 
@@ -216,17 +222,28 @@ public class TarantoolTemplate implements TarantoolOperations {
 
     @Override
     public <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityClass) {
+        return callForList(functionName, Arrays.asList(parameters), entityClass);
+    }
+
+    @Override
+    public <T> List<T> callForList(String functionName, List<?> parameters, Class<T> entityClass) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
         TarantoolResult<TarantoolTuple> result = executeSync(() ->
             tarantoolClient.call(
                 functionName,
-                Arrays.asList(parameters),
+                mapParameters(parameters),
                 tarantoolClient.getConfig().getMessagePackMapper(),
                 getResultMapperForEntity(entityClass))
         );
         return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
+    }
+
+    private List<?> mapParameters(List<?> parameters) {
+        List<Object> mappedParameters = new LinkedList<>();
+        getConverter().write(parameters, mappedParameters);
+        return mappedParameters;
     }
 
     private <T> TarantoolCallResultMapper<TarantoolTuple> getResultMapperForEntity(Class<T> entityClass) {

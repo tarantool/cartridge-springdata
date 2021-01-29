@@ -44,7 +44,7 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
         this.readConverter = new MappingTarantoolReadConverter(
                 instantiators, mappingContext, typeMapper, mapTypeAliasAccessor, conversions, conversionService);
         this.writeConverter = new MappingTarantoolWriteConverter(
-                typeMapper, mappingContext, conversions, conversionService);
+                mappingContext, typeMapper, conversions, conversionService);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
     }
 
     @Override
-    public void write(Object source, TarantoolTuple target) {
+    public void write(Object source, Object target) {
         writeConverter.write(source, target);
     }
 
