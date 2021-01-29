@@ -9,7 +9,6 @@ import io.tarantool.driver.auth.TarantoolCredentials;
 import io.tarantool.driver.core.TarantoolConnectionSelectionStrategies.ParallelRoundRobinStrategyFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.tarantool.core.DefaultTarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolExceptionTranslator;
 import org.springframework.data.tarantool.core.TarantoolTemplate;
@@ -160,15 +159,15 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      *
      * @param tarantoolMappingContext a {@link TarantoolMappingContext} instance
      * @param typeAliasAccessor a {@link TarantoolMapTypeAliasAccessor} instance
-     * @param customConversions a {@link CustomConversions} instance
+     * @param tarantoolCustomConversions a {@link TarantoolCustomConversions} instance
      * @return an {@link MappingTarantoolConverter} instance
      * @see #customConversions()
      */
     @Bean("mappingTarantoolConverter")
     public MappingTarantoolConverter mappingTarantoolConverter(TarantoolMappingContext tarantoolMappingContext,
                                                                TarantoolMapTypeAliasAccessor typeAliasAccessor,
-                                                               CustomConversions customConversions) {
-        return new MappingTarantoolConverter(tarantoolMappingContext, typeAliasAccessor, customConversions);
+                                                               TarantoolCustomConversions tarantoolCustomConversions) {
+        return new MappingTarantoolConverter(tarantoolMappingContext, typeAliasAccessor, tarantoolCustomConversions);
     }
 
     /**
