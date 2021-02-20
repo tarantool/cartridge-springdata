@@ -1,12 +1,17 @@
 package org.springframework.data.tarantool.config;
 
 import io.tarantool.driver.ClusterTarantoolClient;
+import io.tarantool.driver.ClusterTarantoolTupleClient;
 import io.tarantool.driver.TarantoolClientConfig;
 import io.tarantool.driver.TarantoolClusterAddressProvider;
 import io.tarantool.driver.TarantoolServerAddress;
+import io.tarantool.driver.api.TarantoolResult;
+import io.tarantool.driver.api.TarantoolTupleResult;
+import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.auth.SimpleTarantoolCredentials;
 import io.tarantool.driver.auth.TarantoolCredentials;
 import io.tarantool.driver.core.TarantoolConnectionSelectionStrategies.ParallelRoundRobinStrategyFactory;
+import io.tarantool.driver.protocol.Packable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.tarantool.core.DefaultTarantoolExceptionTranslator;
@@ -21,6 +26,7 @@ import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolSimpleTypes;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -42,7 +48,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * Override {@link #tarantoolClientConfig(TarantoolCredentials)} to configure client settings and
      * {@link #tarantoolClusterAddressProvider()}} to configure the Tarantool server address.
      *
-     * @param tarantoolClientConfig Tarantool client configuration
+     * @param tarantoolClientConfig           Tarantool client configuration
      * @param tarantoolClusterAddressProvider Tarantool cluster address provider
      * @return a client instance.
      * @see #tarantoolClientConfig(TarantoolCredentials)
@@ -50,10 +56,11 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
      * @see #tarantoolClusterAddressProvider()
      */
     @Bean(name = "clusterTarantoolClient", destroyMethod = "close")
-    public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
-                                           TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
-        return new ClusterTarantoolClient(
-                tarantoolClientConfig, tarantoolClusterAddressProvider, ParallelRoundRobinStrategyFactory.INSTANCE);
+    public TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>>
+    tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
+                    TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
+        return new ClusterTarantoolTupleClient(
+                tarantoolClientConfig, tarantoolClusterAddressProvider);
     }
 
     /**
@@ -68,7 +75,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
 
     /**
      * Return the {@link TarantoolClientConfig} used to create the actual {@literal TarantoolClient}.
-     *
+     * <p>
      * Override either this method, or use {@link #configureClientConfig(TarantoolClientConfig.Builder)}
      * for altering the setup.
      *
@@ -115,9 +122,9 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     /**
      * Create a {@link TarantoolTemplate} instance.
      *
-     * @param tarantoolClient a configured tarantool client instance
-     * @param mappingContext mapping context, contains information about defined entities
-     * @param converter type converter, converts data between entities and Tarantool tuples
+     * @param tarantoolClient       a configured tarantool client instance
+     * @param mappingContext        mapping context, contains information about defined entities
+     * @param converter             type converter, converts data between entities and Tarantool tuples
      * @param queryExecutorsFactory worker thread factory for query executor threads
      * @return a {@link TarantoolTemplate} instance.
      * @see #tarantoolClient(TarantoolClientConfig, TarantoolClusterAddressProvider)
@@ -157,8 +164,8 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     /**
      * Creates a {@link MappingTarantoolConverter} instance for the specified type conversions
      *
-     * @param tarantoolMappingContext a {@link TarantoolMappingContext} instance
-     * @param typeAliasAccessor a {@link TarantoolMapTypeAliasAccessor} instance
+     * @param tarantoolMappingContext    a {@link TarantoolMappingContext} instance
+     * @param typeAliasAccessor          a {@link TarantoolMapTypeAliasAccessor} instance
      * @param tarantoolCustomConversions a {@link TarantoolCustomConversions} instance
      * @return an {@link MappingTarantoolConverter} instance
      * @see #customConversions()
@@ -184,9 +191,9 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
     /**
      * Creates a {@link TarantoolMappingContext} equipped with entity classes scanned from the mapping base package.
      *
-     * @see #getMappingBasePackages()
      * @return TarantoolMappingContext instance
      * @throws ClassNotFoundException if the entity scan fails
+     * @see #getMappingBasePackages()
      */
     @Bean("tarantoolMappingContext")
     public TarantoolMappingContext tarantoolMappingContext() throws ClassNotFoundException {
@@ -249,4 +256,5 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
             worker.setName("TarantoolTemplateQueryExecutor-" + id);
             return worker;
         }
-    }}
+    }
+}

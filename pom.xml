@@ -48,7 +48,7 @@
     <properties>
         <spring.version>5.2.6.RELEASE</spring.version>
         <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <driver.version>0.3.3</driver.version>
+        <driver.version>0.4.0-SNAPSHOT-FIXME</driver.version>
         <testcontainers.version>0.4.0</testcontainers.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.6.2</version>
+            <version>5.7.0-M1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,7 +110,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
