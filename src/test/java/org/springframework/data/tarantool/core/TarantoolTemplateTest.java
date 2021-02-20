@@ -1,7 +1,6 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
-import io.tarantool.driver.api.tuple.operations.TupleOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -16,8 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexey Kuzin
@@ -27,30 +27,27 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Autowired
     TarantoolOperations tarantoolOperations;
 
-//    private Customer vasya = Customer.builder().uuid(UUID.randomUUID()).name("Vasya").tags(Arrays.asList("one", "two")).build();
-//    private Customer petya = Customer.builder().uuid(UUID.randomUUID()).name("Petya").tags(Arrays.asList("one", "two")).build();
-//    private Customer tanya = Customer.builder().uuid(UUID.randomUUID()).name("Tanya").tags(Arrays.asList("one", "two")).build();
     private Customer vasya = Customer.builder()
-        .id(1L)
-        .name("Vasya")
-        .tags(Arrays.asList("one", "two"))
-        .addresses(generateAddresses())
-        .lastVisitTime(LocalDateTime.now())
-        .build();
+            .id(1L)
+            .name("Vasya")
+            .tags(Arrays.asList("one", "two"))
+            .addresses(generateAddresses())
+            .lastVisitTime(LocalDateTime.now())
+            .build();
     private Customer petya = Customer.builder()
-        .id(2L)
-        .name("Petya")
-        .tags(Arrays.asList("one", "two"))
-        .addresses(generateAddresses())
-        .lastVisitTime(LocalDateTime.now())
-        .build();
+            .id(2L)
+            .name("Petya")
+            .tags(Arrays.asList("one", "two"))
+            .addresses(generateAddresses())
+            .lastVisitTime(LocalDateTime.now())
+            .build();
     private Customer tanya = Customer.builder()
-        .id(3L)
-        .name("Tanya")
-        .tags(Arrays.asList("one", "two"))
-        .addresses(generateAddresses())
-        .lastVisitTime(LocalDateTime.now())
-        .build();
+            .id(3L)
+            .name("Tanya")
+            .tags(Arrays.asList("one", "two"))
+            .addresses(generateAddresses())
+            .lastVisitTime(LocalDateTime.now())
+            .build();
 
     private Map<String, Address> generateAddresses() {
         return Collections.singletonMap("home", Address.builder().city("Moscow").street("Lubyanka").number(13).build());
@@ -79,7 +76,8 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     public void testFunctionAcceptingObject() {
-        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address", new Address[]{vasya.getAddresses().get("home")}, Customer.class);
+        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address",
+                new Address[]{vasya.getAddresses().get("home")}, Customer.class);
         assertTrue(byCity != null && byCity.size() > 0);
     }
 

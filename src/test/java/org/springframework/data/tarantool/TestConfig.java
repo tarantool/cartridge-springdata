@@ -1,12 +1,15 @@
 package org.springframework.data.tarantool;
 
-import io.tarantool.driver.ProxyTarantoolClient;
+import io.tarantool.driver.ProxyTarantoolTupleClient;
 import io.tarantool.driver.TarantoolClientConfig;
 import io.tarantool.driver.TarantoolClusterAddressProvider;
 import io.tarantool.driver.TarantoolServerAddress;
 import io.tarantool.driver.api.TarantoolClient;
+import io.tarantool.driver.api.TarantoolResult;
+import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.auth.SimpleTarantoolCredentials;
 import io.tarantool.driver.auth.TarantoolCredentials;
+import io.tarantool.driver.protocol.Packable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +18,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.tarantool.config.AbstractTarantoolDataConfiguration;
 import org.springframework.data.tarantool.repository.BookRepository;
 import org.springframework.data.tarantool.repository.config.EnableTarantoolRepositories;
+
+import java.util.Collection;
 
 /**
  * @author Alexey Kuzin
@@ -38,9 +43,9 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
     @Override
     protected void configureClientConfig(TarantoolClientConfig.Builder builder) {
         builder
-            .withConnectTimeout(1000 * 5)
-            .withReadTimeout(1000 * 5)
-            .withRequestTimeout(1000 * 5);
+                .withConnectTimeout(1000 * 5)
+                .withReadTimeout(1000 * 5)
+                .withRequestTimeout(1000 * 5);
     }
 
     @Override
@@ -54,13 +59,16 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
     }
 
     @Override
-    public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
-                                           TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
-        return new ProxyTarantoolClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider)) {
-            @Override
-            public String getGetSchemaFunctionName() {
-                return "crud_get_schema";
-            }
-        };
+    public TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>>
+    tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
+                    TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
+        return new ProxyTarantoolTupleClient(super.tarantoolClient(tarantoolClientConfig,
+                tarantoolClusterAddressProvider));
+//        {
+//            @Override
+//            public String getGetSchemaFunctionName() {
+//                return "crud_get_schema";
+//            }
+//        };
     }
 }
