@@ -30,8 +30,8 @@ Tarantool database driver.
 The Tarantool Database documentation is located at
 [tarantool.io](https://www.tarantool.io/en/doc/latest/reference/)
 
-Feel free to join the [Tarantool community chat](https://t.me/tarnatool)
-in Telegram (or its counterpart [in Russian](https://t.me/tarnatoolru))
+Feel free to join the [Tarantool community chat](https://t.me/tarantool)
+in Telegram (or its counterpart [in Russian](https://t.me/tarantoolru))
 if you have any questions about Tarantool database or Spring Data Tarantool.
 
 Detailed questions can be asked on StackOverflow using the
