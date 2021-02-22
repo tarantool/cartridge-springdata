@@ -27,4 +27,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
+        env:
+          TARANTOOL_SERVER_USER: root
+          TARANTOOL_SERVER_GROUP: root
         run: mvn -B verify --file pom.xml
