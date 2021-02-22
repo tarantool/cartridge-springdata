@@ -8,10 +8,8 @@ import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
-import io.tarantool.driver.mappers.TarantoolCallResultMapperFactory;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
-import org.msgpack.core.MessagePack;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.mapping.MappingException;
@@ -47,7 +45,7 @@ public class TarantoolTemplate implements TarantoolOperations {
     private final TarantoolConverter converter;
     private final TarantoolExceptionTranslator exceptionTranslator;
     private final ForkJoinPool queryExecutors;
-    MessagePackMapper mapper;
+    private final MessagePackMapper mapper;
 
     public TarantoolTemplate(
             TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
@@ -63,7 +61,6 @@ public class TarantoolTemplate implements TarantoolOperations {
         );
         this.exceptionTranslator = new DefaultTarantoolExceptionTranslator();
         this.mapper = tarantoolClient.getConfig().getMessagePackMapper();
-
     }
 
     @Override
@@ -250,8 +247,8 @@ public class TarantoolTemplate implements TarantoolOperations {
         return mappedParameters;
     }
 
-    private  <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
-            SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
+    private
+    <T> CallResultMapper<TarantoolResult<TarantoolTuple>, SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
     getResultMapperForEntity(Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
@@ -259,8 +256,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         return tarantoolClient
                 .getResultMapperFactoryFactory()
                 .defaultTupleSingleResultMapperFactory()
-                .withDefaultTupleValueConverter(mapper,spaceMetadata.orElse(null));
-
+                .withDefaultTupleValueConverter(mapper, spaceMetadata.orElse(null));
     }
 
     @Nullable

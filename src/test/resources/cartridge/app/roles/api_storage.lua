@@ -95,6 +95,7 @@ local function init(opts)
     rawset(_G, 'storage_get_space_format', storage_get_space_format)
     rawset(_G, 'find_books_by_name', find_books_by_name)
     rawset(_G, 'find_customer_by_address', find_customer_by_address)
+    rawset(_G, 'ddl', { get_schema = require('ddl').get_schema })
 
     return true
 end

@@ -1,44 +1,16 @@
 local vshard = require('vshard')
 local pool = require('cartridge.pool')
 local errors = require('errors')
+local cartridge_pool = require('cartridge.pool')
+local cartridge_rpc = require('cartridge.rpc')
 
 local AssertionError = errors.new_class('AssertionError')
 
--- function to get cluster schema
-local function crud_get_schema()
-	local replicaset = select(2, next(vshard.router.routeall()))
-	local uniq_spaces = {}
-	local spaces_ids = {}
-	for _, space in pairs(replicaset.master.conn.space) do
-
-		if (spaces_ids[space.id] == nil) then
-			local space_copy = {
-				engine = space.engine,
-				field_count = space.field_count,
-				id = space.id,
-				name = space.name,
-				indexes = {},
-				format = space._format,
-			}
-
-			for i, space_index in pairs(space.index) do
-				if type(i) == 'number' then
-					local index_copy = {
-						id = space_index.id,
-						name = space_index.name,
-						unique = space_index.unique,
-						type = space_index.type,
-						parts = space_index.parts,
-					}
-					table.insert(space_copy.indexes, index_copy)
-				end
-			end
-
-			table.insert(uniq_spaces, {space_copy} )
-			spaces_ids[space.id] = true
-		end
+local function get_schema()
+	for _, instance_uri in pairs(cartridge_rpc.get_candidates('app.roles.api_storage', { leader_only = true })) do
+		local conn = cartridge_pool.connect(instance_uri)
+		return conn:call('ddl.get_schema', {})
 	end
-	return uniq_spaces
 end
 
 function find_by_complex_query(year)
@@ -99,7 +71,7 @@ local function init(opts)
     if opts.is_master then
     end
 
-    rawset(_G, 'crud_get_schema', crud_get_schema)
+	rawset(_G, 'ddl', { get_schema = get_schema })
 
     return true
 end
