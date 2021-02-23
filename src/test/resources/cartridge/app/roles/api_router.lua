@@ -22,6 +22,23 @@ function update_by_complex_query(id, year)
 	return crud.update('test_space', id, {{'=', 'year', year}})
 end
 
+function batch_update_books(books)
+	local result = {}
+	local failures = {}
+	for _, book in pairs(books) do
+		local ok, obj, err = pcall(crud.replace_object, 'test_space', book)
+		if ok and err == nil then
+			result[#result + 1] = obj.rows[1]
+		else
+			failures[#failures + 1] = ok and tostring(err) or tostring(obj)
+		end
+	end
+	if #failures > 0 then
+		return nil, "Failed to update: " .. table.concat(failures, ', ')
+	end
+	return result
+end
+
 -- -- blocked by https://github.com/tarantool/crud/issues/106
 --function find_customer_by_address(address)
 --	return crud.select('customers', {{'=', "addresses.home.city", address.city}})

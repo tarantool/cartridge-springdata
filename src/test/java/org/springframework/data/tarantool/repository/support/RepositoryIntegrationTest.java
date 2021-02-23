@@ -116,4 +116,16 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
         Book bookFromRepository = one.get();
         assertThat(bookFromRepository.getYear()).isEqualTo(2000);
     }
+
+    @Test
+    public void testBatchSave() {
+        Book book1 = Book.builder()
+                .id(888).name("Tamerlan")
+                .uniqueKey("udf888").author("Viktor Yan").year(1979).build();
+        Book book2 = Book.builder()
+                .id(888).name("Bratya Karamazovy")
+                .uniqueKey("udf999").author("Fedor Dostoevsky").year(1888).build();
+        List<Book> savedBooks = bookRepository.batchSave(Arrays.asList(book1, book2));
+        assertTrue(savedBooks.size() > 0);
+    }
 }

@@ -73,7 +73,6 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
 
     private void write(Object source, TarantoolTuple target) {
         Optional<Class<?>> customTarget = conversions.getCustomWriteTarget(source.getClass(), target.getClass());
-
         if (customTarget.isPresent()) {
             TarantoolTuple result = conversionService.convert(source, TarantoolTuple.class);
             setFields(target, result);
@@ -174,7 +173,7 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
         Optional<Class<?>> basicTargetType = conversions.getCustomWriteTarget(value.getClass());
         return basicTargetType
                 .map(aClass -> (Object) conversionService.convert(value, aClass))
-                .orElseGet(() -> convertCustomType(value, valueType));
+                .orElseGet(() -> convertCustomType(value, type));
 
     }
 
@@ -219,15 +218,22 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
         Assert.notNull(source, "Given source must not be null!");
         Assert.notNull(type, "Given type must not be null!");
 
+        Map<String, Object> result;
+        Optional<Class<?>> customTarget = conversions.getCustomWriteTarget(source.getClass(), type.getType());
+        if (customTarget.isPresent()) {
+            result = conversionService.convert(source, Map.class);
+            mapTypeMapper.writeType(ClassUtils.getUserClass(source.getClass()), result);
+            return result;
+        }
+
         TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
         if (entity == null) {
             throw new MappingException("No mapping metadata found for entity ".concat(source.getClass().getName()));
         }
 
         ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
-        Map<String, Object> result = convertProperties(entity, accessor);
+        result = convertProperties(entity, accessor);
 
-        mapTypeMapper.writeType(ClassUtils.getUserClass(source.getClass()), result);
         return result;
     }
 }
