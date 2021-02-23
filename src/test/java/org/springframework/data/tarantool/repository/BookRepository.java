@@ -23,4 +23,7 @@ public interface BookRepository extends TarantoolRepository<Book, Integer> {
 
     @Query(function = "book_find_list_by_name")
     List<Book> getListByName(List<String> names);
+
+    @Query(function = "batch_update_books")
+    List<Book> batchSave(List<Book> books);
 }
