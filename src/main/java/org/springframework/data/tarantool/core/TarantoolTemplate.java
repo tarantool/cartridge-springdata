@@ -222,6 +222,11 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
+    public <T> T call(String functionName, Class<T> entityType) {
+        return call(functionName, Collections.emptyList(), entityType);
+    }
+
+    @Override
     public <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityClass) {
         return callForList(functionName, Arrays.asList(parameters), entityClass);
     }
@@ -239,6 +244,11 @@ public class TarantoolTemplate implements TarantoolOperations {
                         getResultMapperForEntity(entityClass))
         );
         return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
+    }
+
+    @Override
+    public <T> List<T> callForList(String functionName, Class<T> entityType) {
+        return callForList(functionName, Collections.emptyList(), entityType);
     }
 
     private List<?> mapParameters(List<?> parameters) {

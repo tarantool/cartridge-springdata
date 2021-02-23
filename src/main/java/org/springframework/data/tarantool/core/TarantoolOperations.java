@@ -171,6 +171,17 @@ public interface TarantoolOperations {
     <T> T call(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one entity as result.
+     *
+     * @param <T> target entity type
+     * @param functionName callable API function name
+     * @param entityType Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T call(String functionName, Class<T> entityType);
+
+    /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
      * @param <T> target entity type
@@ -193,6 +204,17 @@ public interface TarantoolOperations {
      */
     @Nullable
     <T> List<T> callForList(String functionName, List<?> parameters, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns a list of entities as result.
+     *
+     * @param <T> target entity type
+     * @param functionName callable API function name
+     * @param entityType Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForList(String functionName, Class<T> entityType);
 
     /**
      * Return the entity converter used for this instance
