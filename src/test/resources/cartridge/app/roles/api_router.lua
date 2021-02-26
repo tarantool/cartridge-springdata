@@ -84,6 +84,15 @@ function find_customer_by_address(address)
 	return customer_list
 end
 
+function get_customer_addresses()
+	return crud.pairs('customers')
+			:map(function(c) return c[5] end)
+			:reduce(function(acc, addresses)
+				for _, a in pairs(addresses) do table.insert(acc, a) end
+				return acc
+			end, {})
+end
+
 local function init(opts)
     if opts.is_master then
     end
