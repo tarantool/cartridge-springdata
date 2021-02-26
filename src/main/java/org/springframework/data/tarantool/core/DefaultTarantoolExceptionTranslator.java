@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.core;
 
+import io.tarantool.driver.exceptions.TarantoolClientException;
 import io.tarantool.driver.exceptions.TarantoolIndexNotFoundException;
 import io.tarantool.driver.exceptions.TarantoolException;
 import io.tarantool.driver.exceptions.TarantoolServerException;
@@ -21,15 +22,13 @@ public class DefaultTarantoolExceptionTranslator implements TarantoolExceptionTr
     public DataAccessException translateExceptionIfPossible(RuntimeException cause) {
         if (cause instanceof TarantoolException) {
             // TODO Superclass in driver for metadata exceptions
-            if (cause instanceof TarantoolIndexNotFoundException ||
-                    cause instanceof TarantoolSpaceNotFoundException ||
-                    cause instanceof TarantoolSpaceFieldNotFoundException) {
-                return new InvalidDataAccessResourceUsageException(cause.getMessage(), cause);
+            if (cause instanceof TarantoolClientException) {
+                return new InvalidDataAccessResourceUsageException(cause.getMessage(), cause.getCause());
             }
             if (cause instanceof TarantoolServerException) {
-                return new DataRetrievalFailureException(cause.getMessage(), cause);
+                return new DataRetrievalFailureException(cause.getMessage(), cause.getCause());
             }
-            return new RecoverableDataAccessException(cause.getMessage(), cause);
+            return new RecoverableDataAccessException(cause.getMessage(), cause.getCause());
         }
         // Do not convert unknown exceptions
         return null;
