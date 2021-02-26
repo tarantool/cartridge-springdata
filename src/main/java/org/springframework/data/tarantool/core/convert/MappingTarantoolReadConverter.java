@@ -11,6 +11,7 @@ import org.springframework.data.convert.EntityReader;
 import org.springframework.data.convert.TypeAliasAccessor;
 import org.springframework.data.convert.TypeMapper;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
@@ -37,11 +38,12 @@ import java.util.Optional;
  *
  * @author Alexey Kuzin
  */
-public class MappingTarantoolReadConverter implements EntityReader<Object, TarantoolTuple> {
+public class MappingTarantoolReadConverter implements EntityReader<Object, Object> {
 
     private final EntityInstantiators instantiators;
     private final TarantoolMappingContext mappingContext;
     private final TypeMapper<TarantoolTuple> typeMapper;
+    private final TypeMapper<Map<String, Object>> mapTypeMapper;
     private final TypeAliasAccessor<Map<String, Object>> mapTypeAliasAccessor;
     private final CustomConversions conversions;
     private final GenericConversionService conversionService;
@@ -49,28 +51,29 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
     public MappingTarantoolReadConverter(EntityInstantiators instantiators,
                                          TarantoolMappingContext mappingContext,
                                          TypeMapper<TarantoolTuple> typeMapper,
+                                         TypeMapper<Map<String, Object>> mapTypeMapper,
                                          TypeAliasAccessor<Map<String, Object>> mapTypeAliasAccessor,
                                          CustomConversions conversions,
                                          GenericConversionService conversionService) {
         this.instantiators = instantiators;
         this.mappingContext = mappingContext;
         this.typeMapper = typeMapper;
+        this.mapTypeMapper = mapTypeMapper;
         this.mapTypeAliasAccessor = mapTypeAliasAccessor;
         this.conversions = conversions;
         this.conversionService = conversionService;
     }
 
-    @Override
     @Nullable
-    public <R> R read(Class<R> targetClass, final @Nullable TarantoolTuple source) {
+    private <R> R read(Class<R> targetClass, final @Nullable Map<String, Object> source) {
         if (source == null) {
             return null;
         }
 
-        TypeInformation<? extends R> typeToUse = typeMapper.readType(source, ClassTypeInformation.from(targetClass));
+        TypeInformation<? extends R> typeToUse = mapTypeMapper.readType(source, ClassTypeInformation.from(targetClass));
         Class<? extends R> rawType = typeToUse.getType();
 
-        if (conversions.hasCustomReadTarget(TarantoolTuple.class, rawType)) {
+        if (conversions.hasCustomReadTarget(Map.class, rawType)) {
             return conversionService.convert(source, rawType);
         }
 
@@ -81,7 +84,35 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
         return convertProperties(entity, propertyValueProvider, accessor);
     }
 
-    private TarantoolPropertyValueProvider getPropertyValueProvider(TarantoolTuple source) {
+    @Override
+    @Nullable
+    public <R> R read(Class<R> targetClass, final @Nullable Object source) {
+        if (source == null) {
+            return null;
+        }
+
+        TypeInformation<? extends R> typeToUse;
+        if (source instanceof TarantoolTuple) {
+            typeToUse = typeMapper.readType((TarantoolTuple) source, ClassTypeInformation.from(targetClass));
+
+            Class<? extends R> rawType = typeToUse.getType();
+            if (conversions.hasCustomReadTarget(TarantoolTuple.class, rawType)) {
+                return conversionService.convert(source, rawType);
+            }
+        } else if (source instanceof Map) {
+            typeToUse = mapTypeMapper.readType((Map<String, Object>) source, ClassTypeInformation.from(targetClass));
+        } else {
+            throw new MappingException("Cannot read from object of type " + source.getClass());
+        }
+
+        TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(typeToUse);
+        TarantoolPropertyValueProvider propertyValueProvider = getPropertyValueProvider(source);
+        ConvertingPropertyAccessor<?> accessor = getConvertingPropertyAccessor(entity, propertyValueProvider);
+
+        return convertProperties(entity, propertyValueProvider, accessor);
+    }
+
+    private TarantoolPropertyValueProvider getPropertyValueProvider(Object source) {
         return new TarantoolPropertyValueProvider(source, conversions, conversionService);
     }
 
@@ -135,12 +166,12 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
      */
     private class TarantoolPropertyValueProvider implements PropertyValueProvider<TarantoolPersistentProperty> {
 
-        private TarantoolTuple source;
+        private Object source;
         private CustomConversions conversions;
         private ConversionService conversionService;
         private final TypeMapper<Map<String, Object>> mapTypeMapper;
 
-        public TarantoolPropertyValueProvider(TarantoolTuple source,
+        public TarantoolPropertyValueProvider(Object source,
                                               CustomConversions conversions,
                                               ConversionService conversionService) {
             this.source = source;
@@ -161,20 +192,27 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Taran
             TypeInformation<?> propType = property.getTypeInformation();
             Class<?> propClass = propType.getType();
             Optional<Class<?>> customTargetClass = conversions.getCustomWriteTarget(propClass);
-            Object value;
-            if (propType.isCollectionLike()) {
-                value = source.getList(property.getFieldName());
-            } else if (propType.isMap()) {
-                value = source.getMap(property.getFieldName());
-            } else if (customTargetClass.isPresent() &&
-                    conversions.hasCustomReadTarget(customTargetClass.get(), propClass)) {
-                value = source.getObject(property.getFieldName(), customTargetClass.get()).orElse(null);
-            } else if (conversions.isSimpleType(propClass)) {
-                value = source.getObject(property.getFieldName(), propClass).orElse(null);
+
+            if (source instanceof TarantoolTuple) {
+                Object value;
+                if (propType.isCollectionLike()) {
+                    value = ((TarantoolTuple) source).getList(property.getFieldName());
+                } else if (propType.isMap()) {
+                    value = ((TarantoolTuple) source).getMap(property.getFieldName());
+                } else if (customTargetClass.isPresent() &&
+                        conversions.hasCustomReadTarget(customTargetClass.get(), propClass)) {
+                    value = ((TarantoolTuple) source).getObject(property.getFieldName(), customTargetClass.get()).orElse(null);
+                } else if (conversions.isSimpleType(propClass)) {
+                    value = ((TarantoolTuple) source).getObject(property.getFieldName(), propClass).orElse(null);
+                } else {
+                    value = convertCustomType(((TarantoolTuple) source).getMap(property.getFieldName()), propType);
+                }
+                return readValue(value, propType);
+            } else if (source instanceof Map) {
+                return readValue(((Map<String, Object>) source).get(property.getFieldName()), propType);
             } else {
-                value = convertCustomType(source.getMap(property.getFieldName()), propType);
+                throw new MappingException("Cannot read properties from a source of type " + source.getClass());
             }
-            return readValue(value, propType);
         }
 
         private <R> R readValue(@Nullable Object source, TypeInformation<?> propertyType) {

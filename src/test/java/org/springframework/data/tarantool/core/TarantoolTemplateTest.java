@@ -128,4 +128,10 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             assertEquals("Vladimir", updated.getAddresses().get("home").getCity());
         }
     }
+
+    @Test
+    void testNonEntityAsReturnType() {
+        List<Address> addresses = tarantoolOperations.callForList("get_customer_addresses", Address.class);
+        assertTrue(addresses != null && addresses.size() > 0);
+    }
 }

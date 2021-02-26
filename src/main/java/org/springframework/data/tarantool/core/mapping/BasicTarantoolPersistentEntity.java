@@ -27,4 +27,9 @@ public class BasicTarantoolPersistentEntity<T>
 
         return getType().getSimpleName();
     }
+
+    @Override
+    public boolean hasTupleAnnotation() {
+        return getType().getAnnotation(Tuple.class) != null;
+    }
 }

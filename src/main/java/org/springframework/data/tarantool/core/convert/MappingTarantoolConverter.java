@@ -1,6 +1,5 @@
 package org.springframework.data.tarantool.core.convert;
 
-import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -26,6 +25,7 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
     private final TarantoolTupleTypeMapper typeMapper;
     private final MappingTarantoolReadConverter readConverter;
     private final MappingTarantoolWriteConverter writeConverter;
+    private final TarantoolMapTypeMapper mapTypeMapper;
 
     private ApplicationContext applicationContext;
     /*
@@ -40,9 +40,11 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
         this.mappingContext = mappingContext;
         this.mapTypeAliasAccessor = typeAliasAccessor;
         this.typeMapper = new TarantoolTupleTypeMapper();
+        this.mapTypeMapper = new TarantoolMapTypeMapper();
 
         this.readConverter = new MappingTarantoolReadConverter(
-                instantiators, mappingContext, typeMapper, mapTypeAliasAccessor, conversions, conversionService);
+                instantiators, mappingContext, typeMapper, mapTypeMapper,
+                mapTypeAliasAccessor, conversions, conversionService);
         this.writeConverter = new MappingTarantoolWriteConverter(
                 mappingContext, typeMapper, conversions, conversionService);
     }
@@ -67,7 +69,7 @@ public class MappingTarantoolConverter extends AbstractTarantoolConverter implem
     }
 
     @Override
-    public <R> R read(final Class<R> clazz, TarantoolTuple source) {
+    public <R> R read(final Class<R> clazz, Object source) {
         return readConverter.read(clazz, source);
     }
 

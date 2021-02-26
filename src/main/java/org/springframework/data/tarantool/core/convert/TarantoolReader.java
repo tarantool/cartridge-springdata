@@ -1,6 +1,5 @@
 package org.springframework.data.tarantool.core.convert;
 
-import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.springframework.data.convert.EntityReader;
 
 /**
@@ -9,5 +8,5 @@ import org.springframework.data.convert.EntityReader;
  * @param <T> entity type
  * @author Alexey Kuzin
  */
-public interface TarantoolReader<T> extends EntityReader<T, TarantoolTuple> {
+public interface TarantoolReader<T> extends EntityReader<T, Object> {
 }

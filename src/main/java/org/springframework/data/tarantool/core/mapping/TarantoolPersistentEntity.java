@@ -14,4 +14,9 @@ public interface TarantoolPersistentEntity<T> extends PersistentEntity<T, Tarant
      * @return not null String
      */
     String getSpaceName();
+
+    /**
+     * Returns true, if the {@link Tuple} annotation is set on the class
+     */
+    boolean hasTupleAnnotation();
 }

@@ -1,6 +1,8 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.mappers.ValueConverter;
+import org.msgpack.value.Value;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.lang.Nullable;
 
@@ -159,6 +161,20 @@ public interface TarantoolOperations {
     <T> T call(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
+     * entity converter will be used for converting the result value into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param parameters        function parameters
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> T call(String functionName, Object[] parameters, Class<T> entityType, ValueConverter<Value, T> entityConverter);
+
+    /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
      * @param <T> target entity type
@@ -171,6 +187,20 @@ public interface TarantoolOperations {
     <T> T call(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
+     * entity converter will be used for converting the result value into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param parameters        function parameters
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> T call(String functionName, List<?> parameters, Class<T> entityType, ValueConverter<Value, T> entityConverter);
+
+    /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
      * @param <T> target entity type
@@ -180,6 +210,19 @@ public interface TarantoolOperations {
      */
     @Nullable
     <T> T call(String functionName, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
+     * entity converter will be used for converting the result value into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> T call(String functionName, Class<T> entityType, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
@@ -194,6 +237,23 @@ public interface TarantoolOperations {
     <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
+     * entity converter will be used for converting each value in the result into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param parameters        function parameters
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForList(String functionName,
+                            Object[] parameters,
+                            Class<T> entityType,
+                            ValueConverter<Value, T> entityConverter);
+
+    /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
      * @param <T> target entity type
@@ -206,6 +266,23 @@ public interface TarantoolOperations {
     <T> List<T> callForList(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
+     * entity converter will be used for converting each value in the result into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param parameters        function parameters
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForList(String functionName,
+                            List<?> parameters,
+                            Class<T> entityType,
+                            ValueConverter<Value, T> entityConverter);
+
+    /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
      * @param <T> target entity type
@@ -215,6 +292,19 @@ public interface TarantoolOperations {
      */
     @Nullable
     <T> List<T> callForList(String functionName, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
+     * entity converter will be used for converting each value in the result into an entity.
+     *
+     * @param <T> target entity type
+     * @param functionName      callable API function name
+     * @param entityType        target type of the result object
+     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForList(String functionName, Class<T> entityType, ValueConverter<Value, T> entityConverter);
 
     /**
      * Return the entity converter used for this instance
