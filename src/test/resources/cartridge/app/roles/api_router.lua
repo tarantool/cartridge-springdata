@@ -93,6 +93,14 @@ function get_customer_addresses()
 			end, {})
 end
 
+function returning_error()
+	return nil, AssertionError:new('some error')
+end
+
+function returning_nil()
+	return nil
+end
+
 local function init(opts)
     if opts.is_master then
     end

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Address;
 import org.springframework.data.tarantool.entities.Customer;
@@ -15,9 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Alexey Kuzin
@@ -133,5 +132,25 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     void testNonEntityAsReturnType() {
         List<Address> addresses = tarantoolOperations.callForList("get_customer_addresses", Address.class);
         assertTrue(addresses != null && addresses.size() > 0);
+    }
+
+    @Test
+    void testNonEntityAsReturnType_shouldHandleError() {
+        Throwable ex = null;
+        try {
+            tarantoolOperations.callForList("returning_error", Address.class);
+        } catch (DataRetrievalFailureException e) {
+            ex = e;
+            assertTrue(e.getMessage().contains("some error"));
+        }
+        assertNotNull(ex);
+    }
+
+    @Test
+    void testNonEntityAsReturnType_shouldHandleNil() {
+        List<Address> addresses = tarantoolOperations.callForList("returning_nil", Address.class);
+        assertNull(addresses);
+        Address address = tarantoolOperations.call("returning_nil", Address.class);
+        assertNull(address);
     }
 }
