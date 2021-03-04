@@ -278,14 +278,6 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
-//        TarantoolResult<TarantoolTuple> result = executeSync(() ->
-//                tarantoolClient.call(
-//                        functionName,
-//                        mapParameters(parameters),
-//                        tarantoolClient.getConfig().getMessagePackMapper(),
-//                        getResultMapperForEntity(entityClass))
-//        );
-//        return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
         return executeSync(getResultSupplier(
                 functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(),
                 entityClass, List.class)
