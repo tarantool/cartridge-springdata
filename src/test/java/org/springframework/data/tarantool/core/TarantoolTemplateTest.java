@@ -153,4 +153,12 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         Address address = tarantoolOperations.call("returning_nil", Address.class);
         assertNull(address);
     }
+
+    @Test
+    void testNonEntityAsReturnType_shouldHandleNothing() {
+        List<Address> addresses = tarantoolOperations.callForList("returning_nothing", Address.class);
+        assertNull(addresses);
+        Address address = tarantoolOperations.call("returning_nothing", Address.class);
+        assertNull(address);
+    }
 }

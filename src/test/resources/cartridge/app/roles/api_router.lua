@@ -97,6 +97,9 @@ function returning_error()
 	return nil, AssertionError:new('some error')
 end
 
+function returning_nothing()
+end
+
 function returning_nil()
 	return nil
 end
