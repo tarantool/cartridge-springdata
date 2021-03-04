@@ -56,7 +56,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>io.tarantool</groupId>
   <artifactId>spring-data-tarantool</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 
@@ -156,7 +156,7 @@ class ApplicationConfig extends AbstractTarantoolDataConfiguration {
     @Override
     public TarantoolClient tarantoolClient(TarantoolClientConfig tarantoolClientConfig,
                                            TarantoolClusterAddressProvider tarantoolClusterAddressProvider) {
-        return new ProxyTarantoolClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider));
+        return new ProxyTarantoolTupleClient(super.tarantoolClient(tarantoolClientConfig, tarantoolClusterAddressProvider));
     }
 }
 ```
