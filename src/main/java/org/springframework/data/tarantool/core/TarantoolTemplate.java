@@ -328,7 +328,7 @@ public class TarantoolTemplate implements TarantoolOperations {
                     mapParameters(parameters),
                     tarantoolClient.getConfig().getMessagePackMapper(),
                     getResultMapperForEntity(entityClass))
-                .thenApply(result -> (R) result.stream()
+                .thenApply(result -> result == null ? null : (R) result.stream()
                         .map(t -> mapToEntity(t, entityClass))
                         .collect(Collectors.toList())
                 );

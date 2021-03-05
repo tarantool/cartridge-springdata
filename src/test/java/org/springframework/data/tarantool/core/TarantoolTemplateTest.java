@@ -150,15 +150,27 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     void testNonEntityAsReturnType_shouldHandleNil() {
         List<Address> addresses = tarantoolOperations.callForList("returning_nil", Address.class);
         assertNull(addresses);
+        List<Customer> customers = tarantoolOperations.callForList("returning_nil", Customer.class);
+        assertNull(customers);
         Address address = tarantoolOperations.call("returning_nil", Address.class);
         assertNull(address);
+        Customer customer = tarantoolOperations.call("returning_nil", Customer.class);
+        assertNull(customer);
+        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nil", Address.class));
+        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nil", Customer.class));
     }
 
     @Test
     void testNonEntityAsReturnType_shouldHandleNothing() {
         List<Address> addresses = tarantoolOperations.callForList("returning_nothing", Address.class);
         assertNull(addresses);
+        List<Customer> customers = tarantoolOperations.callForList("returning_nothing", Customer.class);
+        assertNull(customers);
         Address address = tarantoolOperations.call("returning_nothing", Address.class);
         assertNull(address);
+        Customer customer = tarantoolOperations.call("returning_nothing", Customer.class);
+        assertNull(customer);
+        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Address.class));
+        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Customer.class));
     }
 }
