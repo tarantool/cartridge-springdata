@@ -26,6 +26,7 @@ public class TarantoolCustomConversions extends CustomConversions {
 
         converters.addAll(DateConverters.getConvertersToRegister());
         converters.addAll(TarantoolJsr310Converters.getConvertersToRegister());
+        converters.addAll(TarantoolMessagePackConverters.getConvertersToRegister());
 
         STORE_CONVERTERS = Collections.unmodifiableList(converters);
         STORE_CONVERSIONS = StoreConversions.of(TarantoolSimpleTypes.HOLDER, STORE_CONVERTERS);

@@ -33,4 +33,6 @@ public class Book {
     private Address issuerAddress;
 
     private List<Address> storeAddresses;
+
+    private List<Customer> readers;
 }

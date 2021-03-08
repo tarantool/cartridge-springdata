@@ -12,6 +12,7 @@ local function init_space()
                 {name = 'year', type = 'unsigned', is_nullable = true},
                 {name = 'issuerAddress', type = 'any', is_nullable = true},
                 {name = 'storeAddresses', type = 'array', is_nullable = true},
+                {name = 'readers', type = 'array', is_nullable = true},
             },
             if_not_exists = true,
         }

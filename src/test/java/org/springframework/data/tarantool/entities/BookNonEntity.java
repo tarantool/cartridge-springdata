@@ -32,4 +32,6 @@ public class BookNonEntity {
     private Address issuerAddress;
 
     private List<Address> storeAddresses;
+
+    private List<Customer> readers;
 }

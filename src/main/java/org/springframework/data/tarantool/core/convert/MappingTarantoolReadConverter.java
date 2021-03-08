@@ -30,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -223,7 +224,9 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             }
 
             Class<?> targetClass = propertyType.getType();
-            if (conversions.hasCustomReadTarget(source.getClass(), targetClass)) {
+            if (conversions.hasCustomReadTarget(source.getClass(), targetClass) ||
+                conversions.isSimpleType(targetClass) &&
+                        conversionService.canConvert(source.getClass(), targetClass)) {
                 return (R) conversionService.convert(source, targetClass);
             } else if (propertyType.isCollectionLike()) {
                 return convertCollection(asCollection(source), propertyType);
@@ -297,28 +300,26 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             Class<?> keyClass = keyType == null ? null : keyType.getType();
             TypeInformation<?> mapValueType = propertyType.getMapValueType();
 
-            Map<Object, Object> converted = CollectionFactory.createMap(mapClass, keyClass, source.keySet().size());
+            Class<?> mapType = mapTypeMapper.readType(source, propertyType).getType();
 
-            source.entrySet()
-                    .forEach((e) -> {
-                        Object key = (keyClass != null) ? conversionService.convert(e.getKey(), keyClass) : e.getKey();
-                        Object value = readValue(e.getValue(), mapValueType);
-                        converted.put(key, value);
-                    });
+            Map<Object, Object> converted = mapType != null ?
+                    CollectionFactory.createMap(mapClass, keyClass, source.keySet().size()) :
+                    new HashMap<>();
+
+            source.forEach((key, value) -> converted.put(key, readValue(value, mapValueType)));
 
             return (R) convertIfNeeded(converted, propertyType);
         }
 
         private Object convertIfNeeded(Object value, TypeInformation<?> propertyType) {
             Class<?> targetClass = propertyType.getType();
-            if (targetClass.isAssignableFrom(value.getClass())) {
-                return value;
-            } else if (Enum.class.isAssignableFrom(targetClass)) {
+            if (Enum.class.isAssignableFrom(targetClass)) {
                 return Enum.valueOf((Class<Enum>) targetClass, value.toString());
-            } else if (value instanceof Map && !conversionService.canConvert(value.getClass(), targetClass)) {
+            } else if (value instanceof Map && !propertyType.isMap()) {
                 return convertCustomType((Map<String, Object>) value, propertyType);
+            } else {
+                return value;
             }
-            return conversionService.convert(value, targetClass);
         }
     }
 }
