@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.repository.support;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,12 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        tarantoolContainer.executeScript("test.lua").get();
+        tarantoolContainer.executeScript("test_setup.lua").get();
+    }
+
+    @AfterAll
+    public static void tearDown() throws Exception {
+        tarantoolContainer.executeScript("test_teardown.lua").get();
     }
 
     @Test

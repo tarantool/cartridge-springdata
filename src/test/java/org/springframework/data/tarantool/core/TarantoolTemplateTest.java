@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +56,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .lastVisitTime(LocalDateTime.now())
             .build();
 
-    private static Book book  = Book.builder()
+    private static final Book book  = Book.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -65,7 +66,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
             .build();
 
-    private static BookNonEntity bookNonEntity  = BookNonEntity.builder()
+    private static final BookNonEntity bookNonEntity  = BookNonEntity.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -98,8 +99,6 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUpTest() {
-        tarantoolOperations.findAndRemove(Conditions.any(), Customer.class);
-
         tarantoolOperations.save(book, Book.class);
 
         tarantoolOperations.save(vasya, Customer.class);
@@ -109,7 +108,9 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @AfterEach
     void tearDownTest() {
-        tarantoolOperations.findAndRemove(Conditions.any(), Book.class);
+        tarantoolOperations.findAndRemove(Conditions.any(), Customer.class);
+
+        tarantoolOperations.remove(book, Book.class);
     }
 
     @Test
