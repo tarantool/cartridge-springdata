@@ -77,6 +77,12 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @BeforeAll
     private static void setUp() {
+        Customer reader = Customer.builder()
+                .id(1L)
+                .name("Vasya")
+                .build();
+        book.setReaders(Collections.singletonList(reader));
+
         vasya.setFavouriteBooks(Collections.singletonList(book));
         petya.setFavouriteBooks(Collections.singletonList(book));
         tanya.setFavouriteBooks(Collections.singletonList(book));
@@ -126,6 +132,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
                 new Address[]{vasya.getAddresses().get("home")}, Customer.class);
         assertTrue(byCity != null && byCity.size() > 0);
         assertEquals("Riga", byCity.get(0).getForeignAddresses().get(0).getCity());
+        assertEquals("Tales", byCity.get(0).getFavouriteBooks().get(0).getName());
     }
 
     @Test
@@ -134,6 +141,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
                 new Book[]{vasya.getFavouriteBooks().get(0)}, Customer.class);
         assertTrue(byBook != null && byBook.size() > 0);
         assertEquals("Riga", byBook.get(0).getForeignAddresses().get(0).getCity());
+        assertEquals("Tales", byBook.get(0).getFavouriteBooks().get(0).getName());
     }
 
     @Test
@@ -142,6 +150,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
                 new Address[]{Address.builder().city("Riga").street("Brivibas").number(13).build()}, BookNonEntity.class);
         assertTrue(byIssuer != null && byIssuer.size() > 0);
         assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
+        assertEquals("Vasya", byIssuer.get(0).getReaders().get(0).getName());
     }
 
     @Test
@@ -150,6 +159,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
                 new Book[]{book}, BookNonEntity.class);
         assertTrue(byIssuer != null && byIssuer.size() > 0);
         assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
+        assertEquals("Vasya", byIssuer.get(0).getReaders().get(0).getName());
     }
 
     @Test

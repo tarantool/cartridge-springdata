@@ -17,7 +17,7 @@ public class MappingTarantoolEntityInformation<T, ID> extends AbstractEntityInfo
     public MappingTarantoolEntityInformation(TarantoolPersistentEntity<T> entity) {
         super(entity.getType());
         this.entity = entity;
-        this.idClass = entity.getIdProperty().getType();
+        this.idClass = entity.hasIdProperty() ? entity.getIdProperty().getType() : null;
     }
 
     @Override
@@ -42,6 +42,6 @@ public class MappingTarantoolEntityInformation<T, ID> extends AbstractEntityInfo
 
     @Override
     public String getIdAttribute() {
-        return entity.getIdProperty().getFieldName();
+        return entity.hasIdProperty() ? entity.getIdProperty().getFieldName() : null;
     }
 }

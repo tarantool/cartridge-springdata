@@ -423,7 +423,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         }
         Optional<Class<?>> basicTargetType = converter.getCustomConversions().getCustomWriteTarget(idValue.getClass());
         if (basicTargetType.isPresent()) {
-            idValue = converter.getConversionService().convert(source, basicTargetType.get());
+            idValue = converter.getConversionService().convert(idValue, basicTargetType.get());
         }
 
         return Conditions.indexEquals(0, Collections.singletonList(idValue));
