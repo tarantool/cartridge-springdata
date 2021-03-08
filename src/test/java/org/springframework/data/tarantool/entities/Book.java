@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.tarantool.core.mapping.Field;
 import org.springframework.data.tarantool.core.mapping.Tuple;
 
+import java.util.List;
+
 /**
  * @author Alexey Kuzin
  */
@@ -27,4 +29,8 @@ public class Book {
     private String author;
 
     private Integer year;
+
+    private Address issuerAddress;
+
+    private List<Address> storeAddresses;
 }

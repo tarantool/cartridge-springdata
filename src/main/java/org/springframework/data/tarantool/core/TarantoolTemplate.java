@@ -347,7 +347,7 @@ public class TarantoolTemplate implements TarantoolOperations {
             Class<R> entityCollectionClass,
             ValueConverter<Value, T> contentConverter) {
         return () -> tarantoolClient.callForSingleResult(
-                functionName, parameters, parameterMapper,
+                functionName, mapParameters(parameters), parameterMapper,
                 getCustomResultMapper(entityCollectionClass, contentConverter)
         );
     }

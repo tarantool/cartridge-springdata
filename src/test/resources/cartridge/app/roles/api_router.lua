@@ -84,6 +84,48 @@ function find_customer_by_address(address)
 	return customer_list
 end
 
+function find_customer_by_book(book)
+	local customer_list = {}
+	local customers_by_storage, err = pool.map_call('find_customer_by_book', { book }, { uri_list = get_uriList() })
+	if err then
+		return nil, err
+	end
+	for _, customers in pairs(customers_by_storage) do
+		for _, customer in pairs(customers) do
+			table.insert(customer_list, customer)
+		end
+	end
+	return customer_list
+end
+
+function find_book_by_address(address)
+	local book_list = {}
+	local books_by_storage, err = pool.map_call('find_book_by_address', { address }, { uri_list = get_uriList() })
+	if err then
+		return nil, err
+	end
+	for _, books in pairs(books_by_storage) do
+		for _, book in pairs(books) do
+			table.insert(book_list, book)
+		end
+	end
+	return book_list
+end
+
+function find_book_by_book(book)
+	local book_list = {}
+	local books_by_storage, err = pool.map_call('find_book_by_book', { book }, { uri_list = get_uriList() })
+	if err then
+		return nil, err
+	end
+	for _, books in pairs(books_by_storage) do
+		for _, book in pairs(books) do
+			table.insert(book_list, book)
+		end
+	end
+	return book_list
+end
+
 function get_customer_addresses()
 	return crud.pairs('customers')
 			:map(function(c) return c[5] end)
