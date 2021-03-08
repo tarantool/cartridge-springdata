@@ -30,6 +30,10 @@ public class Customer {
 
     private Map<String, Address> addresses;
 
+    private List<Address> foreignAddresses;
+
+    private List<Book> favouriteBooks;
+
     private Address workAddress;
 
     private LocalDateTime lastVisitTime;
