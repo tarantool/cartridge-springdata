@@ -1,6 +1,7 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -49,6 +50,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .id(3L)
             .name("Tanya")
             .tags(Arrays.asList("one", "two"))
+            .addresses(generateAddresses())
             .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
@@ -59,6 +61,8 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .uniqueKey("udf65")
             .author("Grimm Brothers")
             .year(1569)
+            .issuerAddress(Address.builder().city("Riga").street("Brivibas").number(13).build())
+            .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
             .build();
 
     private static BookNonEntity bookNonEntity  = BookNonEntity.builder()
@@ -90,9 +94,16 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     void setUpTest() {
         tarantoolOperations.findAndRemove(Conditions.any(), Customer.class);
 
+        tarantoolOperations.save(book, Book.class);
+
         tarantoolOperations.save(vasya, Customer.class);
         tarantoolOperations.save(petya, Customer.class);
         tarantoolOperations.save(tanya, Customer.class);
+    }
+
+    @AfterEach
+    void tearDownTest() {
+        tarantoolOperations.findAndRemove(Conditions.any(), Book.class);
     }
 
     @Test
@@ -100,7 +111,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         List<Customer> all = tarantoolOperations.findAll(Customer.class);
         assertEquals(3, all.size());
         assertAll(
-                () -> assertEquals("Tales", all.get(0).getName()),
+                () -> assertEquals("Vasya", all.get(0).getName()),
                 () -> assertEquals(Arrays.asList("one", "two"), all.get(0).getTags()),
                 () -> assertTrue(all.get(0).getLastVisitTime().isBefore(LocalDateTime.now())),
                 () -> assertEquals("Moscow", all.get(0).getAddresses().get("home").getCity()),
@@ -110,22 +121,35 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
     @Test
-    void testSelectNonEntity() {
-        BookNonEntity newBook = tarantoolOperations.call("crud.replace_object", Arrays.asList("test_space", bookNonEntity), BookNonEntity.class);
-        List<BookNonEntity> all = tarantoolOperations.callForList("crud.select", Collections.singletonList("test_space"), BookNonEntity.class);
-        assertEquals(1, all.size());
-        assertAll(
-                () -> assertEquals("Vasya", all.get(0).getName()),
-                () -> assertEquals("Brivibas", all.get(0).getIssuerAddress().getStreet()),
-                () -> assertEquals("Riga", all.get(0).getStoreAddresses().get(0).getCity())
-        );
-    }
-
-    @Test
-    public void testFunctionAcceptingObject() {
+    public void testFunctionReturningEntityAndAcceptingNonEntity() {
         List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address",
                 new Address[]{vasya.getAddresses().get("home")}, Customer.class);
         assertTrue(byCity != null && byCity.size() > 0);
+        assertEquals("Riga", byCity.get(0).getForeignAddresses().get(0).getCity());
+    }
+
+    @Test
+    public void testFunctionReturningEntityAndAcceptingEntity() {
+        List<Customer> byBook = tarantoolOperations.callForList("find_customer_by_book",
+                new Book[]{vasya.getFavouriteBooks().get(0)}, Customer.class);
+        assertTrue(byBook != null && byBook.size() > 0);
+        assertEquals("Riga", byBook.get(0).getForeignAddresses().get(0).getCity());
+    }
+
+    @Test
+    public void testFunctionReturningNonEntityAndAcceptingNonEntity() {
+        List<BookNonEntity> byIssuer = tarantoolOperations.callForList("find_book_by_address",
+                new Address[]{Address.builder().city("Riga").street("Brivibas").number(13).build()}, BookNonEntity.class);
+        assertTrue(byIssuer != null && byIssuer.size() > 0);
+        assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
+    }
+
+    @Test
+    public void testFunctionReturningNonEntityAndAcceptingEntity() {
+        List<BookNonEntity> byIssuer = tarantoolOperations.callForList("find_book_by_book",
+                new Book[]{book}, BookNonEntity.class);
+        assertTrue(byIssuer != null && byIssuer.size() > 0);
+        assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
     }
 
     @Test

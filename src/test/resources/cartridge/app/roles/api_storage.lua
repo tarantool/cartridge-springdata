@@ -52,9 +52,9 @@ local function init_space()
                 {name = 'name', type = 'string'},
                 {name = 'tags', type = 'array'},
                 {name = 'addresses', type = 'any'},
-                {name = 'foreignAddresses', type = 'array'},
-                {name = 'favouriteBooks', type = 'array'},
-                {name = 'lastVisitTime', type = 'unsigned'},
+                {name = 'foreignAddresses', type = 'array', is_nullable = true},
+                {name = 'favouriteBooks', type = 'array', is_nullable = true},
+                {name = 'lastVisitTime', type = 'unsigned', is_nullable = true},
             },
             if_not_exists = true,
         }
@@ -86,7 +86,29 @@ local function find_books_by_name(names)
 end
 
 local function find_customer_by_address(address)
-    return box.space.customers:pairs():filter(function (c) return c.addresses.home.city == address.city end):totable()
+    return box.space.customers:pairs()
+            :filter(function (c) return c.addresses.home.city == address.city end)
+            :totable()
+end
+
+local function find_customer_by_book(book)
+    return box.space.customers:pairs()
+            :filter(function (c) return c.favouriteBooks[1].name == book.name end)
+            :totable()
+end
+
+local function find_book_by_address(address)
+    return box.space.test_space:pairs()
+            :map(function (t) return t:tomap() end)
+            :filter(function (b) return b.issuerAddress.city == address.city end)
+            :totable()
+end
+
+local function find_book_by_book(book)
+    return box.space.test_space:pairs()
+            :map(function (t) return t:tomap() end)
+            :filter(function (b) return b.name == book.name end)
+            :totable()
 end
 
 local function init(opts)
@@ -99,6 +121,9 @@ local function init(opts)
     rawset(_G, 'storage_get_space_format', storage_get_space_format)
     rawset(_G, 'find_books_by_name', find_books_by_name)
     rawset(_G, 'find_customer_by_address', find_customer_by_address)
+    rawset(_G, 'find_customer_by_book', find_customer_by_book)
+    rawset(_G, 'find_book_by_address', find_book_by_address)
+    rawset(_G, 'find_book_by_book', find_book_by_book)
     rawset(_G, 'ddl', { get_schema = require('ddl').get_schema })
 
     return true
