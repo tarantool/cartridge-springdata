@@ -1,6 +1,7 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Address;
+import org.springframework.data.tarantool.entities.Book;
+import org.springframework.data.tarantool.entities.BookNonEntity;
 import org.springframework.data.tarantool.entities.Customer;
 
 import java.time.LocalDateTime;
@@ -26,30 +29,61 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Autowired
     TarantoolOperations tarantoolOperations;
 
-    private Customer vasya = Customer.builder()
+    private static Customer vasya = Customer.builder()
             .id(1L)
             .name("Vasya")
             .tags(Arrays.asList("one", "two"))
             .addresses(generateAddresses())
+            .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
-    private Customer petya = Customer.builder()
+    private static Customer petya = Customer.builder()
             .id(2L)
             .name("Petya")
             .tags(Arrays.asList("one", "two"))
             .addresses(generateAddresses())
+            .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
-    private Customer tanya = Customer.builder()
+    private static Customer tanya = Customer.builder()
             .id(3L)
             .name("Tanya")
             .tags(Arrays.asList("one", "two"))
-            .addresses(generateAddresses())
+            .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
 
-    private Map<String, Address> generateAddresses() {
+    private static Book book  = Book.builder()
+            .id(4)
+            .name("Tales")
+            .uniqueKey("udf65")
+            .author("Grimm Brothers")
+            .year(1569)
+            .build();
+
+    private static BookNonEntity bookNonEntity  = BookNonEntity.builder()
+            .id(4)
+            .name("Tales")
+            .uniqueKey("udf65")
+            .author("Grimm Brothers")
+            .year(1569)
+            .issuerAddress(Address.builder().city("Riga").street("Brivibas").number(13).build())
+            .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
+            .build();
+
+    @BeforeAll
+    private static void setUp() {
+        vasya.setFavouriteBooks(Collections.singletonList(book));
+        petya.setFavouriteBooks(Collections.singletonList(book));
+        tanya.setFavouriteBooks(Collections.singletonList(book));
+    }
+
+    private static Map<String, Address> generateAddresses() {
         return Collections.singletonMap("home", Address.builder().city("Moscow").street("Lubyanka").number(13).build());
+    }
+
+    private static List<Address> generateForeignAddresses() {
+        return Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build());
     }
 
     @BeforeEach
@@ -66,10 +100,24 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         List<Customer> all = tarantoolOperations.findAll(Customer.class);
         assertEquals(3, all.size());
         assertAll(
-                () -> assertEquals("Vasya", all.get(0).getName()),
+                () -> assertEquals("Tales", all.get(0).getName()),
                 () -> assertEquals(Arrays.asList("one", "two"), all.get(0).getTags()),
                 () -> assertTrue(all.get(0).getLastVisitTime().isBefore(LocalDateTime.now())),
-                () -> assertEquals("Moscow", all.get(0).getAddresses().get("home").getCity())
+                () -> assertEquals("Moscow", all.get(0).getAddresses().get("home").getCity()),
+                () -> assertEquals("Riga", all.get(0).getForeignAddresses().get(0).getCity()),
+                () -> assertTrue(all.get(0).getFavouriteBooks().size() > 0)
+        );
+    }
+
+    @Test
+    void testSelectNonEntity() {
+        BookNonEntity newBook = tarantoolOperations.call("crud.replace_object", Arrays.asList("test_space", bookNonEntity), BookNonEntity.class);
+        List<BookNonEntity> all = tarantoolOperations.callForList("crud.select", Collections.singletonList("test_space"), BookNonEntity.class);
+        assertEquals(1, all.size());
+        assertAll(
+                () -> assertEquals("Vasya", all.get(0).getName()),
+                () -> assertEquals("Brivibas", all.get(0).getIssuerAddress().getStreet()),
+                () -> assertEquals("Riga", all.get(0).getStoreAddresses().get(0).getCity())
         );
     }
 
