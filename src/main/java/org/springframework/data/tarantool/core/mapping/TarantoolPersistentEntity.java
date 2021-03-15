@@ -1,6 +1,10 @@
 package org.springframework.data.tarantool.core.mapping;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.lang.Nullable;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Represents an entity to be persisted
@@ -19,4 +23,22 @@ public interface TarantoolPersistentEntity<T> extends PersistentEntity<T, Tarant
      * Returns true, if the {@link Tuple} annotation is set on the class
      */
     boolean hasTupleAnnotation();
+
+    /**
+     * @return true if the {@link TarantoolIdClass} annotation is set on the class
+     */
+    boolean hasTarantoolIdClassAnnotation();
+
+    /**
+     * @return type specified in {@link TarantoolIdClass} or null if annotation was not specified
+     */
+    Optional<Class<?>> getTarantoolIdClass();
+
+    /**
+     * Extract property values from id object to list.
+     *
+     * @param idValue a bean of {@link TarantoolIdClass} type
+     * @return list with property values
+     */
+    List<?> getCompositeIdParts(Object idValue);
 }

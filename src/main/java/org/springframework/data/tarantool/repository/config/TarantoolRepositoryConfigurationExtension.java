@@ -39,7 +39,6 @@ public class TarantoolRepositoryConfigurationExtension extends RepositoryConfigu
         return "tarantool";
     }
 
-
     @Override
     public String getRepositoryFactoryBeanClassName() {
         return TarantoolRepositoryFactoryBean.class.getName();

@@ -299,4 +299,10 @@ public interface TarantoolOperations {
      * @return entity converter
      */
     TarantoolConverter getConverter();
+
+    /**
+     *  Truncate space (remove all data records in the space on each node).
+     * @param spaceName
+     */
+    void truncate(String spaceName);
 }

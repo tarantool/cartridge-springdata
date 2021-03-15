@@ -59,7 +59,6 @@ public class TarantoolRepositoryOperationsMapping {
         return defaultOperations;
     }
 
-
     /**
      * Return the default mapping context for using in repositories. It is taken from the the configured
      * default {@link TarantoolOperations} implementation

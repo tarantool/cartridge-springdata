@@ -1,30 +1,36 @@
 package org.springframework.data.tarantool.core;
 
+import io.tarantool.driver.ProxyTarantoolClient;
 import io.tarantool.driver.api.SingleValueCallResult;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
+import io.tarantool.driver.exceptions.TarantoolSpaceOperationException;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
 import io.tarantool.driver.mappers.ValueConverter;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
+import io.tarantool.driver.protocol.TarantoolIndexQuery;
 import org.msgpack.value.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentProperty;
+import org.springframework.data.tarantool.exceptions.TarantoolEntityOperationException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -98,7 +104,7 @@ public class TarantoolTemplate implements TarantoolOperations {
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() -> {
-            Conditions query = idQueryFromEntity(id).withLimit(1);
+            Conditions query = idQueryFromObject(id, entityClass).withLimit(1);
             return tarantoolClient.space(entity.getSpaceName()).select(query);
         });
         return mapFirstToEntity(result, entityClass);
@@ -207,7 +213,7 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(id, "ID must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
-        Conditions query = idQueryFromEntity(id);
+        Conditions query = idQueryFromObject(id, entityClass);
         return removeInternal(query, entityClass);
     }
 
@@ -318,10 +324,10 @@ public class TarantoolTemplate implements TarantoolOperations {
                     mapParameters(parameters),
                     tarantoolClient.getConfig().getMessagePackMapper(),
                     getResultMapperForEntity(entityClass))
-                .thenApply(result -> result == null ? null : (R) result.stream()
-                        .map(t -> mapToEntity(t, entityClass))
-                        .collect(Collectors.toList())
-                );
+                    .thenApply(result -> result == null ? null : (R) result.stream()
+                            .map(t -> mapToEntity(t, entityClass))
+                            .collect(Collectors.toList())
+                    );
         } else {
             return getCustomResultSupplier(
                     functionName,
@@ -345,8 +351,8 @@ public class TarantoolTemplate implements TarantoolOperations {
         );
     }
 
-    private
-    <T> CallResultMapper<TarantoolResult<TarantoolTuple>, SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
+    private <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
+            SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
     getResultMapperForEntity(Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
@@ -380,27 +386,59 @@ public class TarantoolTemplate implements TarantoolOperations {
         return Conditions.indexEquals(0, idValue);
     }
 
+    /**
+     * Build conditions query from entity object that contains id.
+     * This object can be:
+     * - the entity object (Book, Employee etc)
+     *
+     * @param source the entity object
+     * @return condition for this id object
+     */
     private <T> Conditions idQueryFromEntity(T source) {
         TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
-        Object idValue = source;
-        if (entity != null) {
-            TarantoolPersistentProperty idProperty = entity.getIdProperty();
-            if (idProperty == null) {
-                throw new MappingException("No ID property specified on entity " + source.getClass());
-            }
+        Assert.notNull(entity, "Failed to get entity class for " + source.getClass());
 
-            PersistentPropertyAccessor<?> propertyAccessor = entity.getPropertyAccessor(source);
-            idValue = propertyAccessor.getProperty(idProperty);
-            if (idValue == null) {
-                throw new MappingException("ID property value is null");
-            }
-        }
-        Optional<Class<?>> basicTargetType = converter.getCustomConversions().getCustomWriteTarget(idValue.getClass());
-        if (basicTargetType.isPresent()) {
-            idValue = converter.getConversionService().convert(idValue, basicTargetType.get());
-        }
+        Object idValue = entity.getIdentifierAccessor(source).getRequiredIdentifier();
 
-        return Conditions.indexEquals(0, Collections.singletonList(idValue));
+        List<?> indexPartValues = getIndexPartValues(idValue, entity);
+        return createIndexEqualsConditionFromParts(indexPartValues);
+    }
+
+    /**
+     * Build conditions query from object that contains id.
+     * This object can be:
+     * - the basic type representing id of an entity (Integer, String,  etc)
+     * - the 'TarantoolIdClass' object if entity has composite ID
+     *
+     * @param source      the id object
+     * @param entityClass class of entity
+     * @return condition for this id object
+     */
+    private <T> Conditions idQueryFromObject(T source, Class<?> entityClass) {
+        TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+        Assert.notNull(entity, "Failed to get entity class for " + entityClass +
+                ". Possibly @Tuple annotation is missing on the class.");
+
+        List<?> indexPartValues = getIndexPartValues(source, entity);
+        return createIndexEqualsConditionFromParts(indexPartValues);
+    }
+
+    private <T> List<?> getIndexPartValues(T source, TarantoolPersistentEntity<?> entity) {
+        return entity.hasTarantoolIdClassAnnotation() ?
+                getIndexPartsFromCompositeIdValue(source, entity)
+                : Collections.singletonList(source);
+    }
+
+    private List<?> getIndexPartsFromCompositeIdValue(Object idValue, TarantoolPersistentEntity<?> entity) {
+        //for each property get field name and map to idValue bean property value
+        Optional<Class<?>> idClass = entity.getTarantoolIdClass();
+        Assert.isTrue(idClass.isPresent(), "@TarantoolIdClass is not specified for entity " + entity);
+        return entity.getCompositeIdParts(idValue);
+    }
+
+    private Conditions createIndexEqualsConditionFromParts(List<?> indexPartValues) {
+        List<?> indexPartValuesConverted = mapParameters(indexPartValues);
+        return Conditions.indexEquals(TarantoolIndexQuery.PRIMARY, indexPartValuesConverted);
     }
 
     private <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {
@@ -427,6 +465,21 @@ public class TarantoolTemplate implements TarantoolOperations {
     @Override
     public TarantoolConverter getConverter() {
         return converter;
+    }
+
+    @Override
+    public void truncate(String spaceName) {
+        //FIXME implement truncate in cartridge-driver and remove this temporary hack
+        if (tarantoolClient instanceof ProxyTarantoolClient) {
+            boolean result = executeSync(() -> tarantoolClient.callForSingleResult(
+                    "crud.truncate",
+                    Collections.singletonList(spaceName), Boolean.class));
+            if (!result) {
+                throw new TarantoolSpaceOperationException("CRUD failed to truncate space " + spaceName);
+            }
+        } else {
+            throw new UnsupportedOperationException("Truncate operation is not supported in the driver yet");
+        }
     }
 
     private <R> R executeSync(Supplier<CompletableFuture<R>> func) {
