@@ -194,23 +194,25 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             Class<?> propClass = propType.getType();
             Optional<Class<?>> customTargetClass = conversions.getCustomWriteTarget(propClass);
 
+            String fieldName = property.getFieldName();
             if (source instanceof TarantoolTuple) {
                 Object value;
                 if (propType.isCollectionLike()) {
-                    value = ((TarantoolTuple) source).getList(property.getFieldName());
+                    value = ((TarantoolTuple) source).getList(fieldName);
                 } else if (propType.isMap()) {
-                    value = ((TarantoolTuple) source).getMap(property.getFieldName());
+                    value = ((TarantoolTuple) source).getMap(fieldName);
                 } else if (customTargetClass.isPresent() &&
-                        conversions.hasCustomReadTarget(customTargetClass.get(), propClass)) {
-                    value = ((TarantoolTuple) source).getObject(property.getFieldName(), customTargetClass.get()).orElse(null);
-                } else if (conversions.isSimpleType(propClass)) {
-                    value = ((TarantoolTuple) source).getObject(property.getFieldName(), propClass).orElse(null);
+                        conversions.hasCustomReadTarget(customTargetClass.get(), propClass) &&
+                        ((TarantoolTuple) source).canGetObject(fieldName, customTargetClass.get())) {
+                    value = ((TarantoolTuple) source).getObject(fieldName, customTargetClass.get()).orElse(null);
+                } else if (((TarantoolTuple) source).canGetObject(fieldName, Map.class)) {
+                    value = convertCustomType((Map<String, Object>) ((TarantoolTuple) source).getMap(fieldName), propType);
                 } else {
-                    value = convertCustomType(((TarantoolTuple) source).getMap(property.getFieldName()), propType);
+                    value = ((TarantoolTuple) source).getObject(fieldName).orElse(null);
                 }
                 return readValue(value, propType);
             } else if (source instanceof Map) {
-                return readValue(((Map<String, Object>) source).get(property.getFieldName()), propType);
+                return readValue(((Map<String, Object>) source).get(fieldName), propType);
             } else {
                 throw new MappingException("Cannot read properties from a source of type " + source.getClass());
             }
@@ -225,8 +227,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
 
             Class<?> targetClass = propertyType.getType();
             if (conversions.hasCustomReadTarget(source.getClass(), targetClass) ||
-                conversions.isSimpleType(targetClass) &&
-                        conversionService.canConvert(source.getClass(), targetClass)) {
+                conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
                 return (R) conversionService.convert(source, targetClass);
             } else if (propertyType.isCollectionLike()) {
                 return convertCollection(asCollection(source), propertyType);

@@ -14,6 +14,7 @@ import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.BookNonEntity;
 import org.springframework.data.tarantool.entities.Customer;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -255,5 +257,15 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         assertNull(customer);
         assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Address.class));
         assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Customer.class));
+    }
+
+    @Test
+    public void testLoadWithCustomType() {
+        int bookId = 12453;
+        String issueDate = LocalDate.now().toString();
+        tarantoolOperations.call("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+        Book newBook = tarantoolOperations.findById(bookId, Book.class);
+        assertThat(newBook.getId()).isEqualTo(bookId);
+        assertThat(newBook.getIssueDate()).isEqualTo(issueDate);
     }
 }

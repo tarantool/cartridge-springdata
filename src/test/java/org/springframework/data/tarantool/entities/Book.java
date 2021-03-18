@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.tarantool.core.mapping.Field;
 import org.springframework.data.tarantool.core.mapping.Tuple;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,4 +36,6 @@ public class Book {
     private List<Address> storeAddresses;
 
     private List<Customer> readers;
+
+    private LocalDate issueDate;
 }

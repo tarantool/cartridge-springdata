@@ -14,9 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.tarantool.config.AbstractTarantoolDataConfiguration;
 import org.springframework.data.tarantool.repository.BookRepository;
 import org.springframework.data.tarantool.repository.config.EnableTarantoolRepositories;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alexey Kuzin
@@ -53,6 +59,25 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
     @Override
     protected TarantoolServerAddress tarantoolServerAddress() {
         return new TarantoolServerAddress(host, port);
+    }
+
+    @ReadingConverter
+    public enum StringToLocalDateConverter implements Converter<String, LocalDate> {
+
+        INSTANCE;
+
+        @Override
+        public LocalDate convert(String source) {
+            return source == null ? null
+                    : LocalDate.parse(source);
+        }
+    }
+
+    @Override
+    protected List<?> customConverters() {
+        List<Converter<?, ?>> customConverters = new ArrayList<>();
+        customConverters.add(StringToLocalDateConverter.INSTANCE);
+        return customConverters;
     }
 
     @Override
