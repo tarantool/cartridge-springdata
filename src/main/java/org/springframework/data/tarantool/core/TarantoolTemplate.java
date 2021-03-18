@@ -26,7 +26,6 @@ import org.springframework.util.Assert;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -220,9 +219,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     @Override
     public <T> T call(String functionName,
                       Object[] parameters,
-                      Class<T> entityType,
                       ValueConverter<Value, T> entityConverter) {
-        return call(functionName, Arrays.asList(parameters), entityType, entityConverter);
+        return call(functionName, Arrays.asList(parameters), entityConverter);
     }
 
     @Override
@@ -238,14 +236,12 @@ public class TarantoolTemplate implements TarantoolOperations {
     @Override
     public <T> T call(String functionName,
                       List<?> parameters,
-                      Class<T> entityType,
                       ValueConverter<Value, T> entityConverter) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
-        Assert.notNull(entityType, "Entity class must not be null!");
         Assert.notNull(entityConverter, "Entity converter must not be null!");
 
-        List<T> result = callForList(functionName, parameters, entityType, entityConverter);
+        List<T> result = callForList(functionName, parameters, entityConverter);
         return result != null && result.size() > 0 ? result.get(0) : null;
     }
 
@@ -255,8 +251,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T call(String functionName, Class<T> entityType, ValueConverter<Value, T> entityConverter) {
-        return call(functionName, Collections.emptyList(), entityType, entityConverter);
+    public <T> T call(String functionName, ValueConverter<Value, T> entityConverter) {
+        return call(functionName, Collections.emptyList(), entityConverter);
     }
 
     @Override
@@ -267,9 +263,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     @Override
     public <T> List<T> callForList(String functionName,
                                    Object[] parameters,
-                                   Class<T> entityType,
                                    ValueConverter<Value, T> entityConverter) {
-        return callForList(functionName, Arrays.asList(parameters), entityType, entityConverter);
+        return callForList(functionName, Arrays.asList(parameters), entityConverter);
     }
 
     @Override
@@ -279,24 +274,20 @@ public class TarantoolTemplate implements TarantoolOperations {
         Assert.notNull(entityClass, "Entity class must not be null!");
 
         return executeSync(getResultSupplier(
-                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(),
-                entityClass, List.class)
+                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(), entityClass)
         );
     }
 
     @Override
     public <T> List<T> callForList(String functionName,
                                    List<?> parameters,
-                                   Class<T> entityClass,
                                    ValueConverter<Value, T> entityConverter) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
-        Assert.notNull(entityClass, "Entity class must not be null!");
         Assert.notNull(entityConverter, "Entity converter must not be null!");
 
         return executeSync(getCustomResultSupplier(
-                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(),
-                List.class, entityConverter));
+                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(), entityConverter));
     }
 
     @Override
@@ -305,8 +296,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> List<T> callForList(String functionName, Class<T> entityType, ValueConverter<Value, T> entityConverter) {
-        return callForList(functionName, Collections.emptyList(), entityType, entityConverter);
+    public <T> List<T> callForList(String functionName, ValueConverter<Value, T> entityConverter) {
+        return callForList(functionName, Collections.emptyList(), entityConverter);
     }
 
     private List<?> mapParameters(List<?> parameters) {
@@ -316,12 +307,11 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @SuppressWarnings("unchecked")
-    private <T, R extends Collection<T>> Supplier<CompletableFuture<R>> getResultSupplier(
+    private <T, R extends List<T>> Supplier<CompletableFuture<R>> getResultSupplier(
             String functionName,
             List<?> parameters,
             MessagePackObjectMapper parameterMapper,
-            Class<T> entityClass,
-            Class<R> entityCollectionClass) {
+            Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         if (entityMetadata.hasTupleAnnotation()) {
             return () -> tarantoolClient.call(functionName,
@@ -334,41 +324,25 @@ public class TarantoolTemplate implements TarantoolOperations {
                 );
         } else {
             return getCustomResultSupplier(
-                    functionName, parameters, parameterMapper, entityCollectionClass,
+                    functionName,
+                    parameters,
+                    parameterMapper,
                     v -> mapToEntity(mapper.fromValue(v, Map.class), entityClass)
             );
         }
     }
 
-    private <T, R extends Collection<T>> Supplier<CompletableFuture<R>> getCustomResultSupplier(
+    @SuppressWarnings("unchecked")
+    private <T, R extends List<T>> Supplier<CompletableFuture<R>> getCustomResultSupplier(
             String functionName,
             List<?> parameters,
             MessagePackObjectMapper parameterMapper,
-            Class<R> entityCollectionClass,
             ValueConverter<Value, T> contentConverter) {
+        ValueConverter<Value, R> converter = v -> v.isNilValue() ? null
+                : (R) v.asArrayValue().list().stream().map(contentConverter::fromValue).collect(Collectors.toList());
         return () -> tarantoolClient.callForSingleResult(
-                functionName, mapParameters(parameters), parameterMapper,
-                getCustomResultMapper(entityCollectionClass, contentConverter)
+                functionName, mapParameters(parameters), parameterMapper, converter
         );
-    }
-
-    @SuppressWarnings("unchecked")
-    private
-    <T, R extends Collection<T>> CallResultMapper<R, SingleValueCallResult<R>>
-    getCustomResultMapper(Class<R> resultClass, ValueConverter<Value, T> contentConverter) {
-        return tarantoolClient
-                .getResultMapperFactoryFactory()
-                .singleValueResultMapperFactory(resultClass)
-                .withSingleValueResultConverter(v ->
-                        (R) v.asArrayValue().list().stream()
-                                .map(contentConverter::fromValue)
-                                .collect(Collectors.toList()),
-                        getCallResultClass(resultClass)
-                );
-    }
-
-    private <T> Class<SingleValueCallResult<T>> getCallResultClass(Class<T> contentClass) {
-        return (Class<SingleValueCallResult<T>>) (Class<?>) SingleValueCallResult.class;
     }
 
     private

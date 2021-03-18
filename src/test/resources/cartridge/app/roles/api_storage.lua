@@ -13,6 +13,7 @@ local function init_space()
                 {name = 'issuerAddress', type = 'any', is_nullable = true},
                 {name = 'storeAddresses', type = 'array', is_nullable = true},
                 {name = 'readers', type = 'array', is_nullable = true},
+                {name = 'issueDate', type = 'string', is_nullable = true},
             },
             if_not_exists = true,
         }
@@ -101,14 +102,14 @@ end
 local function find_book_by_address(address)
     return box.space.test_space:pairs()
             :map(function (t) return t:tomap() end)
-            :filter(function (b) return b.issuerAddress.city == address.city end)
+            :filter(function (b) return b.issuerAddress ~= nil and b.issuerAddress.city == address.city end)
             :totable()
 end
 
 local function find_book_by_book(book)
     return box.space.test_space:pairs()
             :map(function (t) return t:tomap() end)
-            :filter(function (b) return b.name == book.name end)
+            :filter(function (b) return b.id == book.id end)
             :totable()
 end
 

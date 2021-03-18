@@ -18,23 +18,24 @@ public abstract class TarantoolSimpleTypes {
     private static final Set<Class<?>> TARANTOOL_SIMPLE_TYPES;
 
     static {
+        //TODO add converters for array types
         Set<Class<?>> simpleTypes = new HashSet<>();
         simpleTypes.add(boolean.class);
-        simpleTypes.add(boolean[].class);
+        //simpleTypes.add(boolean[].class);
         simpleTypes.add(long.class);
-        simpleTypes.add(long[].class);
+        //simpleTypes.add(long[].class);
         simpleTypes.add(short.class);
-        simpleTypes.add(short[].class);
+        //simpleTypes.add(short[].class);
         simpleTypes.add(int.class);
-        simpleTypes.add(int[].class);
+        //simpleTypes.add(int[].class);
         simpleTypes.add(byte.class);
         simpleTypes.add(byte[].class);
         simpleTypes.add(float.class);
-        simpleTypes.add(float[].class);
+        //simpleTypes.add(float[].class);
         simpleTypes.add(double.class);
-        simpleTypes.add(double[].class);
+        //simpleTypes.add(double[].class);
         simpleTypes.add(char.class);
-        simpleTypes.add(char[].class);
+        //simpleTypes.add(char[].class);
         simpleTypes.add(Boolean.class);
         simpleTypes.add(Long.class);
         simpleTypes.add(Short.class);
@@ -42,10 +43,10 @@ public abstract class TarantoolSimpleTypes {
         simpleTypes.add(Byte.class);
         simpleTypes.add(Float.class);
         simpleTypes.add(Double.class);
-        simpleTypes.add(Character.class);
+        //simpleTypes.add(Character.class);
         simpleTypes.add(String.class);
-        simpleTypes.add(Class.class);
-        simpleTypes.add(Byte[].class);
+        //simpleTypes.add(Class.class);
+        //simpleTypes.add(Byte[].class);
         simpleTypes.add(UUID.class);
         simpleTypes.add(BigDecimal.class);
 
