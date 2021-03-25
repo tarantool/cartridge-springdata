@@ -19,6 +19,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookStoreId {
+
+    private static final String DUMMY_CONST_STR = "42";
+
     private Integer bookId;
+
+    private static final Integer DUMMY_CONST_INT = 42;
+
     private LocalDateTime receivedAt;
+
 }

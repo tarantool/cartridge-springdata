@@ -23,9 +23,14 @@ import java.time.LocalDateTime;
 @TarantoolIdClass(BookStoreId.class)
 public class BookStore {
 
+    // Test checks that static fields are ignored
+    private static final String DUMMY_CONST_STR = "42";
+
     //@Id - this annotation is optional
     @Field(value = "id")
     private Integer bookId;
+
+    private static final Integer DUMMY_CONST_INT = 42;
 
     //@Id - this annotation is optional
     @Field(value = "received_at")

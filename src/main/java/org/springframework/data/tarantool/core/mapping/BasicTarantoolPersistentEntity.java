@@ -76,8 +76,12 @@ public class BasicTarantoolPersistentEntity<T>
     public List<?> getCompositeIdParts(Object idValue) {
         List<Object> idParts = new LinkedList<>();
         for (Field field : idValue.getClass().getDeclaredFields()) {
+            if(java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
             TarantoolPersistentProperty property = getPersistentProperty(field.getName());
-            Assert.notNull(property, "Property " + field.getName() + "does not exist in entity " + this);
+            Assert.notNull(property, "Property " + field.getName() + " does not exist in entity " + this);
 
             ReflectionUtils.makeAccessible(field);
             try {
@@ -117,7 +121,7 @@ public class BasicTarantoolPersistentEntity<T>
 
             //Maybe @TarantoolIdClass not set for entity.
             //Use getRequiredIdentifier to avoid getting nulls.
-            if(!entityIdClass.isPresent()) {
+            if (!entityIdClass.isPresent()) {
                 return null;
             }
 
