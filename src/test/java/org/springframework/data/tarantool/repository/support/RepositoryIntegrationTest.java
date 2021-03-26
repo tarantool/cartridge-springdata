@@ -6,12 +6,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
+import org.springframework.data.tarantool.BaseIntegrationTestStub;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.repository.BookRepository;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;

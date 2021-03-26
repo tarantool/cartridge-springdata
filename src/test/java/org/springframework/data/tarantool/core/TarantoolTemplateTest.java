@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
+import org.springframework.data.tarantool.BaseIntegrationTestStub;
 import org.springframework.data.tarantool.entities.Address;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.BookNonEntity;
@@ -102,6 +103,9 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @BeforeEach
     void setUpTest() {
         tarantoolOperations.save(book, Book.class);
+
+        //Fix flacky test. Other cases save data so here
+        tarantoolOperations.truncate("customers");
 
         tarantoolOperations.save(vasya, Customer.class);
         tarantoolOperations.save(petya, Customer.class);

@@ -217,6 +217,45 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
 
 See more examples in the module tests.
 
+### Composite primary key
+
+You can create an entity representing a Tarantool tuple with composite 
+primary index. For this you need to use @TarantoolIdClass annotation on entity
+to specify the type of id. Also you may mark all 'id' fields in the entity 
+with standard @Id annotation. @Id annotation on properties is optional but
+It is recommended to use it to make code more clear.
+
+See the example:
+
+```java
+
+public class BookTranslationId {
+    private Integer bookId;
+    private String language;
+    private Integer edition;
+}
+
+@Tuple("book_translation")
+@TarantoolIdClass(BookTranslationId.class)
+public class BookTranslation {
+    @Id
+    @Field(value = "id")
+    private Integer bookId;
+    @Id
+    private String language;
+    @Id
+    private Integer edition;
+    
+    private String translator;
+    private String comments;
+}
+
+public interface BookTranslationRepository 
+        extends TarantoolRepository<BookTranslation, BookTranslationId> {
+}
+
+```
+
 ## Contributing to Spring Data Tarantool
 
 Contributions and issues are welcome, feel free to add them to this

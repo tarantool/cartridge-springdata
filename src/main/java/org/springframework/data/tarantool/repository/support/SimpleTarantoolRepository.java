@@ -22,9 +22,9 @@ import java.util.Optional;
 public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, ID> {
 
     private final TarantoolOperations tarantoolOperations;
-    private final EntityInformation<T, ID> entityInformation;
+    private final TarantoolEntityInformation<T, ID> entityInformation;
 
-    public SimpleTarantoolRepository(EntityInformation<T, ID> entityInformation,
+    public SimpleTarantoolRepository(TarantoolEntityInformation<T, ID> entityInformation,
                                      TarantoolOperations tarantoolOperations) {
         this.entityInformation = entityInformation;
         this.tarantoolOperations = tarantoolOperations;
@@ -107,6 +107,6 @@ public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, 
 
     @Override
     public void deleteAll() {
-        throw new UnsupportedOperationException("Truncate operation is not supported in the driver yet");
+        tarantoolOperations.truncate(entityInformation.getSpaceName());
     }
 }
