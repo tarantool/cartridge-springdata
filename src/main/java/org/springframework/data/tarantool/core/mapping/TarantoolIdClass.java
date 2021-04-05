@@ -1,6 +1,5 @@
 package org.springframework.data.tarantool.core.mapping;
 
-import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.Persistent;
 
 import java.lang.annotation.ElementType;
@@ -16,24 +15,28 @@ import java.lang.annotation.Target;
  * that are parts of primary index of the tuple.
  * These properties must be present in the entity
  * and may marked with {@link org.springframework.data.annotation.Id}.
- * @Id annotation on properties is optional but It is recommended to use it
+ * &#064;Id annotation on properties is optional but It is recommended to use it
  * to make code more clear.
  * Types of properties in primary key class and the entity must correspond.
  *
- *      Example:
+ * Example:
+ *
+ * <pre>{@code
  *
  *      public class BookId {
  *         String name;
  *         String author;
  *      }
  *
- *      @TarantoolIdClass(io.tarantool.example.BookId)
- *      @Tuple(table="book")
+ *      &#064;TarantoolIdClass(io.tarantool.example.BookId)
+ *      &#064;Tuple(table="book")
  *      public class Book {
- *         @Id String name;
- *         @Id String author;
+ *         &#064;Id String name;
+ *         &#064;Id String author;
  *         ...
  *      }
+ *
+ * }</pre>
  *
  * @author Vladimir Rogach
  */

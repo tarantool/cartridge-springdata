@@ -301,8 +301,9 @@ public interface TarantoolOperations {
     TarantoolConverter getConverter();
 
     /**
-     *  Truncate space (remove all data records in the space on each node).
-     * @param spaceName
+     * Truncate space (remove all data records in the space on each node where it persists).
+     *
+     * @param spaceName space name
      */
     void truncate(String spaceName);
 }
