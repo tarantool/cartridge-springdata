@@ -15,6 +15,7 @@ import java.util.List;
  */
 @Data
 @Builder
+@Tuple
 @EqualsAndHashCode
 public class BookNonEntity {
     @Id

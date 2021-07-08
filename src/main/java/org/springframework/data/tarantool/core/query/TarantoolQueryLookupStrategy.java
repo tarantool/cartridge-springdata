@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.core.query;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.tarantool.core.TarantoolOperations;
+import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
 import java.lang.reflect.Method;
@@ -34,6 +36,19 @@ public class TarantoolQueryLookupStrategy implements QueryLookupStrategy {
                 metadata.getRepositoryInterface(), metadata.getDomainType());
 
         TarantoolQueryMethod queryMethod = new TarantoolQueryMethod(method, metadata, projectionFactory);
-        return new TarantoolRepositoryQuery(operations, queryMethod);
+
+        if (hasTupleAnnotation(metadata, queryMethod)) {
+            return new TarantoolTupleRepositoryQuery(operations, queryMethod);
+        }
+
+        return new TarantoolObjectRepositoryQuery(operations, queryMethod);
+    }
+
+    private boolean hasTupleAnnotation(RepositoryMetadata metadata, TarantoolQueryMethod queryMethod) {
+        return hasTupleAnnotationOnRepository(metadata) || queryMethod.hasTupleAnnotation();
+    }
+
+    private boolean hasTupleAnnotationOnRepository(RepositoryMetadata metadata) {
+        return AnnotatedElementUtils.findMergedAnnotation(metadata.getRepositoryInterface(), Tuple.class) != null;
     }
 }

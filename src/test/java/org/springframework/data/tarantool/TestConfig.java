@@ -45,10 +45,9 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
 
     @Override
     protected void configureClientConfig(TarantoolClientConfig.Builder builder) {
-        builder
-            .withConnectTimeout(1000 * 5)
-            .withReadTimeout(1000 * 5)
-            .withRequestTimeout(1000 * 5);
+        builder.withConnectTimeout(1000 * 5)
+                .withReadTimeout(1000 * 5)
+                .withRequestTimeout(1000 * 5);
     }
 
     @Override

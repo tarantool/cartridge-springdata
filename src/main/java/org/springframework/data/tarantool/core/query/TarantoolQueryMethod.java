@@ -3,6 +3,7 @@ package org.springframework.data.tarantool.core.query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.repository.Query;
 
 import java.lang.reflect.Method;
@@ -31,12 +32,30 @@ public class TarantoolQueryMethod extends QueryMethod {
     }
 
     /**
+     * If the method has a @Tuple annotation.
+     *
+     * @return true if it has the annotation, false otherwise.
+     */
+    public boolean hasTupleAnnotation() {
+        return getTupleAnnotation() != null;
+    }
+
+    /**
      * Returns the @Query annotation if set, null otherwise.
      *
-     * @return the n1ql annotation if present.
+     * @return the @Query annotation if present.
      */
     public Query getQueryAnnotation() {
         return method.getAnnotation(Query.class);
+    }
+
+    /**
+     * Returns the @Tuple annotation if set, null otherwise.
+     *
+     * @return the @Tuple annotation if present.
+     */
+    public Tuple getTupleAnnotation() {
+        return method.getAnnotation(Tuple.class);
     }
 
     /**

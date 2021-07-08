@@ -20,8 +20,8 @@ public interface TarantoolOperations {
      * specified type. Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
-     * @param <T> target entity type
-     * @param query Query object that encapsulates the search criteria
+     * @param <T>        target entity type
+     * @param query      Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The converted object
      */
@@ -33,8 +33,8 @@ public interface TarantoolOperations {
      * Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
-     * @param <T> target entity type
-     * @param query Query object that encapsulates the search criteria
+     * @param <T>        target entity type
+     * @param query      Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -45,9 +45,9 @@ public interface TarantoolOperations {
      * Target space will be derived automatically from the entity class.
      * Default converter {@link } will be used unless a custom one is specified. -- TODO
      *
-     * @param <T> target entity type
-     * @param <ID> target entity index type
-     * @param id Entity identifier
+     * @param <T>        target entity type
+     * @param <ID>       target entity index type
+     * @param id         Entity identifier
      * @param entityType Desired type of the result object
      * @return The converted object
      */
@@ -59,7 +59,7 @@ public interface TarantoolOperations {
      * from the entity class.
      * Default converter {@link } will be used unless a custom one is specified. -- TODO
      *
-     * @param <T> target entity type
+     * @param <T>        target entity type
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -70,8 +70,8 @@ public interface TarantoolOperations {
      * found are returned and removed from the space. Target space will be derived automatically from the entity class.
      * Default value mappers {@link } will be used unless a custom one is specified. -- TODO
      *
-     * @param <T> target entity type
-     * @param query Query object that encapsulates the search criteria
+     * @param <T>        target entity type
+     * @param query      Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return The list of converted objects
      */
@@ -82,8 +82,8 @@ public interface TarantoolOperations {
      * Count the number of records matching the specified query. The space is determined automatically
      * from the entity class.
      *
-     * @param <T> target entity type
-     * @param query Query object that encapsulates the search criteria
+     * @param <T>        target entity type
+     * @param query      Query object that encapsulates the search criteria
      * @param entityType Desired type of the result object
      * @return Number of records
      */
@@ -92,8 +92,8 @@ public interface TarantoolOperations {
     /**
      * Insert a record into a space. The space is determined automatically by the entity class.
      *
-     * @param <T> target entity type
-     * @param entity The object to save
+     * @param <T>        target entity type
+     * @param entity     The object to save
      * @param entityType Desired type of the result object
      * @return The inserted object
      */
@@ -104,8 +104,8 @@ public interface TarantoolOperations {
      * Save a record into a space. The space is determined automatically by the entity class. If the record doesn't
      * exist, it will be inserted.
      *
-     * @param <T> target entity type
-     * @param entity The object to save
+     * @param <T>        target entity type
+     * @param entity     The object to save
      * @param entityType Desired type of the result object
      * @return The inserted object
      */
@@ -117,10 +117,10 @@ public interface TarantoolOperations {
      * entity class. Warning: executing this operation on a large data set may cause OutOfMemory error or take
      * significant time to complete.
      *
-     * @param query tuple selection conditions
-     * @param entity entity with new data for update
+     * @param query       tuple selection conditions
+     * @param entity      entity with new data for update
      * @param entityClass target class of the result objects
-     * @param <T> target entity type
+     * @param <T>         target entity type
      * @return list of updated objects
      */
     <T> List<T> update(Conditions query, T entity, Class<T> entityClass);
@@ -128,8 +128,8 @@ public interface TarantoolOperations {
     /**
      * Remove a record from a space corresponding to the specified entity type.
      *
-     * @param <T> target entity type
-     * @param entity Target entity (must have the id property)
+     * @param <T>        target entity type
+     * @param entity     Target entity (must have the id property)
      * @param entityType Desired type of the result object
      * @return Removed entity value
      */
@@ -139,9 +139,9 @@ public interface TarantoolOperations {
     /**
      * Remove a record from a space corresponding to the specified entity type.
      *
-     * @param <T> target entity type
-     * @param <ID> target entity index type
-     * @param id Target entity ID
+     * @param <T>        target entity type
+     * @param <ID>       target entity index type
+     * @param id         Target entity ID
      * @param entityType Desired type of the result object
      * @return Removed entity value
      */
@@ -151,151 +151,307 @@ public interface TarantoolOperations {
     /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param parameters function parameters
-     * @param entityType Desired type of the result object
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, Object[] parameters, Class<T> entityType);
+    <T> T callForTuple(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
      * entity converter will be used for converting the result value into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param parameters        function parameters
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
+    <T> T callForTuple(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param parameters function parameters
-     * @param entityType Desired type of the result object
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, List<?> parameters, Class<T> entityType);
+    <T> T callForTuple(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
      * entity converter will be used for converting the result value into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param parameters        function parameters
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+    <T> T callForTuple(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns one entity as result.
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param entityType Desired type of the result object
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, Class<T> entityType);
+    <T> T callForTuple(String functionName, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
      * entity converter will be used for converting the result value into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> T call(String functionName, ValueConverter<Value, T> entityConverter);
+    <T> T callForTuple(String functionName, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
+     * Result must be in format {metadata=[...], rows=[...]}
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param parameters function parameters
-     * @param entityType Desired type of the result object
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityType);
+    <T> List<T> callForTupleList(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
      * entity converter will be used for converting each value in the result into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param parameters        function parameters
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
+    <T> List<T> callForTupleList(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param parameters function parameters
-     * @param entityType Desired type of the result object
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, List<?> parameters, Class<T> entityType);
+    <T> List<T> callForTupleList(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
      * entity converter will be used for converting each value in the result into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param parameters        function parameters
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+    <T> List<T> callForTupleList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
      *
-     * @param <T> target entity type
+     * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param entityType Desired type of the result object
+     * @param entityType   Desired type of the result object
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, Class<T> entityType);
+    <T> List<T> callForTupleList(String functionName, Class<T> entityType);
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of MessagePack values as result. The given
      * entity converter will be used for converting each value in the result into an entity.
      *
-     * @param <T> target entity type
-     * @param functionName      callable API function name
-     * @param entityConverter   converter from MessagePack value to the result entity type
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param entityConverter converter from MessagePack value to the result entity type
      * @return function call result
      */
     @Nullable
-    <T> List<T> callForList(String functionName, ValueConverter<Value, T> entityConverter);
+    <T> List<T> callForTupleList(String functionName, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType);
+
+    /**
+     * Description below
+     * @see #callForObject(String, Object[], Class)
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result object type
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Description below
+     * @see #callForObject(String, Object[], Class)
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType);
+
+    /**
+     * Description below
+     * @see #callForObject(String, Object[], Class)
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result object type
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Description below
+     * @see #callForObject(String, Object[], Class)
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, Class<T> entityType);
+
+    /**
+     * Description below
+     * @see #callForObject(String, Object[], Class)
+     * The given entity converter will be used for converting the result value into an entity.
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityClass  Desired type of the result object
+     * @return function call result
+     */
+    <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass);
+
+    /**
+     * Description below
+     * @see #callForObjectList(String, List, Class)
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityType);
+
+    /**
+     * Description below
+     * @see #callForObjectList(String, List, Class)
+     * The given entity converter will be used for converting each value in the result into an object.
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Description below
+     * @see #callForObjectList(String, List, Class)
+     * The given entity converter will be used for converting each value in the result into an object.
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Description below
+     * @see #callForObjectList(String, List, Class)
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, Class<T> entityType);
+
+    /**
+     * Description below
+     * @see #callForObjectList(String, List, Class)
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, ValueConverter<Value, T> entityConverter);
 
     /**
      * Return the entity converter used for this instance
+     *
      * @return entity converter
      */
     TarantoolConverter getConverter();
