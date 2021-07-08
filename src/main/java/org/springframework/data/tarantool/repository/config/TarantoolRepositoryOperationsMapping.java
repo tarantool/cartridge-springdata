@@ -44,7 +44,7 @@ public class TarantoolRepositoryOperationsMapping {
      * Add a middle priority mapping that will associate any un-mapped repository that deals with the given domain type
      * Class with a given {@link TarantoolOperations}.
      *
-     * @param entityClass the domain type's {@link Class}.
+     * @param entityClass         the domain type's {@link Class}.
      * @param tarantoolOperations the {@link TarantoolOperations} to use.
      */
     private void mapEntity(Class<?> entityClass, TarantoolOperations tarantoolOperations) {
@@ -53,6 +53,7 @@ public class TarantoolRepositoryOperationsMapping {
 
     /**
      * Return the default {@link TarantoolOperations} implementation
+     *
      * @return TarantoolOperations instance
      */
     public TarantoolOperations getDefaultOperations() {
@@ -62,6 +63,7 @@ public class TarantoolRepositoryOperationsMapping {
     /**
      * Return the default mapping context for using in repositories. It is taken from the the configured
      * default {@link TarantoolOperations} implementation
+     *
      * @return mapping context
      */
     public MappingContext<? extends TarantoolPersistentEntity<?>, TarantoolPersistentProperty> defaultMappingContext() {
@@ -72,8 +74,9 @@ public class TarantoolRepositoryOperationsMapping {
      * Given a repository interface and its domain type, resolves which {@link TarantoolOperations} should be used
      * for them. The repository interface has the highest precedence and the entity class is lower. If no mapping is
      * found, the default implementation will be returned.
+     *
      * @param repositoryInterface repository interface to search the mapping by
-     * @param entityClass domain entity class to search the mapping by
+     * @param entityClass         domain entity class to search the mapping by
      * @return TarantoolOperations instance
      */
     public TarantoolOperations resolve(Class<?> repositoryInterface, Class<?> entityClass) {
@@ -108,6 +111,7 @@ public class TarantoolRepositoryOperationsMapping {
 
         /**
          * Basic constructor. Adds default fallback for operations mapping.
+         *
          * @param defaultOperations default operations implementation
          */
         public Builder(TarantoolOperations defaultOperations) {
@@ -117,6 +121,7 @@ public class TarantoolRepositoryOperationsMapping {
 
         /**
          * Add a mapping of a specific repository interface to a {@link TarantoolOperations} implementation
+         *
          * @param repositoryInterface the repository interface class
          * @param tarantoolOperations implementation for binding with
          * @return Builder instance
@@ -128,7 +133,8 @@ public class TarantoolRepositoryOperationsMapping {
 
         /**
          * Add a mapping of a specific domain entity to a {@link TarantoolOperations} implementation
-         * @param entityClass the domain entity class
+         *
+         * @param entityClass         the domain entity class
          * @param tarantoolOperations implementation for binding with
          * @return Builder instance
          */
@@ -139,6 +145,7 @@ public class TarantoolRepositoryOperationsMapping {
 
         /**
          * Return the configured {@link TarantoolRepositoryOperationsMapping} instance
+         *
          * @return operations mapping instance
          */
         public TarantoolRepositoryOperationsMapping build() {

@@ -8,13 +8,13 @@ import org.springframework.data.tarantool.core.TarantoolOperations;
  *
  * @author Alexey Kuzin
  */
-public class TarantoolRepositoryQueryExecutor {
+public class TarantoolRepositoryTupleQueryExecutor implements TarantoolRepositoryExecutor {
 
     private final TarantoolOperations operations;
     private final TarantoolQueryMethod queryMethod;
 
-    public TarantoolRepositoryQueryExecutor(final TarantoolOperations operations,
-                                            final TarantoolQueryMethod queryMethod) {
+    public TarantoolRepositoryTupleQueryExecutor(final TarantoolOperations operations,
+                                                 final TarantoolQueryMethod queryMethod) {
         this.operations = operations;
         this.queryMethod = queryMethod;
     }
@@ -29,9 +29,9 @@ public class TarantoolRepositoryQueryExecutor {
         final Class<?> domainClass = queryMethod.getResultProcessor().getReturnedType().getDomainType();
 
         if (queryMethod.isCollectionQuery()) {
-            return operations.callForList(queryMethod.getQueryFunctionName(), parameters, domainClass);
+            return operations.callForTupleList(queryMethod.getQueryFunctionName(), parameters, domainClass);
         } else {
-            return operations.call(queryMethod.getQueryFunctionName(), parameters, domainClass);
+            return operations.callForTuple(queryMethod.getQueryFunctionName(), parameters, domainClass);
         }
     }
 }

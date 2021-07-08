@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.repository;
 
+import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.entities.Book;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 /**
  * @author Alexey Kuzin
  */
+@Tuple
 public interface BookRepository extends TarantoolRepository<Book, Integer> {
 //    List<Book> findByAuthor(String author);
 //

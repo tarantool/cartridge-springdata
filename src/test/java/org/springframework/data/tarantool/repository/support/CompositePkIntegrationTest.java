@@ -1,14 +1,12 @@
 package org.springframework.data.tarantool.repository.support;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
-import org.springframework.data.tarantool.core.TarantoolTemplate;
 import org.springframework.data.tarantool.entities.BookStore;
 import org.springframework.data.tarantool.entities.BookStoreId;
 import org.springframework.data.tarantool.entities.BookTranslation;

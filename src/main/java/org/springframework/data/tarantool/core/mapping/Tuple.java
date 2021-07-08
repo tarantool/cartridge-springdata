@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Persistent
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Tuple {
 
     /**

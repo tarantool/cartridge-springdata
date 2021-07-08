@@ -7,13 +7,13 @@ import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
+import io.tarantool.driver.api.tuple.operations.TupleOperations;
 import io.tarantool.driver.exceptions.TarantoolSpaceOperationException;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
 import io.tarantool.driver.mappers.ValueConverter;
 import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
-import io.tarantool.driver.api.tuple.operations.TupleOperations;
 import io.tarantool.driver.protocol.TarantoolIndexQuery;
 import org.msgpack.value.Value;
 import org.springframework.dao.DataAccessException;
@@ -23,14 +23,10 @@ import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentProperty;
-import org.springframework.data.tarantool.exceptions.TarantoolEntityOperationException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -218,92 +214,167 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T call(String functionName, Object[] parameters, Class<T> entityType) {
-        return call(functionName, Arrays.asList(parameters), entityType);
+    public <T> T callForTuple(String functionName, Object[] parameters, Class<T> entityType) {
+        return callForTuple(functionName, Arrays.asList(parameters), entityType);
     }
 
     @Override
-    public <T> T call(String functionName,
-                      Object[] parameters,
-                      ValueConverter<Value, T> entityConverter) {
-        return call(functionName, Arrays.asList(parameters), entityConverter);
+    public <T> T callForTuple(String functionName,
+                              Object[] parameters,
+                              ValueConverter<Value, T> entityConverter) {
+        return callForTuple(functionName, Arrays.asList(parameters), entityConverter);
     }
 
     @Override
-    public <T> T call(String functionName, List<?> parameters, Class<T> entityType) {
-        Assert.hasText(functionName, "Function name must not be null or empty!");
-        Assert.notNull(parameters, "Parameters must not be null!");
-        Assert.notNull(entityType, "Entity class must not be null!");
-
-        List<T> result = callForList(functionName, parameters, entityType);
-        return result != null && result.size() > 0 ? result.get(0) : null;
-    }
-
-    @Override
-    public <T> T call(String functionName,
-                      List<?> parameters,
-                      ValueConverter<Value, T> entityConverter) {
-        Assert.hasText(functionName, "Function name must not be null or empty!");
-        Assert.notNull(parameters, "Parameters must not be null!");
-        Assert.notNull(entityConverter, "Entity converter must not be null!");
-
-        List<T> result = callForList(functionName, parameters, entityConverter);
-        return result != null && result.size() > 0 ? result.get(0) : null;
-    }
-
-    @Override
-    public <T> T call(String functionName, Class<T> entityType) {
-        return call(functionName, Collections.emptyList(), entityType);
-    }
-
-    @Override
-    public <T> T call(String functionName, ValueConverter<Value, T> entityConverter) {
-        return call(functionName, Collections.emptyList(), entityConverter);
-    }
-
-    @Override
-    public <T> List<T> callForList(String functionName, Object[] parameters, Class<T> entityClass) {
-        return callForList(functionName, Arrays.asList(parameters), entityClass);
-    }
-
-    @Override
-    public <T> List<T> callForList(String functionName,
-                                   Object[] parameters,
-                                   ValueConverter<Value, T> entityConverter) {
-        return callForList(functionName, Arrays.asList(parameters), entityConverter);
-    }
-
-    @Override
-    public <T> List<T> callForList(String functionName, List<?> parameters, Class<T> entityClass) {
+    public <T> T callForTuple(String functionName, List<?> parameters, Class<T> entityClass) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
-        return executeSync(getResultSupplier(
-                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(), entityClass)
+        List<T> result = callForTupleList(functionName, parameters, entityClass);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName,
+                              List<?> parameters,
+                              ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        List<T> result = callForTupleList(functionName, parameters, entityConverter);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName, Class<T> entityType) {
+        return callForTuple(functionName, Collections.emptyList(), entityType);
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName, ValueConverter<Value, T> entityConverter) {
+        return callForTuple(functionName, Collections.emptyList(), entityConverter);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, Object[] parameters, Class<T> entityClass) {
+        return callForTupleList(functionName, Arrays.asList(parameters), entityClass);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName,
+                                        Object[] parameters,
+                                        ValueConverter<Value, T> entityConverter) {
+        return callForTupleList(functionName, Arrays.asList(parameters), entityConverter);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, Class<T> entityType) {
+        return callForTupleList(functionName, Collections.emptyList(), entityType);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, ValueConverter<Value, T> entityConverter) {
+        return callForTupleList(functionName, Collections.emptyList(), entityConverter);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, List<?> parameters, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        return executeSync(getResultSupplier(functionName, parameters, entityClass)
         );
     }
 
     @Override
-    public <T> List<T> callForList(String functionName,
-                                   List<?> parameters,
-                                   ValueConverter<Value, T> entityConverter) {
+    public <T> List<T> callForTupleList(String functionName,
+                                        List<?> parameters,
+                                        ValueConverter<Value, T> entityConverter) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityConverter, "Entity converter must not be null!");
 
         return executeSync(getCustomResultSupplier(
-                functionName, parameters, tarantoolClient.getConfig().getMessagePackMapper(), entityConverter));
+                functionName, parameters, getMessagePackMapper(), entityConverter));
     }
 
     @Override
-    public <T> List<T> callForList(String functionName, Class<T> entityType) {
-        return callForList(functionName, Collections.emptyList(), entityType);
+    public <T> T callForObject(String functionName, Class<T> entityType) {
+        return callForObject(functionName, Collections.emptyList(), entityType);
     }
 
     @Override
-    public <T> List<T> callForList(String functionName, ValueConverter<Value, T> entityConverter) {
-        return callForList(functionName, Collections.emptyList(), entityConverter);
+    public <T> T callForObject(String functionName, ValueConverter<Value, T> entityConverter) {
+        return callForObject(functionName, Collections.emptyList(), entityConverter);
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType) {
+        return callForObject(functionName, Arrays.asList(parameters), entityType);
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter) {
+        return callForObject(functionName, Arrays.asList(parameters), entityConverter);
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(
+                functionName, mapParameters(parameters), getMessagePackMapper(), entityConverter)
+        );
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(
+                () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
+                        .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
+        );
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityClass) {
+        return callForObjectList(functionName, Arrays.asList(parameters), entityClass);
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter) {
+        return callForObjectList(functionName, Arrays.asList(parameters), entityConverter);
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, Class<T> entityType) {
+        return callForObjectList(functionName, Collections.emptyList(), entityType);
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, ValueConverter<Value, T> entityConverter) {
+        return callForObjectList(functionName, Collections.emptyList(), entityConverter);
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        return executeSync(getCustomResultSupplier(
+                functionName, parameters, getMessagePackMapper(), entityConverter));
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(functionName,
+                mapParameters(parameters), getMessagePackMapper(), getListValueConverter(entityClass))
+        );
+    }
+
+    private MessagePackMapper getMessagePackMapper() {
+        return tarantoolClient.getConfig().getMessagePackMapper();
     }
 
     private List<?> mapParameters(List<?> parameters) {
@@ -316,26 +387,15 @@ public class TarantoolTemplate implements TarantoolOperations {
     private <T, R extends List<T>> Supplier<CompletableFuture<R>> getResultSupplier(
             String functionName,
             List<?> parameters,
-            MessagePackObjectMapper parameterMapper,
             Class<T> entityClass) {
-        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        if (entityMetadata.hasTupleAnnotation()) {
-            return () -> tarantoolClient.call(functionName,
-                    mapParameters(parameters),
-                    tarantoolClient.getConfig().getMessagePackMapper(),
-                    getResultMapperForEntity(entityClass))
-                    .thenApply(result -> result == null ? null : (R) result.stream()
-                            .map(t -> mapToEntity(t, entityClass))
-                            .collect(Collectors.toList())
-                    );
-        } else {
-            return getCustomResultSupplier(
-                    functionName,
-                    parameters,
-                    parameterMapper,
-                    v -> mapToEntity(mapper.fromValue(v, Map.class), entityClass)
-            );
-        }
+        return () -> tarantoolClient.call(functionName,
+                mapParameters(parameters),
+                getMessagePackMapper(),
+                getResultMapperForEntity(entityClass))
+                .thenApply(result -> result == null ? null : (R) result.stream()
+                        .map(t -> mapToEntity(t, entityClass))
+                        .collect(Collectors.toList())
+                );
     }
 
     @SuppressWarnings("unchecked")
@@ -345,10 +405,20 @@ public class TarantoolTemplate implements TarantoolOperations {
             MessagePackObjectMapper parameterMapper,
             ValueConverter<Value, T> contentConverter) {
         ValueConverter<Value, R> converter = v -> v.isNilValue() ? null
-                : (R) v.asArrayValue().list().stream().map(contentConverter::fromValue).collect(Collectors.toList());
+                : (R) v.asArrayValue().list().stream()
+                .map(contentConverter::fromValue)
+                .collect(Collectors.toList());
+
         return () -> tarantoolClient.callForSingleResult(
                 functionName, mapParameters(parameters), parameterMapper, converter
         );
+    }
+
+    private <T> ValueConverter<Value, List<T>> getListValueConverter(Class<T> entityClass) {
+        return result -> result == null ? null
+                : result.asArrayValue().list().stream()
+                .map(v -> mapToEntity(mapper.fromValue(v, Map.class), entityClass))
+                .collect(Collectors.toList());
     }
 
     private <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
@@ -456,8 +526,8 @@ public class TarantoolTemplate implements TarantoolOperations {
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
                 .getSpaceByName(entityMetadata.getSpaceName());
         TarantoolTuple tuple = spaceMetadata.isPresent() ?
-                new TarantoolTupleImpl(tarantoolClient.getConfig().getMessagePackMapper(), spaceMetadata.get()) :
-                new TarantoolTupleImpl(tarantoolClient.getConfig().getMessagePackMapper());
+                new TarantoolTupleImpl(getMessagePackMapper(), spaceMetadata.get()) :
+                new TarantoolTupleImpl(getMessagePackMapper());
         getConverter().write(entity, tuple);
         return tuple;
     }

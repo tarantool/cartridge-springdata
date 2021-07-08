@@ -9,7 +9,6 @@ import org.springframework.data.tarantool.core.mapping.Tuple;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author Alexey Kuzin
@@ -19,8 +18,7 @@ import java.util.UUID;
 @EqualsAndHashCode
 @Tuple("customers")
 public class Customer {
-//    @Id
-//    private UUID uuid;
+
     @Id
     private Long id;
 

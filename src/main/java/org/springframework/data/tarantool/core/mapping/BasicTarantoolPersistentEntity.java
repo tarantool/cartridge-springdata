@@ -1,7 +1,5 @@
 package org.springframework.data.tarantool.core.mapping;
 
-import io.tarantool.driver.exceptions.TarantoolException;
-import lombok.SneakyThrows;
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
@@ -13,8 +11,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +72,7 @@ public class BasicTarantoolPersistentEntity<T>
     public List<?> getCompositeIdParts(Object idValue) {
         List<Object> idParts = new LinkedList<>();
         for (Field field : idValue.getClass().getDeclaredFields()) {
-            if(java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
 
@@ -140,7 +136,7 @@ public class BasicTarantoolPersistentEntity<T>
             for (Field field : idClass.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) {
                     TarantoolPersistentProperty property = entity.getPersistentProperty(field.getName());
-                    Assert.notNull(property, "Property '"+ field.getName() + "' is null for " + entity);
+                    Assert.notNull(property, "Property '" + field.getName() + "' is null for " + entity);
 
                     Object value = propertyAccessor.getProperty(property);
                     ReflectionUtils.makeAccessible(field);

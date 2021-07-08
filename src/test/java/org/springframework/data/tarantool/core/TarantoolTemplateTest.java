@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
-import org.springframework.data.tarantool.BaseIntegrationTestStub;
 import org.springframework.data.tarantool.entities.Address;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.BookNonEntity;
@@ -21,10 +20,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexey Kuzin
@@ -34,7 +37,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Autowired
     TarantoolOperations tarantoolOperations;
 
-    private static Customer vasya = Customer.builder()
+    private static final Customer vasya = Customer.builder()
             .id(1L)
             .name("Vasya")
             .tags(Arrays.asList("one", "two"))
@@ -42,7 +45,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
-    private static Customer petya = Customer.builder()
+    private static final Customer petya = Customer.builder()
             .id(2L)
             .name("Petya")
             .tags(Arrays.asList("one", "two"))
@@ -50,7 +53,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .foreignAddresses(generateForeignAddresses())
             .lastVisitTime(LocalDateTime.now())
             .build();
-    private static Customer tanya = Customer.builder()
+    private static final Customer tanya = Customer.builder()
             .id(3L)
             .name("Tanya")
             .tags(Arrays.asList("one", "two"))
@@ -59,7 +62,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .lastVisitTime(LocalDateTime.now())
             .build();
 
-    private static final Book book  = Book.builder()
+    private static final Book book = Book.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -69,7 +72,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
             .build();
 
-    private static final BookNonEntity bookNonEntity  = BookNonEntity.builder()
+    private static final BookNonEntity bookNonEntity = BookNonEntity.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -135,7 +138,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     public void testFunctionReturningEntityAndAcceptingNonEntity() {
-        List<Customer> byCity = tarantoolOperations.callForList("find_customer_by_address",
+        List<Customer> byCity = tarantoolOperations.callForTupleList("find_customer_by_address",
                 new Address[]{vasya.getAddresses().get("home")}, Customer.class);
         assertTrue(byCity != null && byCity.size() > 0);
         assertEquals("Riga", byCity.get(0).getForeignAddresses().get(0).getCity());
@@ -144,7 +147,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     public void testFunctionReturningEntityAndAcceptingEntity() {
-        List<Customer> byBook = tarantoolOperations.callForList("find_customer_by_book",
+        List<Customer> byBook = tarantoolOperations.callForTupleList("find_customer_by_book",
                 new Book[]{vasya.getFavouriteBooks().get(0)}, Customer.class);
         assertTrue(byBook != null && byBook.size() > 0);
         assertEquals("Riga", byBook.get(0).getForeignAddresses().get(0).getCity());
@@ -152,19 +155,35 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testFunctionReturningNonEntityAndAcceptingNonEntity() {
-        List<BookNonEntity> byIssuer = tarantoolOperations.callForList("find_book_by_address",
-                new Address[]{Address.builder().city("Riga").street("Brivibas").number(13).build()}, BookNonEntity.class);
-        assertTrue(byIssuer != null && byIssuer.size() > 0);
+    public void test_callForObjectList_shouldReturningNonEntityAndAcceptingNonEntity() {
+        //given
+        List<Address> parameters = Collections.singletonList(
+                Address.builder()
+                        .city("Riga")
+                        .street("Brivibas")
+                        .number(13)
+                        .build()
+        );
+
+        //when
+        List<BookNonEntity> byIssuer = tarantoolOperations.callForObjectList("find_book_by_address", parameters, BookNonEntity.class);
+
+        //then
+        assertTrue(byIssuer.size() > 0);
         assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
         assertEquals("Vasya", byIssuer.get(0).getReaders().get(0).getName());
     }
 
     @Test
-    public void testFunctionReturningNonEntityAndAcceptingEntity() {
-        List<BookNonEntity> byIssuer = tarantoolOperations.callForList("find_book_by_book",
-                new Book[]{book}, BookNonEntity.class);
-        assertTrue(byIssuer != null && byIssuer.size() > 0);
+    public void test_callForObjectList_shouldReturnNonEntityAndAcceptingEntity() {
+        //given
+        List<Book> parameters = Collections.singletonList(book);
+
+        //when
+        List<BookNonEntity> byIssuer = tarantoolOperations.callForObjectList("find_book_by_book", parameters, BookNonEntity.class);
+
+        //then
+        assertTrue(byIssuer.size() > 0);
         assertEquals("Riga", byIssuer.get(0).getStoreAddresses().get(0).getCity());
         assertEquals("Vasya", byIssuer.get(0).getReaders().get(0).getName());
     }
@@ -219,7 +238,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     void testNonEntityAsReturnType() {
-        List<Address> addresses = tarantoolOperations.callForList("get_customer_addresses", Address.class);
+        List<Address> addresses = tarantoolOperations.callForObjectList("get_customer_addresses", Collections.emptyList(), Address.class);
         assertTrue(addresses != null && addresses.size() > 0);
     }
 
@@ -227,7 +246,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     void testNonEntityAsReturnType_shouldHandleError() {
         Throwable ex = null;
         try {
-            tarantoolOperations.callForList("returning_error", Address.class);
+            tarantoolOperations.callForTupleList("returning_error", Address.class);
         } catch (DataRetrievalFailureException e) {
             ex = e;
             assertTrue(e.getMessage().contains("some error"));
@@ -237,38 +256,44 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     void testNonEntityAsReturnType_shouldHandleNil() {
-        List<Address> addresses = tarantoolOperations.callForList("returning_nil", Address.class);
+        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nil", Address.class);
         assertNull(addresses);
-        List<Customer> customers = tarantoolOperations.callForList("returning_nil", Customer.class);
+        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nil", Customer.class);
         assertNull(customers);
-        Address address = tarantoolOperations.call("returning_nil", Address.class);
+        Address address = tarantoolOperations.callForTuple("returning_nil", Address.class);
         assertNull(address);
-        Customer customer = tarantoolOperations.call("returning_nil", Customer.class);
+        Customer customer = tarantoolOperations.callForTuple("returning_nil", Customer.class);
         assertNull(customer);
-        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nil", Address.class));
-        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nil", Customer.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", Address.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", Customer.class));
     }
 
     @Test
     void testNonEntityAsReturnType_shouldHandleNothing() {
-        List<Address> addresses = tarantoolOperations.callForList("returning_nothing", Address.class);
+        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nothing", Address.class);
         assertNull(addresses);
-        List<Customer> customers = tarantoolOperations.callForList("returning_nothing", Customer.class);
+        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nothing", Customer.class);
         assertNull(customers);
-        Address address = tarantoolOperations.call("returning_nothing", Address.class);
+        Address address = tarantoolOperations.callForTuple("returning_nothing", Address.class);
         assertNull(address);
-        Customer customer = tarantoolOperations.call("returning_nothing", Customer.class);
+        Customer customer = tarantoolOperations.callForTuple("returning_nothing", Customer.class);
         assertNull(customer);
-        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Address.class));
-        assertDoesNotThrow(() ->tarantoolOperations.call("returning_nothing", Customer.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", Address.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", Customer.class));
     }
 
     @Test
-    public void testLoadWithCustomType() {
+    public void test_callForTuple_shouldInsertBookWithCustomType() {
+        //given
         int bookId = 12453;
         String issueDate = LocalDate.now().toString();
-        tarantoolOperations.call("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+
+        //when
+        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+
+        //then
         Book newBook = tarantoolOperations.findById(bookId, Book.class);
+        assertThat(newBook).isNotNull();
         assertThat(newBook.getId()).isEqualTo(bookId);
         assertThat(newBook.getIssueDate()).isEqualTo(issueDate);
     }

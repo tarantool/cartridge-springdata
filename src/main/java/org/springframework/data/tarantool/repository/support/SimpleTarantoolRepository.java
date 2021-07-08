@@ -3,7 +3,6 @@ package org.springframework.data.tarantool.repository.support;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.tarantool.core.TarantoolOperations;
 import org.springframework.data.tarantool.repository.TarantoolRepository;
 import org.springframework.util.Assert;
@@ -14,9 +13,9 @@ import java.util.Optional;
 
 /**
  * Basic Tarantool repository implementation
- * @param <T> entity type
- * @param <ID> entity identifier (primary key) type
  *
+ * @param <T>  entity type
+ * @param <ID> entity identifier (primary key) type
  * @author Alexey Kuzin
  */
 public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, ID> {

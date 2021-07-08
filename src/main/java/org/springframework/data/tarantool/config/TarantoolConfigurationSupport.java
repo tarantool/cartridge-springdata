@@ -31,7 +31,7 @@ public abstract class TarantoolConfigurationSupport {
      * {@code com.acme} unless the method is overridden to implement alternate behavior.
      *
      * @return the base packages to scan for mapped {@link Tuple} classes or an empty collection to not enable scanning
-     *         for entities.
+     * for entities.
      */
     protected Collection<String> getMappingBasePackages() {
 
@@ -43,15 +43,19 @@ public abstract class TarantoolConfigurationSupport {
      * Scans the mapping base package for classes annotated with {@link Tuple}. By default, it scans for entities in
      * all packages returned by {@link #getMappingBasePackages()}.
      *
-     * @see #getMappingBasePackages()
      * @return Set of classes marked with {@link Tuple} annotations
      * @throws ClassNotFoundException if the entity scan fails
+     * @see #getMappingBasePackages()
      */
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
         Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
 
         for (String basePackage : getMappingBasePackages()) {
+            if (!StringUtils.hasText(basePackage)) {
+                continue;
+            }
+
             initialEntitySet.addAll(scanForEntities(basePackage));
         }
 
@@ -67,11 +71,6 @@ public abstract class TarantoolConfigurationSupport {
      * @throws ClassNotFoundException if the entity scan fails
      */
     protected Set<Class<?>> scanForEntities(String basePackage) throws ClassNotFoundException {
-
-        if (!StringUtils.hasText(basePackage)) {
-            return Collections.emptySet();
-        }
-
         Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
 
         if (StringUtils.hasText(basePackage)) {
