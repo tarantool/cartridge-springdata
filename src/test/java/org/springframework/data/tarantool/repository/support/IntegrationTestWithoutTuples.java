@@ -8,7 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
+import org.springframework.data.tarantool.entities.BookNonEntity;
 import org.springframework.data.tarantool.entities.SampleUser;
+import org.springframework.data.tarantool.entities.TestSpace;
+import org.springframework.data.tarantool.repository.BookAsTestSpaceRepository;
+import org.springframework.data.tarantool.repository.BookRepositoryWithSchemaOnMethods;
+import org.springframework.data.tarantool.repository.BookRepositoryWithSchemaOnRepository;
+import org.springframework.data.tarantool.repository.BookRepositoryWithSchemaOnRepositoryAndMethods;
 import org.springframework.data.tarantool.repository.BookRepositoryWithTuple;
 import org.springframework.data.tarantool.repository.BookRepositoryWithoutTuple;
 import org.springframework.data.tarantool.repository.SampleUserRepository;
@@ -27,13 +33,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
 
     @Autowired
+    private SampleUserRepository sampleUserRepository;
+
+    @Autowired
     private BookRepositoryWithTuple bookRepositoryWithTuple;
+
+    @Autowired
+    private BookAsTestSpaceRepository bookAsTestSpaceRepository;
 
     @Autowired
     private BookRepositoryWithoutTuple bookRepositoryWithoutTuple;
 
     @Autowired
-    private SampleUserRepository sampleUserRepository;
+    private BookRepositoryWithSchemaOnMethods bookRepositoryWithSchemaOnMethods;
+
+    @Autowired
+    private BookRepositoryWithSchemaOnRepository bookRepositoryWithSchemaOnRepository;
+
+    @Autowired
+    private BookRepositoryWithSchemaOnRepositoryAndMethods bookRepositoryWithSchemaOnRepositoryAndMethods;
 
     @BeforeAll
     public static void setUp() throws Exception {
@@ -46,6 +64,14 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
     }
 
     private final Book book = Book.builder()
+            .id(4)
+            .name("Tales")
+            .uniqueKey("udf65")
+            .author("Grimm Brothers")
+            .year(1569)
+            .build();
+
+    private final BookNonEntity bookNonEntity = BookNonEntity.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -150,5 +176,64 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         Book actual = bookRepositoryWithoutTuple.returningBook();
         //then
         assertThat(actual).isEqualTo(this.book);
+    }
+
+    @Test
+    public void test_save_shouldSaveBook_ifRepositoryMethodWithTupleAnnotationAndSpecifiedSchema() {
+        //when
+        bookRepositoryWithSchemaOnMethods.saveBook(this.bookNonEntity);
+        Optional<BookNonEntity> book = bookRepositoryWithSchemaOnMethods.findBookById(this.bookNonEntity.getId());
+
+        //then
+        assertThat(book).hasValueSatisfying(actual -> {
+            assertThat(actual).isEqualTo(this.bookNonEntity);
+
+            bookRepositoryWithoutTuple.deleteById(actual.getId());
+        });
+    }
+
+    @Test
+    public void test_save_shouldSaveBook_ifRepositoryWithTupleAnnotationAndSpecifiedSchema() {
+        //when
+        BookNonEntity actual = bookRepositoryWithSchemaOnRepository.saveBook(this.bookNonEntity);
+
+        //then
+        assertThat(actual).isEqualTo(this.bookNonEntity);
+
+        bookRepositoryWithoutTuple.deleteById(actual.getId());
+    }
+
+    @Test
+    public void test_save_shouldSaveBook_ifRepositoryWithSpecifiedSchemaOnRepositoryAndMethods() {
+        //given
+        bookRepositoryWithSchemaOnRepositoryAndMethods.saveBook(this.bookNonEntity);
+
+        //when
+        Optional<BookNonEntity> book = bookRepositoryWithSchemaOnRepositoryAndMethods.findBookById(this.bookNonEntity.getId());
+
+        //then
+        assertThat(book).hasValueSatisfying(actual -> {
+            assertThat(actual).isEqualTo(this.bookNonEntity);
+
+            bookRepositoryWithoutTuple.deleteById(actual.getId());
+        });
+    }
+
+    @Test
+    void test_save_shouldSaveAndReturnBook_ifTestSpaceIsAClassName() {
+        //given
+        TestSpace entity = TestSpace.builder()
+                .id(111)
+                .name("Tales")
+                .uniqueKey("udf65")
+                .author("Grimm Brothers")
+                .year(1569)
+                .build();
+
+        //when
+        TestSpace saved = bookAsTestSpaceRepository.save(entity);
+
+        //then
+        assertThat(saved).isEqualTo(entity);
     }
 }

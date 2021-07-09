@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("integration")
 class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Autowired
-    BookRepository bookRepository;
+    private BookRepository bookRepository;
 
     @BeforeAll
     public static void setUp() throws Exception {

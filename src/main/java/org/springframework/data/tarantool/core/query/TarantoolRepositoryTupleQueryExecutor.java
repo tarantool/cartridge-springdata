@@ -28,10 +28,13 @@ public class TarantoolRepositoryTupleQueryExecutor implements TarantoolRepositor
     public Object execute(final Object[] parameters) {
         final Class<?> domainClass = queryMethod.getResultProcessor().getReturnedType().getDomainType();
 
+        String spaceName = queryMethod.getSpaceName()
+                .orElse(operations.getMappingContext().getRequiredPersistentEntity(domainClass).getSpaceName());
+
         if (queryMethod.isCollectionQuery()) {
-            return operations.callForTupleList(queryMethod.getQueryFunctionName(), parameters, domainClass);
+            return operations.callForTupleList(queryMethod.getQueryFunctionName(), parameters, spaceName, domainClass);
         } else {
-            return operations.callForTuple(queryMethod.getQueryFunctionName(), parameters, domainClass);
+            return operations.callForTuple(queryMethod.getQueryFunctionName(), parameters, spaceName, domainClass);
         }
     }
 }
