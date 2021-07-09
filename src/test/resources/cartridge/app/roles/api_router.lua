@@ -3,6 +3,8 @@ local pool = require('cartridge.pool')
 local errors = require('errors')
 local cartridge_pool = require('cartridge.pool')
 local cartridge_rpc = require('cartridge.rpc')
+local log = require('log')
+local json = require('json')
 
 local AssertionError = errors.new_class('AssertionError')
 
@@ -168,6 +170,14 @@ end
 
 function insert_book_with_custom_type(book_id, issue_date)
     crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
+end
+
+function save_book(book)
+    return crud.insert_object('test_space', book)
+end
+
+function find_book_by_id(book_id)
+    return crud.select('test_space', { { '=', 'id', book_id } })
 end
 
 local function init(opts)

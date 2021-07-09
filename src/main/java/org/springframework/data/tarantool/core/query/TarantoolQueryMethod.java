@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.core.query;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
@@ -7,6 +8,7 @@ import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.repository.Query;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * Represents a query method with Tarantool extensions
@@ -16,10 +18,26 @@ import java.lang.reflect.Method;
 public class TarantoolQueryMethod extends QueryMethod {
 
     private final Method method;
+    private final RepositoryMetadata metadata;
 
     public TarantoolQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
         super(method, metadata, factory);
         this.method = method;
+        this.metadata = metadata;
+    }
+
+    public Optional<String> getSpaceName() {
+        Tuple methodTupleAnnotation = getTupleAnnotation();
+        if (methodTupleAnnotation != null) {
+            return Optional.of(methodTupleAnnotation.spaceName());
+        }
+
+        Tuple declaredAnnotation = AnnotatedElementUtils.findMergedAnnotation(metadata.getRepositoryInterface(), Tuple.class);
+        if (declaredAnnotation != null) {
+            return Optional.of(declaredAnnotation.spaceName());
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -46,7 +64,7 @@ public class TarantoolQueryMethod extends QueryMethod {
      * @return the @Query annotation if present.
      */
     public Query getQueryAnnotation() {
-        return method.getAnnotation(Query.class);
+        return AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
     }
 
     /**
@@ -55,7 +73,7 @@ public class TarantoolQueryMethod extends QueryMethod {
      * @return the @Tuple annotation if present.
      */
     public Tuple getTupleAnnotation() {
-        return method.getAnnotation(Tuple.class);
+        return AnnotatedElementUtils.findMergedAnnotation(method, Tuple.class);
     }
 
     /**

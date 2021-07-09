@@ -3,29 +3,23 @@ package org.springframework.data.tarantool;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.Disabled;
-import org.mockito.internal.matchers.ArrayEquals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.tarantool.core.TarantoolTemplate;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.data.tarantool.core.mapping.Tuple;
+import org.springframework.data.tarantool.repository.BookRepositoryWithSchemaOnMethods;
 import org.springframework.data.tarantool.repository.TarantoolRepository;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +28,7 @@ import java.util.stream.Collectors;
 
 /**
  * A stub class for debugging with localhost cluster.
- *
+ * <p>
  * Inherit this class instead of {@link BaseIntegrationTest} to debug
  * your test without invoking testcontainers.
  *
@@ -46,23 +40,29 @@ import java.util.stream.Collectors;
                 "tarantool.port=3301",
                 "tarantool.username=admin",
                 "tarantool.password=testapp-cluster-cookie"
-})
+        })
 public class BaseIntegrationTestStub {
 
     private final Logger logger = LoggerFactory.getLogger(BaseIntegrationTestStub.class);
 
     @Autowired
-    private List<TarantoolRepository<?,?>> availableRepos;
+    private List<TarantoolRepository<?, ?>> availableRepos;
 
     @Autowired
     private TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> client;
 
     protected final static TarantoolContainerStub tarantoolContainer = new TarantoolContainerStub();
+    private final static List<Class<BookRepositoryWithSchemaOnMethods>> classesWithoutTupleAnnotation = Arrays.asList(
+            BookRepositoryWithSchemaOnMethods.class
+            //add new repositories here without @Tuple
+    );
 
     @PostConstruct
     private void initStub() {
         // wipe all data in cluster before running tests
-        availableRepos.forEach(TarantoolRepository::deleteAll);
+        availableRepos.stream()
+                .filter(classesWithoutTupleAnnotation::contains)
+                .forEach(TarantoolRepository::deleteAll);
 
         tarantoolContainer.setClient(this.client);
         tarantoolContainer.runDeferred();
@@ -98,7 +98,7 @@ public class BaseIntegrationTestStub {
         }
 
         public CompletableFuture<List<?>> executeScript(String script) {
-            if(client == null) {
+            if (client == null) {
                 // Client is initialized only after DI is finished.
                 // So it is null during static init phase.
                 // We put init commands to a buffer and will execute it a bit later.

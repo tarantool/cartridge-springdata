@@ -139,7 +139,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Test
     public void testFunctionReturningEntityAndAcceptingNonEntity() {
         List<Customer> byCity = tarantoolOperations.callForTupleList("find_customer_by_address",
-                new Address[]{vasya.getAddresses().get("home")}, Customer.class);
+                new Address[]{vasya.getAddresses().get("home")}, "customers", Customer.class);
         assertTrue(byCity != null && byCity.size() > 0);
         assertEquals("Riga", byCity.get(0).getForeignAddresses().get(0).getCity());
         assertEquals("Tales", byCity.get(0).getFavouriteBooks().get(0).getName());
@@ -148,7 +148,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Test
     public void testFunctionReturningEntityAndAcceptingEntity() {
         List<Customer> byBook = tarantoolOperations.callForTupleList("find_customer_by_book",
-                new Book[]{vasya.getFavouriteBooks().get(0)}, Customer.class);
+                new Book[]{vasya.getFavouriteBooks().get(0)}, "customers", Customer.class);
         assertTrue(byBook != null && byBook.size() > 0);
         assertEquals("Riga", byBook.get(0).getForeignAddresses().get(0).getCity());
         assertEquals("Tales", byBook.get(0).getFavouriteBooks().get(0).getName());
@@ -246,7 +246,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     void testNonEntityAsReturnType_shouldHandleError() {
         Throwable ex = null;
         try {
-            tarantoolOperations.callForTupleList("returning_error", Address.class);
+            tarantoolOperations.callForTupleList("returning_error", "test_space", Address.class);
         } catch (DataRetrievalFailureException e) {
             ex = e;
             assertTrue(e.getMessage().contains("some error"));
@@ -256,30 +256,30 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
 
     @Test
     void testNonEntityAsReturnType_shouldHandleNil() {
-        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nil", Address.class);
+        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nil", "test_space", Address.class);
         assertNull(addresses);
-        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nil", Customer.class);
+        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nil", "test_space", Customer.class);
         assertNull(customers);
-        Address address = tarantoolOperations.callForTuple("returning_nil", Address.class);
+        Address address = tarantoolOperations.callForTuple("returning_nil", "test_space", Address.class);
         assertNull(address);
-        Customer customer = tarantoolOperations.callForTuple("returning_nil", Customer.class);
+        Customer customer = tarantoolOperations.callForTuple("returning_nil", "test_space", Customer.class);
         assertNull(customer);
-        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", Address.class));
-        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", Customer.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", "test_space", Address.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nil", "test_space", Customer.class));
     }
 
     @Test
     void testNonEntityAsReturnType_shouldHandleNothing() {
-        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nothing", Address.class);
+        List<Address> addresses = tarantoolOperations.callForTupleList("returning_nothing", "test_space", Address.class);
         assertNull(addresses);
-        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nothing", Customer.class);
+        List<Customer> customers = tarantoolOperations.callForTupleList("returning_nothing", "test_space", Customer.class);
         assertNull(customers);
-        Address address = tarantoolOperations.callForTuple("returning_nothing", Address.class);
+        Address address = tarantoolOperations.callForTuple("returning_nothing", "test_space", Address.class);
         assertNull(address);
-        Customer customer = tarantoolOperations.callForTuple("returning_nothing", Customer.class);
+        Customer customer = tarantoolOperations.callForTuple("returning_nothing", "test_space", Customer.class);
         assertNull(customer);
-        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", Address.class));
-        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", Customer.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", "test_space", Address.class));
+        assertDoesNotThrow(() -> tarantoolOperations.callForTuple("returning_nothing", "test_space", Customer.class));
     }
 
     @Test
@@ -289,7 +289,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         String issueDate = LocalDate.now().toString();
 
         //when
-        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), "test_space", Book.class);
 
         //then
         Book newBook = tarantoolOperations.findById(bookId, Book.class);

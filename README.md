@@ -181,7 +181,7 @@ public class MyService {
     Book book = new Book();
     book.setName("Le Petit Prince");
     book.setAuthor("Antoine de Saint-Exupéry");
-    book = repository.save(book);
+    Book savedBook = repository.save(book);
 
     List<Book> allBooks = repository.findAll();
   }
@@ -216,6 +216,29 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
 ```
 
 See more examples in the module tests.
+
+#### Call internal functions in tarantool
+You can call the internal functions of the Tarantool using the `@Query` annotation by specifying the function name in lua.
+In this case, you can receive a response in the form of an object, or a list of objects.
+
+```java
+public interface SampleUserRepository extends TarantoolRepository<SampleUser, String> {
+    @Query(function = "returning_sample_user_object")
+    SampleUser returningSampleUserObject(String name);
+
+    @Query(function = "get_predefined_users")
+    List<SampleUser> getPredefinedUsers();
+}
+```
+```lua
+function returning_sample_user_object()
+    return { name = "John", lastName = "Smith" }
+end
+
+function get_predefined_users()
+    return { { name = "John", lastName = "Smith" }, { name = "Sam", lastName = "Smith" } }
+end
+```
 
 ### Composite primary key
 

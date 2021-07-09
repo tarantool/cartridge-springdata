@@ -71,9 +71,7 @@ public class TarantoolTemplate implements TarantoolOperations {
 
     @Override
     public <T> T findOne(Conditions query, Class<T> entityClass) {
-        Assert.notNull(query, "Query must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
-
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() ->
                 tarantoolClient.space(entity.getSpaceName()).select(query)
@@ -97,6 +95,7 @@ public class TarantoolTemplate implements TarantoolOperations {
     public <T, ID> T findById(ID id, Class<T> entityClass) {
         Assert.notNull(id, "Id must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
+
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
         TarantoolResult<TarantoolTuple> result = executeSync(() -> {
@@ -214,8 +213,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T callForTuple(String functionName, Object[] parameters, Class<T> entityType) {
-        return callForTuple(functionName, Arrays.asList(parameters), entityType);
+    public <T> T callForTuple(String functionName, Object[] parameters, String spaceName, Class<T> entityType) {
+        return callForTuple(functionName, Arrays.asList(parameters), spaceName, entityType);
     }
 
     @Override
@@ -226,12 +225,12 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T callForTuple(String functionName, List<?> parameters, Class<T> entityClass) {
+    public <T> T callForTuple(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
-        List<T> result = callForTupleList(functionName, parameters, entityClass);
+        List<T> result = callForTupleList(functionName, parameters, spaceName, entityClass);
         return result != null && result.size() > 0 ? result.get(0) : null;
     }
 
@@ -248,18 +247,13 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> T callForTuple(String functionName, Class<T> entityType) {
-        return callForTuple(functionName, Collections.emptyList(), entityType);
+    public <T> T callForTuple(String functionName, String spaceName, Class<T> entityType) {
+        return callForTuple(functionName, Collections.emptyList(), spaceName, entityType);
     }
 
     @Override
     public <T> T callForTuple(String functionName, ValueConverter<Value, T> entityConverter) {
         return callForTuple(functionName, Collections.emptyList(), entityConverter);
-    }
-
-    @Override
-    public <T> List<T> callForTupleList(String functionName, Object[] parameters, Class<T> entityClass) {
-        return callForTupleList(functionName, Arrays.asList(parameters), entityClass);
     }
 
     @Override
@@ -270,8 +264,8 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> List<T> callForTupleList(String functionName, Class<T> entityType) {
-        return callForTupleList(functionName, Collections.emptyList(), entityType);
+    public <T> List<T> callForTupleList(String functionName, String spaceName, Class<T> entityType) {
+        return callForTupleList(functionName, Collections.emptyList(), spaceName, entityType);
     }
 
     @Override
@@ -280,13 +274,17 @@ public class TarantoolTemplate implements TarantoolOperations {
     }
 
     @Override
-    public <T> List<T> callForTupleList(String functionName, List<?> parameters, Class<T> entityClass) {
+    public <T> List<T> callForTupleList(String functionName, Object[] parameters, String spaceName, Class<T> entityClass) {
+        return callForTupleList(functionName, Arrays.asList(parameters), spaceName, entityClass);
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
 
-        return executeSync(getResultSupplier(functionName, parameters, entityClass)
-        );
+        return executeSync(getResultSupplier(functionName, parameters, spaceName, entityClass));
     }
 
     @Override
@@ -373,6 +371,11 @@ public class TarantoolTemplate implements TarantoolOperations {
         );
     }
 
+    @Override
+    public TarantoolMappingContext getMappingContext() {
+        return mappingContext;
+    }
+
     private MessagePackMapper getMessagePackMapper() {
         return tarantoolClient.getConfig().getMessagePackMapper();
     }
@@ -387,11 +390,12 @@ public class TarantoolTemplate implements TarantoolOperations {
     private <T, R extends List<T>> Supplier<CompletableFuture<R>> getResultSupplier(
             String functionName,
             List<?> parameters,
+            String spaceName,
             Class<T> entityClass) {
         return () -> tarantoolClient.call(functionName,
                 mapParameters(parameters),
                 getMessagePackMapper(),
-                getResultMapperForEntity(entityClass))
+                getResultMapperForEntity(spaceName, entityClass))
                 .thenApply(result -> result == null ? null : (R) result.stream()
                         .map(t -> mapToEntity(t, entityClass))
                         .collect(Collectors.toList())
@@ -423,10 +427,10 @@ public class TarantoolTemplate implements TarantoolOperations {
 
     private <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
             SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
-    getResultMapperForEntity(Class<T> entityClass) {
+    getResultMapperForEntity(String spaceName, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
-                .getSpaceByName(entityMetadata.getSpaceName());
+                .getSpaceByName(spaceName != null ? spaceName : entityMetadata.getSpaceName());
         return tarantoolClient
                 .getResultMapperFactoryFactory()
                 .defaultTupleSingleResultMapperFactory()

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.springframework.data.tarantool.core.mapping.MappingUtils.camelCaseToSnakeCase;
+
 /**
  * Basic representation of a persistent entity
  *
@@ -39,7 +41,7 @@ public class BasicTarantoolPersistentEntity<T>
             return annotationField.value();
         }
 
-        return getType().getSimpleName();
+        return camelCaseToSnakeCase(getType().getSimpleName());
     }
 
     @Override
