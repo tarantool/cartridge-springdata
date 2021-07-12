@@ -15,6 +15,4 @@ public interface BookRepositoryWithSchemaOnRepositoryAndMethods extends Tarantoo
     @Tuple("test_space")
     @Query(function = "find_book_by_id")
     Optional<BookNonEntity> findBookById(Integer id);
-
-
 }

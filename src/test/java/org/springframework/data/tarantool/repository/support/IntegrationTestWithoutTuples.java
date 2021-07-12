@@ -137,6 +137,8 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
 
     @Test
     public void test_findBookByAuthor_shouldThrowException_ifTupleAnnotationOnRepository() {
+        // returning_book function return object, but findBookByAuthor expected tuple
+        // for this case method should throw exception
         assertThrows(InvalidDataAccessResourceUsageException.class,
                 () -> bookRepositoryWithTuple.findBookByAuthor("Grimm Brothers"));
     }

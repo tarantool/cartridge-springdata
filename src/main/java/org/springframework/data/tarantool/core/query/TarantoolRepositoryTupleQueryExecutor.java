@@ -4,7 +4,7 @@ import org.springframework.data.tarantool.core.TarantoolOperations;
 
 /**
  * Helper for executing repository queries marked by {@link org.springframework.data.tarantool.repository.Query}
- * annotation
+ * annotation and having result as tuple or list of tuples
  *
  * @author Alexey Kuzin
  */

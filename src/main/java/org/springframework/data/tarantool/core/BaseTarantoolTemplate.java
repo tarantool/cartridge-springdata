@@ -1,0 +1,480 @@
+package org.springframework.data.tarantool.core;
+
+import io.tarantool.driver.ProxyTarantoolClient;
+import io.tarantool.driver.api.SingleValueCallResult;
+import io.tarantool.driver.api.TarantoolClient;
+import io.tarantool.driver.api.TarantoolResult;
+import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.api.tuple.TarantoolTuple;
+import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
+import io.tarantool.driver.api.tuple.operations.TupleOperations;
+import io.tarantool.driver.exceptions.TarantoolSpaceOperationException;
+import io.tarantool.driver.mappers.CallResultMapper;
+import io.tarantool.driver.mappers.MessagePackMapper;
+import io.tarantool.driver.mappers.MessagePackObjectMapper;
+import io.tarantool.driver.mappers.ValueConverter;
+import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
+import io.tarantool.driver.protocol.TarantoolIndexQuery;
+import org.msgpack.value.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.data.tarantool.core.convert.TarantoolConverter;
+import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
+import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.springframework.data.tarantool.core.TarantoolTemplateUtils.getIndexPartsFromCompositeIdValue;
+import static org.springframework.data.tarantool.core.TarantoolTemplateUtils.idQueryFromTuple;
+
+/**
+ * @author Alexey Kuzin
+ * @author Oleg Kuznetsov
+ */
+abstract class BaseTarantoolTemplate implements TarantoolOperations {
+
+    protected static final int MAX_WORKERS = 4;
+
+    protected final TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient;
+    protected final TarantoolMappingContext mappingContext;
+    protected final TarantoolConverter converter;
+    protected final TarantoolExceptionTranslator exceptionTranslator;
+    protected final ForkJoinPool queryExecutors;
+    protected final MessagePackMapper mapper;
+
+    public BaseTarantoolTemplate(
+            TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
+            TarantoolMappingContext mappingContext,
+            TarantoolConverter converter,
+            ForkJoinPool.ForkJoinWorkerThreadFactory queryExecutorsFactory) {
+        this.tarantoolClient = tarantoolClient;
+        this.mappingContext = mappingContext;
+        this.converter = converter;
+        this.queryExecutors = new ForkJoinPool(
+                Math.min(MAX_WORKERS, Runtime.getRuntime().availableProcessors()),
+                queryExecutorsFactory, null, false
+        );
+        this.exceptionTranslator = new DefaultTarantoolExceptionTranslator();
+        this.mapper = tarantoolClient.getConfig().getMessagePackMapper();
+    }
+
+
+    @Override
+    public <T> T findOne(Conditions query, Class<T> entityClass) {
+        Assert.notNull(entityClass, "Entity class must not be null!");
+        TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entity.getSpaceName()).select(query)
+        );
+        return mapFirstToEntity(result, entityClass);
+    }
+
+    @Override
+    public <T> List<T> find(Conditions query, Class<T> entityClass) {
+        Assert.notNull(query, "Query must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entity.getSpaceName()).select(query)
+        );
+        return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
+    }
+
+    @Override
+    public <T, ID> T findById(ID id, Class<T> entityClass) {
+        Assert.notNull(id, "Id must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+
+        TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() -> {
+            Conditions query = idQueryFromObject(id, entityClass).withLimit(1);
+            return tarantoolClient.space(entity.getSpaceName()).select(query);
+        });
+        return mapFirstToEntity(result, entityClass);
+    }
+
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entity.getSpaceName()).select(Conditions.any())
+        );
+        return result.stream().map(t -> mapToEntity(t, entityClass)).collect(Collectors.toList());
+    }
+
+    @Override
+    public <T> List<T> findAndRemove(Conditions query, Class<T> entityType) {
+        List<T> entities = find(query, entityType);
+        return entities.stream().map(e -> remove(e, entityType)).collect(Collectors.toList());
+    }
+
+    @Override
+    public <T> Long count(Conditions query, Class<T> entityType) {
+        // not supported in the driver yet. TODO change this when implemented in the driver
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public <T> T insert(T entity, Class<T> entityClass) {
+        Assert.notNull(entity, "Entity must not be null!");
+        Assert.notNull(entityClass, "Type must not be null!");
+
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entityMetadata.getSpaceName()).insert(mapToTuple(entity, entityMetadata))
+        );
+        return mapFirstToEntity(result, entityClass);
+    }
+
+    @Override
+    public <T> T save(T entity, Class<T> entityClass) {
+        Assert.notNull(entity, "Entity must not be null!");
+        Assert.notNull(entityClass, "Type must not be null!");
+
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entityMetadata.getSpaceName()).replace(mapToTuple(entity, entityMetadata))
+        );
+        return mapFirstToEntity(result, entityClass);
+    }
+
+    @Override
+    public <T> List<T> update(Conditions query, T entity, Class<T> entityClass) {
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolTuple newTuple = mapToTuple(entity, entityMetadata);
+        return update(query, setNonNullFieldsFromTuple(newTuple), entityClass);
+    }
+
+    @Override
+    public <T> T remove(T entity, Class<T> entityClass) {
+        Assert.notNull(entity, "Entity must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        Conditions query = idQueryFromEntity(entity);
+        return removeInternal(query, entityClass);
+    }
+
+    @Override
+    public <T, ID> T removeById(ID id, Class<T> entityClass) {
+        Assert.notNull(id, "ID must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        Conditions query = idQueryFromObject(id, entityClass);
+        return removeInternal(query, entityClass);
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        List<T> result = callForTupleList(functionName, parameters, spaceName, entityClass);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName,
+                              List<?> parameters,
+                              ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        List<T> result = callForTupleList(functionName, parameters, entityConverter);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        return executeSync(getResultSupplier(functionName, parameters, spaceName, entityClass));
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName,
+                                        List<?> parameters,
+                                        ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        return executeSync(getCustomResultSupplier(
+                functionName, parameters, getMessagePackMapper(), entityConverter));
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(
+                functionName, mapParameters(parameters), getMessagePackMapper(), entityConverter)
+        );
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(
+                () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
+                        .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
+        );
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        return executeSync(getCustomResultSupplier(
+                functionName, parameters, getMessagePackMapper(), entityConverter));
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(functionName,
+                mapParameters(parameters), getMessagePackMapper(), getListValueConverter(entityClass))
+        );
+    }
+
+    @Override
+    public void truncate(String spaceName) {
+        //FIXME implement truncate in cartridge-driver and remove this temporary hack
+        if (tarantoolClient instanceof ProxyTarantoolClient) {
+            boolean result = executeSync(() -> tarantoolClient.callForSingleResult(
+                    "crud.truncate",
+                    Collections.singletonList(spaceName), Boolean.class));
+            if (!result) {
+                throw new TarantoolSpaceOperationException("CRUD failed to truncate space " + spaceName);
+            }
+        } else {
+            throw new UnsupportedOperationException("Truncate operation is not supported in the driver yet");
+        }
+    }
+
+    @Override
+    public TarantoolConverter getConverter() {
+        return converter;
+    }
+
+    @Override
+    public TarantoolMappingContext getMappingContext() {
+        return mappingContext;
+    }
+
+    /**
+     * Build conditions query from entity object that contains id.
+     * This object can be:
+     * - the entity object (Book, Employee etc)
+     *
+     * @param source the entity object
+     * @return condition for this id object
+     */
+    protected <T> Conditions idQueryFromEntity(T source) {
+        TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(source.getClass());
+        Assert.notNull(entity, "Failed to get entity class for " + source.getClass());
+
+        Object idValue = entity.getIdentifierAccessor(source).getRequiredIdentifier();
+
+        List<?> indexPartValues = getIndexPartValues(idValue, entity);
+        return createIndexEqualsConditionFromParts(indexPartValues);
+    }
+
+    /**
+     * Build conditions query from object that contains id.
+     * This object can be:
+     * - the basic type representing id of an entity (Integer, String,  etc)
+     * - the 'TarantoolIdClass' object if entity has composite ID
+     *
+     * @param <T>         desired type
+     * @param source      the id object
+     * @param entityClass class of entity
+     * @return condition for this id object
+     */
+    protected <T> Conditions idQueryFromObject(T source, Class<?> entityClass) {
+        TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+        Assert.notNull(entity, "Failed to get entity class for " + entityClass +
+                ". Possibly @Tuple annotation is missing on the class.");
+
+        List<?> indexPartValues = getIndexPartValues(source, entity);
+        return createIndexEqualsConditionFromParts(indexPartValues);
+    }
+
+    protected <T> List<T> update(Conditions query, TupleOperations updateOperations, Class<T> entityClass) {
+        Assert.notNull(query, "Conditions must not be null!");
+        Assert.notNull(updateOperations, "Update operations must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> tuplesForUpdate = executeSync(() ->
+                tarantoolClient.space(entityMetadata.getSpaceName()).select(query)
+        );
+        List<CompletableFuture<TarantoolResult<TarantoolTuple>>> futures = tuplesForUpdate.stream()
+                .map(tuple -> tarantoolClient.space(entityMetadata.getSpaceName())
+                        .update(idQueryFromTuple(tuple, entityMetadata), updateOperations))
+                .collect(Collectors.toList());
+        return getFutureValue(queryExecutors.submit(
+                () -> futures.stream().parallel()
+                        .map(this::getFutureValue)
+                        .map(tuples -> mapFirstToEntity(tuples, entityClass))
+                        .collect(Collectors.toList())
+        ));
+    }
+
+    protected TupleOperations setNonNullFieldsFromTuple(TarantoolTuple tuple) {
+        final AtomicReference<TupleOperations> result = new AtomicReference<>();
+        TupleOperations.fromTarantoolTuple(tuple).asList()
+                .stream().filter(o -> !(o.getValue() instanceof io.tarantool.driver.api.tuple.TarantoolNullField))
+                .forEach(op -> {
+                    if (result.get() == null) {
+                        result.set(TupleOperations.set(op.getFieldIndex(), op.getValue()));
+                    } else {
+                        result.get().addOperation(op);
+                    }
+                });
+        return result.get();
+    }
+
+    @Nullable
+    protected <T> T removeInternal(Conditions query, Class<T> entityClass) {
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        TarantoolResult<TarantoolTuple> result = executeSync(() ->
+                tarantoolClient.space(entityMetadata.getSpaceName()).delete(query)
+        );
+        return mapFirstToEntity(result, entityClass);
+    }
+
+    protected <T> TarantoolTuple mapToTuple(T entity, TarantoolPersistentEntity<?> entityMetadata) {
+        Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
+                .getSpaceByName(entityMetadata.getSpaceName());
+        TarantoolTuple tuple = spaceMetadata.isPresent() ?
+                new TarantoolTupleImpl(getMessagePackMapper(), spaceMetadata.get()) :
+                new TarantoolTupleImpl(getMessagePackMapper());
+        getConverter().write(entity, tuple);
+        return tuple;
+    }
+
+    protected <R> R executeSync(Supplier<CompletableFuture<R>> func) {
+        return getFutureValue(func.get());
+    }
+
+    protected <R> R getFutureValue(Future<R> future) {
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                DataAccessException wrapped = exceptionTranslator
+                        .translateExceptionIfPossible((RuntimeException) e.getCause());
+                if (wrapped != null) {
+                    throw wrapped;
+                }
+            }
+            throw new DataRetrievalFailureException(e.getMessage(), e.getCause());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    protected <T, R extends List<T>> Supplier<CompletableFuture<R>> getResultSupplier(
+            String functionName,
+            List<?> parameters,
+            String spaceName,
+            Class<T> entityClass) {
+        return () -> tarantoolClient.call(functionName,
+                mapParameters(parameters),
+                getMessagePackMapper(),
+                getResultMapperForEntity(spaceName, entityClass))
+                .thenApply(result -> result == null ? null : (R) result.stream()
+                        .map(t -> mapToEntity(t, entityClass))
+                        .collect(Collectors.toList())
+                );
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T, R extends List<T>> Supplier<CompletableFuture<R>> getCustomResultSupplier(
+            String functionName,
+            List<?> parameters,
+            MessagePackObjectMapper parameterMapper,
+            ValueConverter<Value, T> contentConverter) {
+        ValueConverter<Value, R> converter = v -> v.isNilValue() ? null
+                : (R) v.asArrayValue().list().stream()
+                .map(contentConverter::fromValue)
+                .collect(Collectors.toList());
+
+        return () -> tarantoolClient.callForSingleResult(
+                functionName, mapParameters(parameters), parameterMapper, converter
+        );
+    }
+
+    protected <T> ValueConverter<Value, List<T>> getListValueConverter(Class<T> entityClass) {
+        return result -> result == null ? null
+                : result.asArrayValue().list().stream()
+                .map(v -> mapToEntity(mapper.fromValue(v, Map.class), entityClass))
+                .collect(Collectors.toList());
+    }
+
+    protected <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
+            SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
+    getResultMapperForEntity(String spaceName, Class<T> entityClass) {
+        TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
+                .getSpaceByName(StringUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName);
+        return tarantoolClient
+                .getResultMapperFactoryFactory()
+                .defaultTupleSingleResultMapperFactory()
+                .withDefaultTupleValueConverter(mapper, spaceMetadata.orElse(null));
+    }
+
+
+    protected <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {
+        return mapToEntity(tuples.stream()
+                        .findFirst()
+                        .orElse(null),
+                entityClass);
+    }
+
+    protected <T> T mapToEntity(@Nullable Object tuple, Class<T> entityClass) {
+        return getConverter().read(entityClass, tuple);
+    }
+
+    protected Conditions createIndexEqualsConditionFromParts(List<?> indexPartValues) {
+        List<?> indexPartValuesConverted = mapParameters(indexPartValues);
+        return Conditions.indexEquals(TarantoolIndexQuery.PRIMARY, indexPartValuesConverted);
+    }
+
+
+    protected List<?> mapParameters(List<?> parameters) {
+        List<Object> mappedParameters = new LinkedList<>();
+        getConverter().write(parameters, mappedParameters);
+        return mappedParameters;
+    }
+
+
+    protected <T> List<?> getIndexPartValues(T source, TarantoolPersistentEntity<?> entity) {
+        return entity.hasTarantoolIdClassAnnotation() ?
+                getIndexPartsFromCompositeIdValue(source, entity)
+                : Collections.singletonList(source);
+    }
+
+    protected MessagePackMapper getMessagePackMapper() {
+        return tarantoolClient.getConfig().getMessagePackMapper();
+    }
+}
