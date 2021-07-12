@@ -3,12 +3,15 @@
 [![cartridge-springdata:ubuntu/master Actions Status](https://github.com/tarantool/cartridge-springdata/workflows/ubuntu-master/badge.svg)](https://github.com/tarantool/cartridge-springdata/actions)
 
 The primary goal of the [Spring Data](https://projects.spring.io/spring-data)
-project is to make it easier to build Spring-powered applications that use new data access technologies such as
-non-relational databases, map-reduce frameworks, and cloud based data services.
+project is to make it easier to build Spring-powered applications that
+use new data access technologies such as non-relational databases,
+map-reduce frameworks, and cloud based data services.
 
-The Spring Data Tarantool project provides Spring Data way of working with Tarantool database spaces. The key features
-are repository support and different API layers which are common in Spring Data, as well as support for asynchronous
-approaches baked by the underlying asynchronous Tarantool database driver.
+The Spring Data Tarantool project provides Spring Data way of working
+with Tarantool database spaces. The key features are repository support
+and different API layers which are common in Spring Data, as well as
+support for asynchronous approaches baked by the underlying asynchronous
+Tarantool database driver.
 
 ## Spring Boot compatibility
 
@@ -50,7 +53,6 @@ TBA soon
 Add the Maven dependency:
 
 ```xml
-
 <dependency>
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
@@ -60,27 +62,30 @@ Add the Maven dependency:
 
 ### TarantoolTemplate
 
-`TarantoolTemplate` is the central support class for Tarantool database operations. It provides:
+`TarantoolTemplate` is the central support class for Tarantool database
+operations. It provides:
 
 * Basic POJO mapping support to and from Tarantool tuples
-* Convenience methods to interact with the store (insert object, update objects, select)
+* Convenience methods to interact with the store (insert object,
+update objects, select)
 * Exception translation into Spring's
-  [technology agnostic DAO exception hierarchy](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions)
-  .
+[technology agnostic DAO exception hierarchy](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions).
 
 ### Spring Data repositories
 
-To simplify the creation of data repositories Spring Data Tarantool provides a generic repository programming model. It
-will automatically create a repository proxy for you that adds implementations of finder methods you specify on an
-interface.
+To simplify the creation of data repositories Spring Data Tarantool
+provides a generic repository programming model. It will automatically
+create a repository proxy for you that adds implementations of finder
+methods you specify on an interface.
 
-Only simple CRUD operations including entity ID are supported at the moment (will be fixed soon).
+Only simple CRUD operations including entity ID are supported at the
+moment (will be fixed soon).
 
 For example, given a `Book` class with name and author properties, a
-`BookRepository` interface can be defined for saving and loading the entities:
+`BookRepository` interface can be defined for saving and loading the
+entities:
 
 ```java
-
 @Tuple("books")
 public class Book {
     @Id
@@ -103,14 +108,15 @@ public interface BookRepository extends TarantoolRepository<Book, Long> {
 }
 ```
 
-The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples. You can
-add `@Tuple` on the `@Query` annotated method that specify space name for specific internal function call. Also, you can
-add `@Tuple` annotation to the repository - it is shortcut for specifying space name for all methods in this repository.
-The `@Field` annotations provide custom names for the fields. It is necessary to have at least one field marked with the
-`@Id` annotation.
+The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples.
+You can add `@Tuple` on the `@Query` annotated method that specify space name for specific internal function call.
+Also, you can add `@Tuple` annotation to the repository - it is shortcut for specifying space name for all methods
+in this repository. The `@Field` annotations provide custom names for the fields. It is necessary to have at least 
+one field marked with the `@Id` annotation.
 
-Extending `CrudRepository` causes CRUD methods being pulled into the interface so that you can easily save and find
-single entities and collections of them.
+Extending `CrudRepository` causes CRUD methods being pulled into the
+interface so that you can easily save and find single entities and
+collections of them.
 
 Let's assume that you have the [tarantool/crud](https://github.com/tarantool/crud) module installed in yor Cartridge
 application and there is an active 'crud-router' role on your router. Put the following settings in your application
@@ -126,7 +132,6 @@ properties:
 Than you can have Spring automatically create a proxy for the repository interface by using the following JavaConfig:
 
 ```java
-
 @Configuration
 @EnableTarantoolRepositories(basePackageClasses = BookRepository.class)
 class ApplicationConfig extends AbstractTarantoolDataConfiguration {
@@ -158,13 +163,12 @@ class ApplicationConfig extends AbstractTarantoolDataConfiguration {
 }
 ```
 
-This sets up a connection to a local Tarantool instance and enables the detection of Spring Data repositories (
-through `@EnableTarantoolRepositories`).
+This sets up a connection to a local Tarantool instance and enables the
+detection of Spring Data repositories (through `@EnableTarantoolRepositories`).
 
 This will find the repository interface and register a proxy object in the container. You can use it as shown below:
 
 ```java
-
 @Service
 public class MyService {
 
@@ -188,8 +192,8 @@ public class MyService {
 
 #### Proxy methods in repositories
 
-Consider we need to write a complex query in Lua, working with sharded data in Tarantool Cartridge. In this case we can
-expose this query as a public API function and map that function on a repository method via the `@Query`
+Consider we need to write a complex query in Lua, working with sharded data in Tarantool Cartridge. In this case
+we can expose this query as a public API function and map that function on a repository method via the `@Query`
 annotation:
 
 ```java
@@ -209,21 +213,20 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
     ...
 
     function find_by_complex_query(year)
-        return crud.pairs('books'):filter(function(b)
-            return b[6] and b[6] > year
-        end)       :totable()
+        return crud.pairs('books'):filter(function(b) return b[6] and b[6] > year end):totable()
     end
 ```
 
 See more examples in the module tests.
 
-#### Call internal functions in tarantool
+#### Call stored functions in Tarantool instance
 
-You can call the internal functions of the Tarantool using the `@Query` annotation by specifying the function name in
-lua. In this case, you can receive a response in the form of an object, or a list of objects.
+You can bind repository methods to calls of the stored functions in the Tarantool instance using the `@Query` annotation
+with the stored function name specified in the `functionName` parameter.
+For such methods, you can specify the stored function response format so that it will be parsed correctly. The response
+format may be either an object (and a list of objects) or a tuple (and a list of tuples).
 
 ```java
-
 @Data
 @Tuple
 public class SampleUser {
@@ -239,6 +242,46 @@ public interface SampleUserRepository extends TarantoolRepository<SampleUser, St
 
     @Query(function = "get_predefined_users")
     List<SampleUser> getPredefinedUsers();
+}
+```
+
+```java
+@Tuple
+public class Book {
+  @Id
+  private Integer id;
+  private String name;
+}
+
+// by default, schema name is another_space for all CRUD standard methods
+@Tuple("another_space") 
+public interface BookRepository extends TarantoolRepository<Book, Integer> {
+    
+    // it overrides schema name to test_space for current method
+    @Tuple("test_space") 
+    @Query(function = "do_something")
+    Optional<Book> doSomething(Book book);
+}
+```
+
+By default, schema name is book_entity because schema name not specified 
+on the entity class and on the repository. In this case schema name being 
+name of entity class in snake_case, but for "doSomething" method space name 
+is a test_space.
+```java
+@Tuple
+public class BookEntity {
+  @Id
+  private Integer id;
+  private String name;
+}
+
+public interface BookRepository extends TarantoolRepository<BookEntity, Integer> {
+    
+    // it overrides schema name to test_space for current method
+    @Tuple("test_space") 
+    @Query(function = "do_something")
+    void doSomething(Book book);
 }
 ```
 
@@ -279,7 +322,6 @@ public class BookTranslation {
     private String language;
     @Id
     private Integer edition;
-
     private String translator;
     private String comments;
 }

@@ -8,7 +8,6 @@ class MappingUtils {
         return ParsingUtils.reconcatenateCamelCase(string, "_");
     }
 
-    public MappingUtils() throws Exception {
-        throw new Exception("Couldn't create utility class!");
+    private MappingUtils() {
     }
 }
