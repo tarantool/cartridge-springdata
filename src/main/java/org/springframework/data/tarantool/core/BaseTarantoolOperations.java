@@ -1,6 +1,8 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.mappers.ValueConverter;
+import org.msgpack.value.Value;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.lang.Nullable;
@@ -8,6 +10,8 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 
 /**
+ * Interface that specifies a basic set of Tarantool operations. Implemented by {@link BaseTarantoolTemplate}.
+ *
  * @author Oleg Kuznetsov
  */
 public interface BaseTarantoolOperations {
@@ -160,5 +164,80 @@ public interface BaseTarantoolOperations {
      * @param spaceName space name
      */
     void truncate(String spaceName);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one entity as result.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param spaceName    space name in Tarantool instance
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForTuple(String functionName, List<?> parameters, String spaceName, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns some MessagePack value as result. The given
+     * entity converter will be used for converting the result value into an entity.
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForTuple(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result object type
+     * @return function call result
+     * @see #callForObject(String, List, Class)
+     */
+    @Nullable
+    <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   Desired type of the result object
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType);
+
+    /**
+     * The given entity converter will be used for converting each value in the result into an object.
+     *
+     * @param <T>             target entity type
+     * @param functionName    callable API function name
+     * @param parameters      function parameters
+     * @param entityConverter converter from MessagePack value to the result entity type
+     * @return function call result
+     * @see #callForObjectList(String, List, Class)
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityClass  Desired type of the result object
+     * @return function call result
+     */
+    <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass);
 
 }
