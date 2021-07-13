@@ -13,10 +13,17 @@ import java.util.Optional;
 
 
 /**
+ * This class contains static utils functions for {@link TarantoolOperations} implementations
+ *
  * @author Oleg Kuznetsov
  */
 public class TarantoolTemplateUtils {
 
+    /**
+     * @param tuple  represents tuple for Tarantool Instance
+     * @param entity represents an entity to be persisted
+     * @return conditions class with information about query
+     */
     static Conditions idQueryFromTuple(TarantoolTuple tuple, TarantoolPersistentEntity<?> entity) {
         List<?> idValue = tuple.getFields();
         if (entity != null) {
@@ -31,6 +38,23 @@ public class TarantoolTemplateUtils {
         return Conditions.indexEquals(0, idValue);
     }
 
+    /**
+     * @param source type of an entity
+     * @param entity represents an entity to be persisted
+     * @param <T>    desired return type
+     * @return list of index parts
+     */
+    static <T> List<?> getIndexPartValues(T source, TarantoolPersistentEntity<?> entity) {
+        return entity.hasTarantoolIdClassAnnotation() ?
+                getIndexPartsFromCompositeIdValue(source, entity)
+                : Collections.singletonList(source);
+    }
+
+    /**
+     * @param idValue object as id in entity
+     * @param entity  represents an entity to be persisted
+     * @return list of index parts
+     */
     static List<?> getIndexPartsFromCompositeIdValue(Object idValue, TarantoolPersistentEntity<?> entity) {
         //for each property get field name and map to idValue bean property value
         Optional<Class<?>> idClass = entity.getTarantoolIdClass();
@@ -40,4 +64,5 @@ public class TarantoolTemplateUtils {
 
     private TarantoolTemplateUtils() {
     }
+
 }

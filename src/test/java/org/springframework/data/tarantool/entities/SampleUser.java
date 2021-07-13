@@ -9,7 +9,7 @@ import org.springframework.data.tarantool.core.mapping.Tuple;
  * @author Oleg Kuznetsov
  */
 @Data
-@Tuple("test_space")
+@Tuple
 @Builder
 public class SampleUser {
     private String name;

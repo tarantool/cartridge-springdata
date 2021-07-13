@@ -25,7 +25,6 @@ public class BaseIntegrationTest {
                     //.withReuse(true)
                     .withRouterPassword("testapp-cluster-cookie")
                     .withLogConsumer(new Slf4jLogConsumer(logger));
-
     @BeforeAll
     static void startContainer() {
         if (!tarantoolContainer.isRunning()) {

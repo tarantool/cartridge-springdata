@@ -7,6 +7,7 @@ import io.tarantool.driver.mappers.ValueConverter;
 import org.msgpack.value.Value;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
+import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 
 /**
+ * This class contains call operations for invoking stored functions in Tarantool instance
+ *
  * @author Alexey Kuzin
  * @author Oleg Kuznetsov
  */
@@ -25,6 +28,81 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
             TarantoolConverter converter,
             ForkJoinWorkerThreadFactory queryExecutorsFactory) {
         super(tarantoolClient, mappingContext, converter, queryExecutorsFactory);
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        List<T> result = callForTupleList(functionName, parameters, spaceName, entityClass);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> T callForTuple(String functionName,
+                              List<?> parameters,
+                              ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        List<T> result = callForTupleList(functionName, parameters, entityConverter);
+        return result != null && result.size() > 0 ? result.get(0) : null;
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
+        return executeSync(getResultSupplier(functionName, parameters, spaceName, entityClass));
+    }
+
+    @Override
+    public <T> List<T> callForTupleList(String functionName,
+                                        List<?> parameters,
+                                        ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        return executeSync(getCustomResultSupplier(
+                functionName, parameters, getMessagePackMapper(), entityConverter));
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(
+                functionName, mapParameters(parameters), getMessagePackMapper(), entityConverter)
+        );
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(
+                () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
+                        .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
+        );
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
+
+        return executeSync(getCustomResultSupplier(
+                functionName, parameters, getMessagePackMapper(), entityConverter));
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass) {
+        return executeSync(() -> tarantoolClient.callForSingleResult(functionName,
+                mapParameters(parameters), getMessagePackMapper(), getListValueConverter(entityClass))
+        );
     }
 
     @Override

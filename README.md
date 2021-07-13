@@ -276,7 +276,7 @@ public class BookEntity {
 
 public interface BookRepository extends TarantoolRepository<BookEntity, Integer> {
     
-    // it overrides the space name to "test_space" for the current method
+    // The space name here overrides to "test_space" for the current method
     @Tuple("test_space") 
     @Query(function = "do_something")
     void doSomething(Book book);
