@@ -238,4 +238,5 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         //then
         assertThat(saved).isEqualTo(entity);
     }
+
 }

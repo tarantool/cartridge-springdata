@@ -1,7 +1,11 @@
 package org.springframework.data.tarantool.core;
 
 import io.tarantool.driver.api.conditions.Conditions;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
@@ -9,6 +13,7 @@ import org.springframework.data.tarantool.entities.Address;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.BookNonEntity;
 import org.springframework.data.tarantool.entities.Customer;
+import org.springframework.data.tarantool.entities.SampleUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.data.tarantool.TestUtils.invokeWithAttempts;
 
 /**
@@ -281,12 +291,23 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         String issueDate = LocalDate.now().toString();
 
         //when
-        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), "test_space", Book.class);
+        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
 
         //then
+        //todo: remove invokeWithAttempts when this issue have been implemented in https://github.com/tarantool/cartridge-java/issues/107
         Book newBook = invokeWithAttempts(() -> tarantoolOperations.findById(bookId, Book.class), 3, 100);
         assertThat(newBook).isNotNull();
         assertThat(newBook.getId()).isEqualTo(bookId);
         assertThat(newBook.getIssueDate()).isEqualTo(issueDate);
     }
+
+    @Test
+    public void test_callForObject_shouldReturnPredefinedUser() {
+        //when
+        SampleUser actual = tarantoolOperations.callForObject("returning_sample_user_object", Collections.emptyList(), SampleUser.class);
+
+        //then
+        assertThat(actual).isEqualTo(SampleUser.builder().name("Vasya").lastName("Vasiliev").build());
+    }
+
 }
