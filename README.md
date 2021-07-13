@@ -109,8 +109,8 @@ public interface BookRepository extends TarantoolRepository<Book, Long> {
 ```
 
 The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples.
-You can add `@Tuple` on the `@Query` annotated method that specify space name for specific internal function call.
-Also, you can add `@Tuple` annotation to the repository - it is shortcut for specifying space name for all methods
+You can add `@Tuple` on the `@Query` annotated method that specifies the space name for a specific stored function call.
+Also, you can add `@Tuple` annotation to the repository - it acts as a shortcut for specifying the tuple return format and space name for all custom methods
 in this repository. The `@Field` annotations provide custom names for the fields. It is necessary to have at least 
 one field marked with the `@Id` annotation.
 
@@ -253,21 +253,19 @@ public class Book {
   private String name;
 }
 
-// by default, schema name is another_space for all CRUD standard methods
+// Here, the space name is "another_space" for all methods, including default CRUD ones
 @Tuple("another_space") 
 public interface BookRepository extends TarantoolRepository<Book, Integer> {
     
-    // it overrides schema name to test_space for current method
+    // The space name here overrides "another_space" to "test_space" for the current method
     @Tuple("test_space") 
     @Query(function = "do_something")
     Optional<Book> doSomething(Book book);
 }
 ```
 
-By default, schema name is book_entity because schema name not specified 
-on the entity class and on the repository. In this case schema name being 
-name of entity class in snake_case, but for "doSomething" method space name 
-is a test_space.
+Here the space name is not specified neither in a `@Tuple` annotation on the repository interface, nr on the entity class, so it will be "book_entity" according to the entity class name, turned into "lower snake case".
+But for the "doSomething" method the space name will be overridden to "test_space".
 ```java
 @Tuple
 public class BookEntity {
@@ -278,7 +276,7 @@ public class BookEntity {
 
 public interface BookRepository extends TarantoolRepository<BookEntity, Integer> {
     
-    // it overrides schema name to test_space for current method
+    // it overrides the space name to "test_space" for the current method
     @Tuple("test_space") 
     @Query(function = "do_something")
     void doSomething(Book book);
@@ -337,4 +335,3 @@ public interface BookTranslationRepository
 Contributions and issues are welcome, feel free to add them to this project or offer directly in the Tarantool community
 chat or on StackOverflow using the [tarantool](https://stackoverflow.com/questions/tagged/tarantool)
 tag.
-
