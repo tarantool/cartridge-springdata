@@ -40,6 +40,9 @@ public interface TarantoolCallOperations {
     <T> T callForTuple(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
      * @param <T>             target entity type
      * @param functionName    callable API function name
      * @param parameters      function parameters
@@ -54,6 +57,14 @@ public interface TarantoolCallOperations {
      * Call a function defined in Tarantool instance API which returns one object
      * in query method result format.
      *
+     * <pre>
+     * {@code
+     * function get_predefined_user()
+     *     return { name = "John", lastName = "Smith" }
+     * end
+     * }
+     * </pre>
+     *
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
@@ -64,6 +75,8 @@ public interface TarantoolCallOperations {
     <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
      * The given entity converter will be used for converting each value in the result into an object.
      *
      * @param <T>             target entity type
@@ -79,6 +92,14 @@ public interface TarantoolCallOperations {
     /**
      * Call a function defined in Tarantool instance API which returns list of objects
      * in query method result format.
+     *
+     * <pre>
+     * {@code
+     * function get_predefined_users()
+     *     return { { name: John, lastName: Smith }, { name: Sam, lastName: Brown } }
+     * end
+     * }
+     * </pre>
      *
      * @param <T>          target entity type
      * @param functionName callable API function name
@@ -183,7 +204,6 @@ public interface TarantoolCallOperations {
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
-     * Result must be in format {metadata=[...], rows=[...]}
      *
      * @param <T>          target entity type
      * @param functionName callable API function name
@@ -262,7 +282,6 @@ public interface TarantoolCallOperations {
 
     /**
      * Call a function defined in Tarantool instance API which returns a list of entities as result.
-     * Result must be in format {metadata=[...], rows=[...]}
      *
      * @param <T>          target entity type
      * @param functionName callable API function name
@@ -303,6 +322,9 @@ public interface TarantoolCallOperations {
     <T> List<T> callForTupleList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param entityType   Desired type of the result object
@@ -313,6 +335,8 @@ public interface TarantoolCallOperations {
     <T> T callForObject(String functionName, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
      * The given entity converter will be used for converting the result value into an entity.
      *
      * @param <T>             target entity type
@@ -325,6 +349,9 @@ public interface TarantoolCallOperations {
     <T> T callForObject(String functionName, ValueConverter<Value, T> entityConverter);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
@@ -336,6 +363,9 @@ public interface TarantoolCallOperations {
     <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
      * @param <T>             target entity type
      * @param functionName    callable API function name
      * @param parameters      function parameters
@@ -357,6 +387,9 @@ public interface TarantoolCallOperations {
     <T> List<T> callForObjectList(String functionName, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
      * @param <T>             target entity type
      * @param functionName    callable API function name
      * @param entityConverter converter from MessagePack value to the result entity type
@@ -367,6 +400,9 @@ public interface TarantoolCallOperations {
     <T> List<T> callForObjectList(String functionName, ValueConverter<Value, T> entityConverter);
 
     /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
@@ -378,6 +414,8 @@ public interface TarantoolCallOperations {
     <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityType);
 
     /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
      * The given entity converter will be used for converting each value in the result into an object.
      *
      * @param <T>             target entity type

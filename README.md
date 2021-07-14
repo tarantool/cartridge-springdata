@@ -253,7 +253,7 @@ public class Book {
   private String name;
 }
 
-// Here, the space name is "another_space" for all methods, including default CRUD ones
+// Here, the space name is "another_space" for all @Query methods
 @Tuple("another_space") 
 public interface BookRepository extends TarantoolRepository<Book, Integer> {
     
