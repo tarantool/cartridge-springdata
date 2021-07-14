@@ -20,6 +20,8 @@ import java.util.Optional;
 public class TarantoolTemplateUtils {
 
     /**
+     * Return Conditions class for field id
+     *
      * @param tuple  represents tuple for Tarantool Instance
      * @param entity represents an entity to be persisted
      * @return conditions class with information about query
@@ -39,6 +41,8 @@ public class TarantoolTemplateUtils {
     }
 
     /**
+     * Return index part values
+     *
      * @param source type of an entity
      * @param entity represents an entity to be persisted
      * @param <T>    desired return type
@@ -51,6 +55,8 @@ public class TarantoolTemplateUtils {
     }
 
     /**
+     * Return composite id parts
+     *
      * @param idValue object as id in entity
      * @param entity  represents an entity to be persisted
      * @return list of index parts
