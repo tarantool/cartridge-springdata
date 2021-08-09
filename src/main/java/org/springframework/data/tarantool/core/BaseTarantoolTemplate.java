@@ -215,6 +215,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
      * - the entity object (Book, Employee etc)
      *
      * @param source the entity object
+     * @param <T>    target entity type
      * @return condition for this id object
      */
     protected <T> Conditions idQueryFromEntity(T source) {
@@ -233,9 +234,9 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
      * - the basic type representing id of an entity (Integer, String,  etc)
      * - the 'TarantoolIdClass' object if entity has composite ID
      *
-     * @param <T>         desired type
      * @param source      the id object
      * @param entityClass class of entity
+     * @param <T>         target entity type
      * @return condition for this id object
      */
     protected <T> Conditions idQueryFromObject(T source, Class<?> entityClass) {
