@@ -46,7 +46,7 @@ about [Spring projects](https://projects.spring.io/).
 
 ### Demo project
 
-TBA soon
+Check out a traditional [Pet Clinic application](https://github.com/tarantool/spring-petclinic-tarantool) implemented using this module.
 
 ### Maven configuration
 
@@ -56,7 +56,7 @@ Add the Maven dependency:
 <dependency>
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 </dependency>
 ```
 
@@ -264,7 +264,7 @@ public interface BookRepository extends TarantoolRepository<Book, Integer> {
 }
 ```
 
-Here the space name is not specified neither in a `@Tuple` annotation on the repository interface, nr on the entity class, so it will be "book_entity" according to the entity class name, turned into "lower snake case".
+Here the space name is not specified neither in a `@Tuple` annotation on the repository interface, nor on the entity class, so it will be "book_entity" according to the entity class name, turned into "lower snake case".
 But for the "doSomething" method the space name will be overridden to "test_space".
 ```java
 @Tuple
