@@ -7,13 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
+import org.springframework.data.tarantool.entities.TestEntity;
 import org.springframework.data.tarantool.repository.BookRepository;
+import org.springframework.data.tarantool.repository.TestRepository;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -23,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private TestRepository testRepository;
 
     @BeforeAll
     public static void setUp() throws Exception {
@@ -127,5 +133,17 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
                 .uniqueKey("udf999").author("Fedor Dostoevsky").year(1888).build();
         List<Book> savedBooks = bookRepository.batchSave(Arrays.asList(book1, book2));
         assertTrue(savedBooks.size() > 0);
+    }
+
+    @Test
+    public void should_testCustomConverter_ReturnObjectWithDouble_ifCustomConverterHasBeenAdded() {
+        //given
+        TestEntity expected = testRepository.save(new TestEntity(1, 1D));
+
+        //when
+        List<TestEntity> actual = testRepository.testCustomConverter(1);
+
+        //then
+        assertEquals(expected, actual.get(0));
     }
 }

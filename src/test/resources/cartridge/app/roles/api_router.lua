@@ -1,10 +1,7 @@
-local vshard = require('vshard')
 local pool = require('cartridge.pool')
 local errors = require('errors')
 local cartridge_pool = require('cartridge.pool')
 local cartridge_rpc = require('cartridge.rpc')
-local log = require('log')
-local json = require('json')
 
 local AssertionError = errors.new_class('AssertionError')
 
@@ -52,6 +49,10 @@ end
 
 function find_by_entity(book)
     return crud.select('test_space', { { '=', 'id', book.id } })
+end
+
+function test_custom_converter(id)
+    return crud.select('test_custom_converter_space', { { '=', 'id', id } })
 end
 
 local function get_uriList()
