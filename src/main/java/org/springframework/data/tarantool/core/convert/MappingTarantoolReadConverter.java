@@ -207,9 +207,10 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                     value = ((TarantoolTuple) source).getObject(fieldName, customTargetClass.get()).orElse(null);
                 } else if (((TarantoolTuple) source).canGetObject(fieldName, Map.class)) {
                     value = convertCustomType((Map<String, Object>) ((TarantoolTuple) source).getMap(fieldName), propType);
-                } else {
+                } else if (((TarantoolTuple) source).canGetObject(fieldName, propClass)) {
                     value = ((TarantoolTuple) source).getObject(fieldName, propClass).orElse(null);
-                }
+                } else
+                    value = ((TarantoolTuple) source).getObject(fieldName).orElse(null);
                 return readValue(value, propType);
             } else if (source instanceof Map) {
                 return readValue(((Map<String, Object>) source).get(fieldName), propType);
@@ -227,7 +228,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
 
             Class<?> targetClass = propertyType.getType();
             if (conversions.hasCustomReadTarget(source.getClass(), targetClass) ||
-                conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
+                    conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
                 return (R) conversionService.convert(source, targetClass);
             } else if (propertyType.isCollectionLike()) {
                 return convertCollection(asCollection(source), propertyType);

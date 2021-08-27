@@ -170,7 +170,7 @@ function returning_nil()
 end
 
 function insert_book_with_custom_type(book_id, issue_date)
-    crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
+    return crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
 end
 
 function save_book(book)

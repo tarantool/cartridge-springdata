@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.data.tarantool.TestUtils.invokeWithAttempts;
 
 /**
  * @author Alexey Kuzin
@@ -291,11 +290,9 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         String issueDate = LocalDate.now().toString();
 
         //when
-        tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+        Book newBook = tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
 
         //then
-        //todo: remove invokeWithAttempts when this issue have been implemented in https://github.com/tarantool/cartridge-java/issues/107
-        Book newBook = invokeWithAttempts(() -> tarantoolOperations.findById(bookId, Book.class), 3, 100);
         assertThat(newBook).isNotNull();
         assertThat(newBook.getId()).isEqualTo(bookId);
         assertThat(newBook.getIssueDate()).isEqualTo(issueDate);
