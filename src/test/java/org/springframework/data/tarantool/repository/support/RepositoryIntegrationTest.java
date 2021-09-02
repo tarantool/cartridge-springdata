@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
-import org.springframework.data.tarantool.entities.TestEntity;
+import org.springframework.data.tarantool.entities.TestEntityWithDoubleField;
+import org.springframework.data.tarantool.entities.TestEntityWithFloatField;
 import org.springframework.data.tarantool.repository.BookRepository;
-import org.springframework.data.tarantool.repository.TestRepository;
+import org.springframework.data.tarantool.repository.TestDoubleRepository;
+import org.springframework.data.tarantool.repository.TestFloatRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +30,10 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     private BookRepository bookRepository;
 
     @Autowired
-    private TestRepository testRepository;
+    private TestDoubleRepository testDoubleRepository;
+
+    @Autowired
+    private TestFloatRepository testFloatRepository;
 
     @BeforeAll
     public static void setUp() throws Exception {
@@ -136,14 +141,26 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void should_testCustomConverter_ReturnObjectWithDouble_ifCustomConverterHasBeenAdded() {
+    public void should_testCustomConverter_returnObjectWithDouble_ifCustomConverterHasBeenAdded() {
         //given
-        TestEntity expected = testRepository.save(new TestEntity(1, 1D));
+        TestEntityWithDoubleField expected = testDoubleRepository.save(new TestEntityWithDoubleField(1, 1D));
 
         //when
-        List<TestEntity> actual = testRepository.testCustomConverter(1);
+        List<TestEntityWithDoubleField> actual = testDoubleRepository.testCustomConverter(1);
 
         //then
         assertEquals(expected, actual.get(0));
+    }
+
+    @Test
+    public void should_test_returnObjectWithFloat_ifFirstInStackConvertersIsDouble() {
+        //given
+        testFloatRepository.save(new TestEntityWithFloatField(1, 1f));
+
+        //when
+        List<TestEntityWithFloatField> actual = testFloatRepository.test(1);
+
+        //then
+        assertEquals(1f, actual.get(0).getTest());
     }
 }

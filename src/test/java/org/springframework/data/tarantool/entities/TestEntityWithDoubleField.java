@@ -8,7 +8,7 @@ import org.springframework.data.tarantool.core.mapping.Tuple;
 @Data
 @Tuple("test_custom_converter_space")
 @AllArgsConstructor
-public class TestEntity {
+public class TestEntityWithDoubleField {
 
     @Id
     private Integer id;

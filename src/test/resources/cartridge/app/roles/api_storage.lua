@@ -145,6 +145,25 @@ local function init_space()
         unique = false,
         if_not_exists = true,
     })
+
+    local test_get_object_space = box.schema.space.create(
+            'test_get_object_space',
+            {
+                format = {
+                    { name = 'id', type = 'unsigned' },
+                    { name = 'bucket_id', type = 'unsigned' },
+                    { name = 'test', type = 'number' }
+                },
+                if_not_exists = true,
+            }
+    )
+
+    test_get_object_space:create_index('id', { parts = { 'id' }, if_not_exists = true, })
+    test_get_object_space:create_index('bucket_id', {
+        parts = { 'bucket_id' },
+        unique = false,
+        if_not_exists = true,
+    })
 end
 
 local function storage_get_space_format()
