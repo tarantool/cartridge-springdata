@@ -72,10 +72,22 @@ public class TestConfig extends AbstractTarantoolDataConfiguration {
         }
     }
 
+    @ReadingConverter
+    public enum IntegerToDoubleConverter implements Converter<Integer, Double> {
+
+        INSTANCE;
+
+        @Override
+        public Double convert(Integer source) {
+            return source == null ? null : Double.valueOf(source);
+        }
+    }
+
     @Override
     protected List<?> customConverters() {
         List<Converter<?, ?>> customConverters = new ArrayList<>();
         customConverters.add(StringToLocalDateConverter.INSTANCE);
+        customConverters.add(IntegerToDoubleConverter.INSTANCE);
         return customConverters;
     }
 

@@ -1,10 +1,7 @@
-local vshard = require('vshard')
 local pool = require('cartridge.pool')
 local errors = require('errors')
 local cartridge_pool = require('cartridge.pool')
 local cartridge_rpc = require('cartridge.rpc')
-local log = require('log')
-local json = require('json')
 
 local AssertionError = errors.new_class('AssertionError')
 
@@ -52,6 +49,18 @@ end
 
 function find_by_entity(book)
     return crud.select('test_space', { { '=', 'id', book.id } })
+end
+
+function test_custom_converter(id)
+    return crud.select('test_custom_converter_space', { { '=', 'id', id } })
+end
+
+function test_get_object_space_return_long(id)
+    return crud.select('test_get_object_space', { { '=', 'id', id } })
+end
+
+function test_save_with_double(object)
+    crud.insert('test_get_object_space', object)
 end
 
 local function get_uriList()
@@ -169,7 +178,7 @@ function returning_nil()
 end
 
 function insert_book_with_custom_type(book_id, issue_date)
-    crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
+    return crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
 end
 
 function save_book(book)

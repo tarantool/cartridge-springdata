@@ -5,8 +5,6 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.mapping.model.EntityInstantiator;
-import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.convert.TypeAliasAccessor;
 import org.springframework.data.convert.TypeMapper;
@@ -15,6 +13,8 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+import org.springframework.data.mapping.model.EntityInstantiator;
+import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.PropertyValueProvider;
@@ -207,9 +207,10 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                     value = ((TarantoolTuple) source).getObject(fieldName, customTargetClass.get()).orElse(null);
                 } else if (((TarantoolTuple) source).canGetObject(fieldName, Map.class)) {
                     value = convertCustomType((Map<String, Object>) ((TarantoolTuple) source).getMap(fieldName), propType);
-                } else {
+                } else if (((TarantoolTuple) source).canGetObject(fieldName, propClass)) {
+                    value = ((TarantoolTuple) source).getObject(fieldName, propClass).orElse(null);
+                } else
                     value = ((TarantoolTuple) source).getObject(fieldName).orElse(null);
-                }
                 return readValue(value, propType);
             } else if (source instanceof Map) {
                 return readValue(((Map<String, Object>) source).get(fieldName), propType);
@@ -227,7 +228,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
 
             Class<?> targetClass = propertyType.getType();
             if (conversions.hasCustomReadTarget(source.getClass(), targetClass) ||
-                conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
+                    conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
                 return (R) conversionService.convert(source, targetClass);
             } else if (propertyType.isCollectionLike()) {
                 return convertCollection(asCollection(source), propertyType);
@@ -248,7 +249,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             if (source == null) {
                 return null;
             }
-            
+
             TypeInformation<?> typeToUse = mapTypeMapper.readType(source, propertyType);
             TarantoolPersistentEntity<?> entity = mappingContext.getPersistentEntity(typeToUse);
             if (shouldDefaultToMap(source, entity)) {
@@ -273,7 +274,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                 if (property.getType().isPrimitive() && propValue == null) {
                     return;
                 }
-                propertyAccessor.setProperty(property, propValue);;
+                propertyAccessor.setProperty(property, propValue);
             });
             return (R) propertyAccessor.getBean();
         }
