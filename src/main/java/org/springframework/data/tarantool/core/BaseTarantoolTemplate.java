@@ -24,7 +24,6 @@ import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -132,7 +131,8 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
     @Override
     public <T> Long count(Conditions query, Class<T> entityType) {
         // not supported in the driver yet. TODO change this when implemented in the driver
-        throw new NotImplementedException();
+
+        throw new IllegalStateException("not implemented");
     }
 
     @Override
