@@ -51,24 +51,12 @@ function find_by_entity(book)
     return crud.select('test_space', { { '=', 'id', book.id } })
 end
 
-function test_custom_converter(id)
-    return crud.select('test_custom_converter_space', { { '=', 'id', id } })
-end
-
-function test_get_object_space_return_long(id)
-    return crud.select('test_get_object_space', { { '=', 'id', id } })
-end
-
-function test_save_with_double(object)
-    crud.insert('test_get_object_space', object)
-end
-
 local function get_uriList()
-    local uriLider, err = cartridge.rpc_get_candidates('app.roles.api_storage', { leader_only = true })
+    local uriLeader, err = cartridge.rpc_get_candidates('app.roles.api_storage', { leader_only = true })
     if err ~= nil then
         return nil, err
     end
-    return uriLider
+    return uriLeader
 end
 
 function book_find_list_by_name(names)

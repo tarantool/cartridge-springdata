@@ -143,24 +143,24 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Test
     public void should_testCustomConverter_returnObjectWithDouble_ifCustomConverterHasBeenAdded() {
         //given
-        TestEntityWithDoubleField expected = testDoubleRepository.save(new TestEntityWithDoubleField(1, 1D));
+        double testField = 1D;
 
         //when
-        List<TestEntityWithDoubleField> actual = testDoubleRepository.testCustomConverter(1);
+        TestEntityWithDoubleField saved = testDoubleRepository.save(new TestEntityWithDoubleField(1, testField));
 
         //then
-        assertEquals(expected, actual.get(0));
+        assertEquals(testField, saved.getTest());
     }
 
     @Test
     public void should_test_returnObjectWithFloat_ifFirstInStackConvertersIsDouble() {
         //given
-        testFloatRepository.save(new TestEntityWithFloatField(1, 1f));
+        float testField = 1f;
 
         //when
-        List<TestEntityWithFloatField> actual = testFloatRepository.test(1);
+        TestEntityWithFloatField savedEntity = testFloatRepository.save(new TestEntityWithFloatField(1, testField));
 
         //then
-        assertEquals(1f, actual.get(0).getTest());
+        assertEquals(testField, savedEntity.getTest());
     }
 }
