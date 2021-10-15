@@ -1,9 +1,9 @@
 package org.springframework.data.tarantool;
 
-import io.tarantool.driver.ProxyTarantoolTupleClient;
 import io.tarantool.driver.TarantoolClientConfig;
 import io.tarantool.driver.TarantoolClusterAddressProvider;
 import io.tarantool.driver.TarantoolServerAddress;
+import io.tarantool.driver.api.ProxyTarantoolTupleClient;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.tuple.TarantoolTuple;

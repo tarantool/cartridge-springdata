@@ -1,10 +1,9 @@
 package org.springframework.data.tarantool.config;
 
-import io.tarantool.driver.ClusterTarantoolClient;
-import io.tarantool.driver.ClusterTarantoolTupleClient;
 import io.tarantool.driver.TarantoolClientConfig;
 import io.tarantool.driver.TarantoolClusterAddressProvider;
 import io.tarantool.driver.TarantoolServerAddress;
+import io.tarantool.driver.api.ClusterTarantoolTupleClient;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.tuple.TarantoolTuple;

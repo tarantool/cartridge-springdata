@@ -1,6 +1,6 @@
 package org.springframework.data.tarantool.core;
 
-import io.tarantool.driver.ProxyTarantoolClient;
+import io.tarantool.driver.api.ProxyTarantoolClient;
 import io.tarantool.driver.api.SingleValueCallResult;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
