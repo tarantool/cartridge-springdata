@@ -1,19 +1,19 @@
 package org.springframework.data.tarantool.core;
 
-import io.tarantool.driver.ProxyTarantoolClient;
 import io.tarantool.driver.api.SingleValueCallResult;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
-import io.tarantool.driver.api.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
+import io.tarantool.driver.core.ProxyTarantoolClient;
+import io.tarantool.driver.core.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.exceptions.TarantoolSpaceOperationException;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
 import io.tarantool.driver.mappers.ValueConverter;
-import io.tarantool.driver.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.protocol.TarantoolIndexQuery;
 import org.msgpack.value.Value;
 import org.springframework.dao.DataAccessException;
