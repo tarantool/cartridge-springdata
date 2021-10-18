@@ -31,6 +31,13 @@
             <organization>Tarantool</organization>
             <organizationUrl>https://tarantool.io/</organizationUrl>
         </developer>
+        <developer>
+            <id>vrogach2020</id>
+            <name>Vladimir Rogach</name>
+            <email>vladimir.rogach@gmail.com</email>
+            <organization>Tarantool</organization>
+            <organizationUrl>https://tarantool.io/</organizationUrl>
+        </developer>
     </developers>
 
     <issueManagement>
