@@ -86,6 +86,7 @@ local function init_space()
                     { name = 'edition', type = 'integer' },
                     { name = 'translator', type = 'string' },
                     { name = 'comments', type = 'string', is_nullable = true },
+                    { name = 'bytesString', type = 'string', is_nullable = true }
                 },
                 if_not_exists = true,
             }

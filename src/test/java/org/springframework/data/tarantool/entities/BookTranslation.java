@@ -33,4 +33,6 @@ public class BookTranslation {
     private String translator;
 
     private String comments;
+
+    private byte[] bytesString;
 }

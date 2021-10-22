@@ -62,6 +62,7 @@ class CompositePkIntegrationTest extends BaseIntegrationTest {
                 .edition(22)
                 .translator("Ivan Ivanov")
                 .comments("Some translation")
+                .bytesString("Hello".getBytes())
                 .build();
         BookTranslation newTranslation = bookTranslationRepository.save(translation);
         assertThat(newTranslation).isEqualTo(translation);
