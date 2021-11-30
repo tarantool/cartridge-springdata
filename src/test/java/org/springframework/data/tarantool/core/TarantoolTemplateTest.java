@@ -1,6 +1,9 @@
 package org.springframework.data.tarantool.core;
 
+import io.tarantool.driver.api.TarantoolClient;
+import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.conditions.Conditions;
+import io.tarantool.driver.api.tuple.TarantoolTuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -28,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -37,6 +42,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TarantoolTemplateTest extends BaseIntegrationTest {
     @Autowired
     TarantoolOperations tarantoolOperations;
+
+    @Autowired
+    TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient;
 
     private static final Customer vasya = Customer.builder()
             .id(1L)
@@ -135,6 +143,28 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
                 () -> assertEquals("Riga", all.get(0).getForeignAddresses().get(0).getCity()),
                 () -> assertTrue(all.get(0).getFavouriteBooks().size() > 0)
         );
+    }
+
+    @Test
+    void test_truncate_shouldDeleteAllTuplesInSpace() {
+        List<Customer> all = tarantoolOperations.findAll(Customer.class);
+        assertEquals(3, all.size());
+        tarantoolOperations.truncate("customers");
+        all = tarantoolOperations.findAll(Customer.class);
+        assertEquals(0, all.size());
+    }
+
+    @Test
+    void test_truncate_shouldRaiseException_ifSpaceDoesNotExist() throws ExecutionException, InterruptedException {
+        // drop space named "dropped_space" from all storages
+        tarantoolClient.eval(
+                "cartridge_pool = require('cartridge.pool')" +
+                "cartridge_rpc = require('cartridge.rpc')" +
+                "uri_storages = cartridge_rpc.get_candidates('app.roles.api_storage', { leader_only = true })" +
+                "cartridge_pool.map_call('drop_space', {...} , { uri_list = uri_storages })",
+                Collections.singletonList("dropped_space")).get();
+        assertThrows(DataRetrievalFailureException.class,
+                () -> tarantoolOperations.truncate("dropped_space"));
     }
 
     @Test

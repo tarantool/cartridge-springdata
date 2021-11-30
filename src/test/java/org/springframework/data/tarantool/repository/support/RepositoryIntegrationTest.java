@@ -1,7 +1,7 @@
 package org.springframework.data.tarantool.repository.support;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +35,24 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private TestFloatRepository testFloatRepository;
 
-    @BeforeAll
-    public static void setUp() throws Exception {
-        tarantoolContainer.executeScript("test_setup.lua").get();
+    @BeforeEach
+    public void setUp() {
+        Book donQuixote = Book.builder()
+                .id(1).uniqueKey("a1").name("Don Quixote").author("Miguel de Cervantes").year(1605).build();
+        Book theGreatGatsby = Book.builder()
+                .id(2).uniqueKey("a2").name("The Great Gatsby").author("F. Scott Fitzgerald").year(1925).build();
+        Book warAndPeace = Book.builder()
+                .id(3).uniqueKey("a3").name("War and Peace").author("Leo Tolstoy").year(1869).build();
+        bookRepository.save(donQuixote);
+        bookRepository.save(theGreatGatsby);
+        bookRepository.save(warAndPeace);
     }
 
-    @AfterAll
-    public static void tearDown() throws Exception {
-        tarantoolContainer.executeScript("test_teardown.lua").get();
+    @AfterEach
+    public void tearDown() {
+        bookRepository.deleteAll();
+        testDoubleRepository.deleteAll();
+        testFloatRepository.deleteAll();
     }
 
     @Test
@@ -75,6 +85,15 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
         Book newBook = bookRepository.save(book);
         bookRepository.delete(newBook);
         assertThat(bookRepository.existsById(6)).isFalse();
+    }
+
+    @Test
+    public void test_deleteAll() {
+        List<Book> books = (List<Book>) bookRepository.findAll();
+        assertEquals(3, books.size());
+        bookRepository.deleteAll();
+        books = (List<Book>) bookRepository.findAll();
+        assertEquals(0, books.size());
     }
 
     @Test

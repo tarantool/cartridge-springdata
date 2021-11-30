@@ -164,6 +164,8 @@ local function init_space()
         unique = false,
         if_not_exists = true,
     })
+
+    box.schema.space.create("dropped_space")
 end
 
 local function storage_get_space_format()
@@ -205,6 +207,10 @@ local function find_book_by_book(book)
               :totable()
 end
 
+local function drop_space(space_name)
+    return box.space[space_name]:drop()
+end
+
 local function init(opts)
     if opts.is_master then
         init_space()
@@ -218,6 +224,7 @@ local function init(opts)
     rawset(_G, 'find_customer_by_book', find_customer_by_book)
     rawset(_G, 'find_book_by_address', find_book_by_address)
     rawset(_G, 'find_book_by_book', find_book_by_book)
+    rawset(_G, 'drop_space', drop_space)
     rawset(_G, 'ddl', { get_schema = require('ddl').get_schema })
 
     return true

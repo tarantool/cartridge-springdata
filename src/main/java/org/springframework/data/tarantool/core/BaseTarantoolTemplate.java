@@ -186,17 +186,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
 
     @Override
     public void truncate(String spaceName) {
-        //FIXME implement truncate in cartridge-driver and remove this temporary hack
-        if (tarantoolClient instanceof ProxyTarantoolClient) {
-            boolean result = executeSync(() -> tarantoolClient.callForSingleResult(
-                    "crud.truncate",
-                    Collections.singletonList(spaceName), Boolean.class));
-            if (!result) {
-                throw new TarantoolSpaceOperationException("CRUD failed to truncate space " + spaceName);
-            }
-        } else {
-            throw new UnsupportedOperationException("Truncate operation is not supported in the driver yet");
-        }
+        executeSync(() -> tarantoolClient.space(spaceName).truncate());
     }
 
     @Override
