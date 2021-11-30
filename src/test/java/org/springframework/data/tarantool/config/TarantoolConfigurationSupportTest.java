@@ -9,7 +9,6 @@ import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.TestConfig;
 import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.entities.ObjectWithoutTuple;
-import org.springframework.data.tarantool.repository.RepositoryWithoutTupleAnnotationOnEntity;
 
 import java.util.Set;
 
@@ -24,9 +23,6 @@ class TarantoolConfigurationSupportTest extends BaseIntegrationTest {
 
     @Autowired
     private TestConfig testConfig;
-
-    @Autowired
-    private RepositoryWithoutTupleAnnotationOnEntity repositoryWithoutTupleAnnotationOnEntity;
 
     @Test
     @SneakyThrows
