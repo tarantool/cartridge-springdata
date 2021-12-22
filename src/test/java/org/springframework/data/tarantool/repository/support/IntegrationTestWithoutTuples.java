@@ -1,7 +1,9 @@
 package org.springframework.data.tarantool.repository.support;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +60,17 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         tarantoolContainer.executeScript("test_setup.lua").get();
     }
 
+
+    @BeforeEach
+    @SneakyThrows
+    void setUpTest() {
+        tarantoolContainer.executeScript("test_teardown.lua").join();
+    }
+
     @AfterAll
-    public static void tearDown() throws Exception {
-        tarantoolContainer.executeScript("test_teardown.lua").get();
+    @SneakyThrows
+    public static void tearDown() {
+        tarantoolContainer.executeScript("test_teardown.lua").join();
     }
 
     private final Book book = Book.builder()
@@ -118,12 +128,13 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
 
     @Test
     public void test_findById_shouldReturnBook_ifTupleAnnotationOnQueryMethodWithSpace() {
+        bookRepositoryWithoutTuple.save(this.book);
         //when
-        Optional<Book> book = bookRepositoryWithoutTuple.findById(3);
+        Optional<Book> book = bookRepositoryWithoutTuple.findById(this.book.getId());
         //then
         assertThat(book).hasValueSatisfying(actual -> {
-            assertThat(actual.getName()).isEqualTo("War and Peace");
-            assertThat(actual.getAuthor()).isEqualTo("Leo Tolstoy");
+            assertThat(actual.getName()).isEqualTo(this.book.getName());
+            assertThat(actual.getAuthor()).isEqualTo(this.book.getAuthor());
         });
     }
 
@@ -132,7 +143,7 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         //when
         Book newBook = bookRepositoryWithoutTuple.save(this.book);
         //then
-        assertThat(newBook).isEqualTo(book);
+        assertThat(newBook).isEqualTo(this.book);
     }
 
     @Test
@@ -163,12 +174,13 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
 
     @Test
     public void test_findById_shouldReturnBookAsTuple_ifTupleAnnotationHasOnRepository() {
+        bookRepositoryWithTuple.save(this.book);
         //when
-        Optional<Book> book = bookRepositoryWithTuple.findById(3);
+        Optional<Book> book = bookRepositoryWithTuple.findById(this.book.getId());
         //then
         assertThat(book).hasValueSatisfying(actual -> {
-            assertThat(actual.getName()).isEqualTo("War and Peace");
-            assertThat(actual.getAuthor()).isEqualTo("Leo Tolstoy");
+            assertThat(actual.getName()).isEqualTo(this.book.getName());
+            assertThat(actual.getAuthor()).isEqualTo(this.book.getAuthor());
         });
     }
 
@@ -187,11 +199,7 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         Optional<BookNonEntity> book = bookRepositoryWithSchemaOnMethods.findBookById(this.bookNonEntity.getId());
 
         //then
-        assertThat(book).hasValueSatisfying(actual -> {
-            assertThat(actual).isEqualTo(this.bookNonEntity);
-
-            bookRepositoryWithoutTuple.deleteById(actual.getId());
-        });
+        assertThat(book).hasValueSatisfying(actual -> assertThat(actual).isEqualTo(this.bookNonEntity));
     }
 
     @Test
@@ -214,11 +222,7 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         Optional<BookNonEntity> book = bookRepositoryWithSchemaOnRepositoryAndMethods.findBookById(this.bookNonEntity.getId());
 
         //then
-        assertThat(book).hasValueSatisfying(actual -> {
-            assertThat(actual).isEqualTo(this.bookNonEntity);
-
-            bookRepositoryWithoutTuple.deleteById(actual.getId());
-        });
+        assertThat(book).hasValueSatisfying(actual -> assertThat(actual).isEqualTo(this.bookNonEntity));
     }
 
     @Test
@@ -238,5 +242,4 @@ public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
         //then
         assertThat(saved).isEqualTo(entity);
     }
-
 }

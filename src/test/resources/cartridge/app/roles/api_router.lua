@@ -161,6 +161,22 @@ end
 function returning_nothing()
 end
 
+function returning_number()
+    return 1
+end
+
+function returning_string()
+    return "test string"
+end
+
+function returning_object()
+    return { test = "testString", testNumber = 4 }
+end
+
+function returning_object_list()
+    return { { test = "testString", testNumber = 4 }, { test = "testString2", testNumber = 10 } }
+end
+
 function returning_nil()
     return nil
 end

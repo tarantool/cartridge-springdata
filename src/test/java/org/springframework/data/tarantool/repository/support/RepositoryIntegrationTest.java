@@ -9,10 +9,12 @@ import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.TestEntityWithDoubleField;
 import org.springframework.data.tarantool.entities.TestEntityWithFloatField;
+import org.springframework.data.tarantool.entities.TestObject;
 import org.springframework.data.tarantool.repository.BookRepository;
 import org.springframework.data.tarantool.repository.TestDoubleRepository;
 import org.springframework.data.tarantool.repository.TestFloatRepository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -181,5 +183,58 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
 
         //then
         assertEquals(testField, savedEntity.getTest());
+    }
+
+    @Test
+    public void should_test_returnIntegerFromRepository() {
+        //given
+        Integer expected = 1;
+
+        //when
+        Integer actual = testDoubleRepository.getInteger();
+
+        //then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void should_test_returnStringFromRepository() {
+        //given
+        String expected = "test string";
+
+        //when
+        String actual = testDoubleRepository.getString();
+
+        //then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void should_test_returnNonEntityObjectFromRepository() {
+        //given
+        TestObject expected = new TestObject("testString", 4);
+
+        //when
+        TestObject actual = testDoubleRepository.getNonEntityObject();
+
+        //then
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void should_test_returnNonEntityObjectListFromRepository() {
+        //given
+        final List<Object> expected = new ArrayList<>();
+        TestObject expectedItem = new TestObject("testString", 4);
+        TestObject expectedItem2 = new TestObject("testString2", 10);
+        expected.add(expectedItem);
+        expected.add(expectedItem2);
+
+
+        //when
+        List<TestObject> actual = testDoubleRepository.getNonEntityObjectList();
+
+        //then
+        assertEquals(expected, actual);
     }
 }

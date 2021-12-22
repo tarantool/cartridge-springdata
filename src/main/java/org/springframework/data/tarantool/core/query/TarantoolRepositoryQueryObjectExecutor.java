@@ -21,12 +21,11 @@ public class TarantoolRepositoryQueryObjectExecutor implements TarantoolReposito
 
     @Override
     public Object execute(Object[] parameters) {
-        final Class<?> domainClass = queryMethod.getResultProcessor().getReturnedType().getDomainType();
+        final Class<?> returnedType = queryMethod.getResultProcessor().getReturnedType().getReturnedType();
 
         if (queryMethod.isCollectionQuery()) {
-            return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, domainClass);
-        } else {
-            return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, domainClass);
+            return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType);
         }
+        return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, returnedType);
     }
 }

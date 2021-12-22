@@ -337,4 +337,27 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         assertThat(actual).isEqualTo(SampleUser.builder().name("Vasya").lastName("Vasiliev").build());
     }
 
+    @Test
+    public void test_callForObject_shouldReturnNumber() {
+        //given
+        Integer expected = 1;
+
+        //when
+        Integer actual = tarantoolOperations.callForObject("returning_number", Integer.class);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void test_callForObject_shouldReturnString() {
+        //given
+        String expected = "test string";
+
+        //when
+        String actual = tarantoolOperations.callForObject("returning_string", String.class);
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+    }
 }
