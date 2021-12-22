@@ -87,6 +87,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
 
     @Override
     @Nullable
+    @SuppressWarnings("unchecked")
     public <R> R read(Class<R> targetClass, final @Nullable Object source) {
         if (source == null) {
             return null;
@@ -102,6 +103,8 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             }
         } else if (source instanceof Map) {
             typeToUse = mapTypeMapper.readType((Map<String, Object>) source, ClassTypeInformation.from(targetClass));
+        } else if (source.getClass().equals(targetClass)) {
+            return (R) source;
         } else {
             throw new MappingException("Cannot read from object of type " + source.getClass());
         }
