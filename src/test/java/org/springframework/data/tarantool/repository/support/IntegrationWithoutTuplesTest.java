@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Oleg Kuznetsov
  */
 @Tag("integration")
-public class IntegrationTestWithoutTuples extends BaseIntegrationTest {
+public class IntegrationWithoutTuplesTest extends BaseIntegrationTest {
 
     @Autowired
     private SampleUserRepository sampleUserRepository;
