@@ -161,12 +161,24 @@ end
 function returning_nothing()
 end
 
-function returning_number()
-    return 1
+function returning_integer()
+    return 12345
+end
+
+function returning_double()
+    return 1.2345
 end
 
 function returning_string()
     return "test string"
+end
+
+function returning_char()
+    return "t"
+end
+
+function returning_boolean()
+    return true
 end
 
 function returning_object()

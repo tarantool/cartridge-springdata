@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TestDoubleRepository extends TarantoolRepository<TestEntityWithDoubleField, Integer> {
 
-    @Query(function = "returning_number")
+    @Query(function = "returning_integer")
     Integer getInteger();
 
     @Query(function = "returning_string")

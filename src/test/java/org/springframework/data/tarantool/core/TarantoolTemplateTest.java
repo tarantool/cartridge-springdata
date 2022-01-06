@@ -340,10 +340,10 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Test
     public void test_callForObject_shouldReturnNumber() {
         //given
-        Integer expected = 1;
+        Integer expected = 12345;
 
         //when
-        Integer actual = tarantoolOperations.callForObject("returning_number", Integer.class);
+        Integer actual = tarantoolOperations.callForObject("returning_integer", Integer.class);
 
         //then
         assertThat(actual).isEqualTo(expected);

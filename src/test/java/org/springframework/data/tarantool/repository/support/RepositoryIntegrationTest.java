@@ -188,7 +188,7 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     @Test
     public void should_test_returnIntegerFromRepository() {
         //given
-        Integer expected = 1;
+        Integer expected = 12345;
 
         //when
         Integer actual = testDoubleRepository.getInteger();
