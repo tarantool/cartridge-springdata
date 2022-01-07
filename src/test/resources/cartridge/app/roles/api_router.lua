@@ -181,6 +181,21 @@ function returning_boolean()
     return true
 end
 
+function returning_simple_array()
+    return {{ nil, true, "abc", 123, 1.23 }}
+end
+
+function returning_simple_map()
+    return { testId = nil, testBoolean = true, testString = "abc", testInteger = 123, testDouble = 1.23 }
+end
+
+function returning_array_of_identical_maps()
+    return {
+        { testId = nil, testBoolean = true, testString = "abc", testInteger = 123, testDouble = 1.23 },
+        { testId = 1, testBoolean = false, testString = "cba", testInteger = 321, testDouble = 3.21 },
+    }
+end
+
 function returning_object()
     return { test = "testString", testNumber = 4 }
 end

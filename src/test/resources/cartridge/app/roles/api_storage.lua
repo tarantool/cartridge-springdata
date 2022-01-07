@@ -146,6 +146,28 @@ local function init_space()
         if_not_exists = true,
     })
 
+    local test_simple_object = box.schema.space.create(
+            'test_simple_object',
+            {
+                format = {
+                    { name = 'testId', type = 'unsigned' },
+                    { name = 'testBoolean', type = 'boolean' },
+                    { name = 'testString', type = 'string' },
+                    { name = 'testInteger', type = 'integer' },
+                    { name = 'testDouble', type = 'double' },
+                    { name = 'bucket_id', type = 'unsigned' },
+                },
+                if_not_exists = true,
+            }
+    )
+
+    test_simple_object:create_index('testId', { parts = { 'testId' }, if_not_exists = true, })
+    test_simple_object:create_index('bucket_id', {
+        parts = { 'bucket_id' },
+        unique = false,
+        if_not_exists = true,
+    })
+
     local test_get_object_space = box.schema.space.create(
             'test_get_object_space',
             {
