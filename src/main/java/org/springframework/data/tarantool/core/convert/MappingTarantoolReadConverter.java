@@ -93,6 +93,11 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
         if (source == null) {
             return null;
         }
+        if (targetClass.equals(void.class)) {
+            throw new MappingException(
+                    String.format("Cannot map object of type %s to object of type %s", source.getClass(), targetClass)
+            );
+        }
 
         TypeInformation<? extends R> typeToUse;
         if (source instanceof TarantoolTuple) {

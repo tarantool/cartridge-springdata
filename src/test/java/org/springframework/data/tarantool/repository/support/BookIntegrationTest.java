@@ -2,10 +2,11 @@ package org.springframework.data.tarantool.repository.support;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.entities.TestSpace;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -130,13 +132,39 @@ class BookIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled("ReturnType void does not work if the result is returned from Tarantool until #68 will be fixed")
     public void testUpdateYear() {
         Book book = Book.builder()
                 .id(777).name("Red and Black")
                 .uniqueKey("udf99").author("Stendal").year(1999).build();
         Book newBook = bookRepository.save(book);
         bookRepository.updateYear(777, 2000);
+        Optional<Book> one = bookRepository.findById(777);
+        assertTrue(one.isPresent());
+        Book bookFromRepository = one.get();
+        assertThat(bookFromRepository.getYear()).isEqualTo(2000);
+    }
+
+    @Test
+    public void test_voidReturnType_shouldThrowException_withReturningNotNil() {
+        Book book = Book.builder()
+                .id(777).name("Red and Black")
+                .uniqueKey("udf99").author("Stendal").year(1999).build();
+        bookRepository.save(book);
+        DataRetrievalFailureException exception =
+                assertThrows(DataRetrievalFailureException.class,
+                        () -> bookRepository.updateYearIncorrectReturnType(777, 2000));
+        assertTrue(exception.getCause() instanceof MappingException);
+        assertTrue(exception.getCause().getMessage()
+                .contains("Cannot map object of type class io.tarantool.driver.core.tuple.TarantoolTupleImpl to object of type void"));
+    }
+
+    @Test
+    public void test_voidReturnType_shouldCompleteCorrectly_withReturningNil() {
+        Book book = Book.builder()
+                .id(777).name("Red and Black")
+                .uniqueKey("udf99").author("Stendal").year(1999).build();
+        Book newBook = bookRepository.save(book);
+        bookRepository.updateYearCorrectReturnType(777, 2000);
         Optional<Book> one = bookRepository.findById(777);
         assertTrue(one.isPresent());
         Book bookFromRepository = one.get();

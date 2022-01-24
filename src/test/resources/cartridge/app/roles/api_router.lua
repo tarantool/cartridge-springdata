@@ -25,6 +25,10 @@ function update_by_complex_query(id, year)
     return crud.update('test_space', id, { { '=', 'year', year } })
 end
 
+function update_by_complex_query_without_return(id, year)
+    crud.update('test_space', id, { { '=', 'year', year } })
+end
+
 function batch_update_books(books)
     local result = {}
     local failures = {}
