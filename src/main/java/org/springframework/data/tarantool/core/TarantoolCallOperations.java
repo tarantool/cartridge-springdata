@@ -10,6 +10,7 @@ import java.util.List;
  * Interface that specifies a set of Tarantool call operations extensions. Implemented by {@link TarantoolTemplate}.
  *
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 public interface TarantoolCallOperations {
 
@@ -20,7 +21,7 @@ public interface TarantoolCallOperations {
      * @param functionName callable API function name
      * @param parameters   function parameters
      * @param spaceName    space name in Tarantool instance
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      */
     @Nullable
@@ -68,11 +69,34 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      */
     @Nullable
     <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType);
+
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
+     * <pre>
+     * {@code
+     * function get_predefined_user()
+     *     return { name = "John", lastName = "Smith" }
+     * end
+     * }
+     * </pre>
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   desired type of the result object
+     * @param spaceName    name of the space to get the metadata, if needed
+     * @return function call result
+     */
+    @Nullable
+    <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType, String spaceName);
 
     /**
      * Call a function defined in Tarantool instance API which returns list of objects
@@ -104,7 +128,28 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityClass  Desired type of the result object
+     * @param entityClass  desired type of the result object
+     * @param spaceName    name of the space to get the metadata, if needed
+     * @return function call result
+     */
+    <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass, String spaceName);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
+     * <pre>
+     * {@code
+     * function get_predefined_users()
+     *     return { { name: John, lastName: Smith }, { name: Sam, lastName: Brown } }
+     * end
+     * }
+     * </pre>
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityClass  desired type of the result object
      * @return function call result
      */
     <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass);
@@ -181,7 +226,7 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param spaceName    space name in Tarantool instance
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
      */
@@ -207,7 +252,7 @@ public interface TarantoolCallOperations {
      *
      * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
      */
@@ -233,7 +278,7 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
      */
@@ -246,7 +291,7 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
      */
@@ -273,7 +318,7 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param spaceName    space name in Tarantool instance
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
      */
@@ -287,7 +332,7 @@ public interface TarantoolCallOperations {
      * @param functionName callable API function name
      * @param parameters   function parameters
      * @param spaceName    space name in Tarantool instance
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      */
     @Nullable
@@ -299,7 +344,7 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @param spaceName    space name in Tarantool instance
      * @return function call result
      * @see #callForTupleList(String, Object[], String, Class)
@@ -327,7 +372,7 @@ public interface TarantoolCallOperations {
      *
      * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForObject(String, List, Class)
      */
@@ -355,12 +400,27 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForObject(String, List, Class)
      */
     @Nullable
     <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns one object
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   desired type of the result object
+     * @param spaceName    name of the space to get the metadata, if needed
+     * @return function call result
+     * @see #callForObject(String, List, Class)
+     */
+    @Nullable
+    <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType, String spaceName);
 
     /**
      * Call a function defined in Tarantool instance API which returns one object
@@ -379,7 +439,7 @@ public interface TarantoolCallOperations {
     /**
      * @param <T>          target entity type
      * @param functionName callable API function name
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForObjectList(String, List, Class)
      */
@@ -406,7 +466,22 @@ public interface TarantoolCallOperations {
      * @param <T>          target entity type
      * @param functionName callable API function name
      * @param parameters   function parameters
-     * @param entityType   Desired type of the result object
+     * @param entityType   desired type of the result object
+     * @param spaceName    name of the space to get the metadata, if needed
+     * @return function call result
+     * @see #callForObjectList(String, List, Class)
+     */
+    @Nullable
+    <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityType, String spaceName);
+
+    /**
+     * Call a function defined in Tarantool instance API which returns list of objects
+     * in query method result format.
+     *
+     * @param <T>          target entity type
+     * @param functionName callable API function name
+     * @param parameters   function parameters
+     * @param entityType   desired type of the result object
      * @return function call result
      * @see #callForObjectList(String, List, Class)
      */

@@ -1,26 +1,40 @@
 package org.springframework.data.tarantool.core;
 
+import io.tarantool.driver.api.SingleValueCallResult;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
+import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
+import io.tarantool.driver.mappers.CallResultMapper;
+import io.tarantool.driver.mappers.DefaultMessagePackMapperFactory;
+import io.tarantool.driver.mappers.DefaultResultMapperFactoryFactory;
+import io.tarantool.driver.mappers.DefaultTarantoolTupleValueConverter;
+import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.ValueConverter;
+import org.msgpack.value.ArrayValue;
 import org.msgpack.value.Value;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
+import org.springframework.data.tarantool.core.mappers.TarantoolAutoResultConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
+import java.util.stream.Collectors;
 
 /**
  * This class contains call operations for invoking stored functions in Tarantool instance
  *
  * @author Alexey Kuzin
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 public class TarantoolTemplate extends BaseTarantoolTemplate {
+
+    private final DefaultResultMapperFactoryFactory mapperFactoryFactory;
 
     public TarantoolTemplate(
             TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
@@ -28,6 +42,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
             TarantoolConverter converter,
             ForkJoinWorkerThreadFactory queryExecutorsFactory) {
         super(tarantoolClient, mappingContext, converter, queryExecutorsFactory);
+        this.mapperFactoryFactory = new DefaultResultMapperFactoryFactory();
     }
 
     @Override
@@ -85,6 +100,81 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
                         .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
+        );
+    }
+
+    private MessagePackMapper getDefaultComplexTypesMapper() {
+        // FIXME: https://github.com/tarantool/cartridge-java/issues/166
+        // return tarantoolClient.getConfig().getMessagePackMapper().copy();
+        return DefaultMessagePackMapperFactory
+                .getInstance()
+                .defaultComplexTypesMapper();
+    }
+
+    private void registerTupleResultMapper(MessagePackMapper customMapper,
+                                           Optional<TarantoolSpaceMetadata> spaceMetadata) {
+        customMapper.registerValueConverter(
+                ArrayValue.class,
+                TarantoolTuple.class,
+                new TarantoolAutoResultConverter<>(
+                        new DefaultTarantoolTupleValueConverter(customMapper,
+                                spaceMetadata.orElse(null)),
+                        spaceMetadata.orElse(null)));
+    }
+
+    private <T> CallResultMapper<T, SingleValueCallResult<T>>
+    withDefaultSingleValueMapper(MessagePackMapper customMapper,
+                                 Class<T> entityClass) {
+        return mapperFactoryFactory
+                .getDefaultSingleValueMapper(customMapper, entityClass);
+    }
+
+    private <T> CallResultMapper<T, SingleValueCallResult<T>>
+    getAutoResultMapper(Class<T> entityClass, Optional<TarantoolSpaceMetadata> spaceMetadata) {
+        MessagePackMapper customMapper = getDefaultComplexTypesMapper();
+        registerTupleResultMapper(customMapper, spaceMetadata);
+        return withDefaultSingleValueMapper(customMapper, entityClass);
+    }
+
+    @Override
+    public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass, String spaceName) {
+        Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
+
+        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
+                = getAutoResultMapper(entityClass, spaceMetadata);
+
+        return executeSync(
+                () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
+                        .thenApply((value) -> {
+                            if (value == null) {
+                                return null;
+                            }
+                            if (value instanceof TarantoolResult) {
+                                return mapToEntity(((TarantoolResult) value).get(0), entityClass);
+                            }
+                            return mapToEntity(value, entityClass);
+                        })
+        );
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters,
+                                         Class<T> entityClass, String spaceName) {
+        Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
+
+        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
+                = getAutoResultMapper(entityClass, spaceMetadata);
+
+        return executeSync(
+                () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
+                        .thenApply(values -> {
+                            if (values == null) {
+                                return null;
+                            }
+                            return ((List<T>) values).stream()
+                                    .map(t -> mapToEntity(t, entityClass))
+                                    .collect(Collectors.toList());
+                        })
         );
     }
 
@@ -195,6 +285,11 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     }
 
     @Override
+    public <T> T callForObject(String functionName, Object[] parameters, Class<T> entityType, String spaceName) {
+        return callForObject(functionName, Arrays.asList(parameters), entityType, spaceName);
+    }
+
+    @Override
     public <T> T callForObject(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter) {
         return callForObject(functionName, Arrays.asList(parameters), entityConverter);
     }
@@ -202,6 +297,11 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     @Override
     public <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityClass) {
         return callForObjectList(functionName, Arrays.asList(parameters), entityClass);
+    }
+
+    @Override
+    public <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityClass, String spaceName) {
+        return callForObjectList(functionName, Arrays.asList(parameters), entityClass, spaceName);
     }
 
     @Override

@@ -23,6 +23,13 @@ public class TarantoolObjectRepositoryQueryExecutor implements TarantoolReposito
     @Override
     public Object execute(Object[] parameters) {
         final Class<?> returnedType = queryMethod.getResultProcessor().getReturnedType().getReturnedType();
+        if (operations.getMappingContext().hasPersistentEntityFor(returnedType)) {
+            String spaceName = operations.getMappingContext().getRequiredPersistentEntity(returnedType).getSpaceName();
+            if (queryMethod.isCollectionQuery()) {
+                return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+            }
+            return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+        }
 
         if (queryMethod.isCollectionQuery()) {
             return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType);

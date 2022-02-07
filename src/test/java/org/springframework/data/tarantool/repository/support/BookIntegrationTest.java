@@ -7,14 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
-import org.springframework.data.tarantool.entities.TestEntityWithDoubleField;
-import org.springframework.data.tarantool.entities.TestEntityWithFloatField;
-import org.springframework.data.tarantool.entities.TestObject;
+import org.springframework.data.tarantool.entities.TestSpace;
+import org.springframework.data.tarantool.repository.BookAsTestSpaceRepository;
 import org.springframework.data.tarantool.repository.BookRepository;
-import org.springframework.data.tarantool.repository.TestDoubleRepository;
-import org.springframework.data.tarantool.repository.TestFloatRepository;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,17 +21,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
 @Tag("integration")
-class RepositoryIntegrationTest extends BaseIntegrationTest {
+class BookIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private BookRepository bookRepository;
 
     @Autowired
-    private TestDoubleRepository testDoubleRepository;
-
-    @Autowired
-    private TestFloatRepository testFloatRepository;
+    private BookAsTestSpaceRepository bookAsTestSpaceRepository;
 
     @BeforeEach
     public void setUp() {
@@ -53,8 +47,6 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     @AfterEach
     public void tearDown() {
         bookRepository.deleteAll();
-        testDoubleRepository.deleteAll();
-        testFloatRepository.deleteAll();
     }
 
     @Test
@@ -162,79 +154,20 @@ class RepositoryIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void should_testCustomConverter_returnObjectWithDouble_ifCustomConverterHasBeenAdded() {
+    void test_save_shouldSaveAndReturnBook_ifTestSpaceIsAClassName() {
         //given
-        double testField = 1D;
+        TestSpace entity = TestSpace.builder()
+                .id(111)
+                .name("Tales")
+                .uniqueKey("udf65")
+                .author("Grimm Brothers")
+                .year(1569)
+                .build();
 
         //when
-        TestEntityWithDoubleField saved = testDoubleRepository.save(new TestEntityWithDoubleField(1, testField));
+        TestSpace saved = bookAsTestSpaceRepository.save(entity);
 
         //then
-        assertEquals(testField, saved.getTest());
-    }
-
-    @Test
-    public void should_test_returnObjectWithFloat_ifFirstInStackConvertersIsDouble() {
-        //given
-        float testField = 1f;
-
-        //when
-        TestEntityWithFloatField savedEntity = testFloatRepository.save(new TestEntityWithFloatField(1, testField));
-
-        //then
-        assertEquals(testField, savedEntity.getTest());
-    }
-
-    @Test
-    public void should_test_returnIntegerFromRepository() {
-        //given
-        Integer expected = 1;
-
-        //when
-        Integer actual = testDoubleRepository.getInteger();
-
-        //then
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void should_test_returnStringFromRepository() {
-        //given
-        String expected = "test string";
-
-        //when
-        String actual = testDoubleRepository.getString();
-
-        //then
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void should_test_returnNonEntityObjectFromRepository() {
-        //given
-        TestObject expected = new TestObject("testString", 4);
-
-        //when
-        TestObject actual = testDoubleRepository.getNonEntityObject();
-
-        //then
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void should_test_returnNonEntityObjectListFromRepository() {
-        //given
-        final List<Object> expected = new ArrayList<>();
-        TestObject expectedItem = new TestObject("testString", 4);
-        TestObject expectedItem2 = new TestObject("testString2", 10);
-        expected.add(expectedItem);
-        expected.add(expectedItem2);
-
-
-        //when
-        List<TestObject> actual = testDoubleRepository.getNonEntityObjectList();
-
-        //then
-        assertEquals(expected, actual);
+        assertThat(saved).isEqualTo(entity);
     }
 }

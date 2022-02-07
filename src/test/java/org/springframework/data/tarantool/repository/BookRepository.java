@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.repository;
 
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.tarantool.entities.Book;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * @author Alexey Kuzin
  */
-public interface BookRepository extends TarantoolRepository<Book, Integer> {
+public interface BookRepository extends CrudRepository<Book, Integer> {
 
     @Query(function = "find_by_complex_query", output = TarantoolSerializationType.TUPLE)
     List<Book> findByYearGreaterThenProxy(Integer year);
