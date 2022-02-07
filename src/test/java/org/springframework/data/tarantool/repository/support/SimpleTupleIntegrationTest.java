@@ -7,12 +7,14 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.SimpleObject;
+import org.springframework.data.tarantool.exceptions.TarantoolMetadataMissingException;
 import org.springframework.data.tarantool.repository.SimpleObjectRepository;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -75,6 +77,12 @@ class SimpleTupleIntegrationTest extends BaseIntegrationTest {
 
         //then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void test_tuple_shouldThrowException_withTupleValidationAndIncorrectMetadata() {
+        assertThrows(TarantoolMetadataMissingException.class,
+                () -> repository.getSimpleTupleWithTupleValidationAndIncorrectMetadata());
     }
 
     @Test
@@ -166,6 +174,12 @@ class SimpleTupleIntegrationTest extends BaseIntegrationTest {
 
         //then
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void test_tuples_shouldThrowException_withTupleValidationAndIncorrectMetadata() {
+        assertThrows(TarantoolMetadataMissingException.class,
+                () -> repository.getSimpleTuplesWithTupleValidationAndIncorrectMetadata());
     }
 
     @Test
