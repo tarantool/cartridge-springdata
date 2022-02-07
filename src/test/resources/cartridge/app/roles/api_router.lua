@@ -16,8 +16,8 @@ function find_by_complex_query(year)
     return require('fun')
             .iter(crud.pairs('test_space'))
             :filter(function(b)
-        return b[6] and b[6] > year
-    end)
+                return b[6] and b[6] > year
+            end)
             :totable()
 end
 
@@ -146,12 +146,23 @@ function returning_error()
     return nil, AssertionError:new('some error')
 end
 
-function returning_sample_user_object()
-    return { name = "Vasya", lastName = "Vasiliev" }
+function get_users_with_age_gt(age)
+    return crud.select("sample_user", { { ">", "age", age } })
 end
 
-function get_predefined_users()
-    return { { name = "Vasya", lastName = "Vasiliev" }, { name = "Test", lastName = "Testov" } }
+function get_predefined_user()
+    return { name = "John", age = 46 }
+end
+
+function get_age_by_name(name)
+    local user, err = crud.get("sample_user", name)
+    if err ~= nil then
+        return user, err
+    end
+    if user.rows[1] ~= nil then
+        return user.rows[1][2]
+    end
+    return nil
 end
 
 function returning_book()

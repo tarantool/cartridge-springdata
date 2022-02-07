@@ -4,16 +4,16 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.repository.Query;
+import org.springframework.data.tarantool.repository.TarantoolSerializationType;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 /**
  * Represents a query method with Tarantool extensions
  *
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
 public class TarantoolQueryMethod extends QueryMethod {
 
@@ -26,20 +26,6 @@ public class TarantoolQueryMethod extends QueryMethod {
         this.metadata = metadata;
     }
 
-    public Optional<String> getSpaceName() {
-        Tuple methodTupleAnnotation = getTupleAnnotation();
-        if (methodTupleAnnotation != null) {
-            return Optional.of(methodTupleAnnotation.spaceName());
-        }
-
-        Tuple declaredAnnotation = AnnotatedElementUtils.findMergedAnnotation(metadata.getRepositoryInterface(), Tuple.class);
-        if (declaredAnnotation != null) {
-            return Optional.of(declaredAnnotation.spaceName());
-        }
-
-        return Optional.empty();
-    }
-
     /**
      * If the method has a @Query annotation.
      *
@@ -47,15 +33,6 @@ public class TarantoolQueryMethod extends QueryMethod {
      */
     public boolean hasQueryAnnotation() {
         return getQueryAnnotation() != null;
-    }
-
-    /**
-     * If the method has a @Tuple annotation.
-     *
-     * @return true if it has the annotation, false otherwise.
-     */
-    public boolean hasTupleAnnotation() {
-        return getTupleAnnotation() != null;
     }
 
     /**
@@ -68,12 +45,12 @@ public class TarantoolQueryMethod extends QueryMethod {
     }
 
     /**
-     * Returns the @Tuple annotation if set, null otherwise.
+     * Returns the response structure that the connector will expect from Tarantool specified in Query annotation
      *
-     * @return the @Tuple annotation if present.
+     * @return expected output structure
      */
-    public Tuple getTupleAnnotation() {
-        return AnnotatedElementUtils.findMergedAnnotation(method, Tuple.class);
+    public TarantoolSerializationType getQueryOutputType() {
+        return getQueryAnnotation().output();
     }
 
     /**

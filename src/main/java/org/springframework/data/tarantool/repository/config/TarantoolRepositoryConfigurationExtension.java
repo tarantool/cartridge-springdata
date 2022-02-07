@@ -5,13 +5,11 @@ import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
 import org.springframework.data.tarantool.config.BeanNames;
-import org.springframework.data.tarantool.core.mapping.Tuple;
 import org.springframework.data.tarantool.repository.TarantoolRepository;
 import org.springframework.data.tarantool.repository.support.TarantoolRepositoryFactoryBean;
 import org.w3c.dom.Element;
@@ -42,11 +40,6 @@ public class TarantoolRepositoryConfigurationExtension extends RepositoryConfigu
     @Override
     public String getRepositoryFactoryBeanClassName() {
         return TarantoolRepositoryFactoryBean.class.getName();
-    }
-
-    @Override
-    protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-        return Collections.singleton(Tuple.class);
     }
 
     @Override

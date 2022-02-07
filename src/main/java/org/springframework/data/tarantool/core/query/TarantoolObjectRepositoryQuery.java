@@ -10,6 +10,7 @@ import org.springframework.lang.Nullable;
  * Represents query matched to a repository method that returns an object or list of objects
  *
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 public class TarantoolObjectRepositoryQuery implements RepositoryQuery {
 
@@ -24,7 +25,7 @@ public class TarantoolObjectRepositoryQuery implements RepositoryQuery {
     @Nullable
     @Override
     public Object execute(Object[] parameters) {
-        return new TarantoolRepositoryQueryObjectExecutor(operations, queryMethod)
+        return new TarantoolObjectRepositoryQueryExecutor(operations, queryMethod)
                 .execute(parameters);
     }
 

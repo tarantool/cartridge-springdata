@@ -5,7 +5,7 @@ package org.springframework.data.tarantool.core.query;
  *
  * @author Oleg Kuznetsov
  */
-public interface TarantoolRepositoryExecutor {
+public interface TarantoolRepositoryQueryExecutor {
 
     Object execute(final Object[] parameters);
 }

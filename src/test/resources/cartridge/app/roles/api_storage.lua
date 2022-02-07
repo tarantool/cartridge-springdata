@@ -117,7 +117,7 @@ local function init_space()
     )
 
     book_store:create_index('id', {
-        parts = { 'id', 'received_at'},
+        parts = { 'id', 'received_at' },
         if_not_exists = true,
     })
 
@@ -141,6 +141,25 @@ local function init_space()
 
     test_custom_converter_space:create_index('id', { parts = { 'id' }, if_not_exists = true, })
     test_custom_converter_space:create_index('bucket_id', {
+        parts = { 'bucket_id' },
+        unique = false,
+        if_not_exists = true,
+    })
+
+    local sample_user = box.schema.space.create(
+            'sample_user',
+            {
+                format = {
+                    { name = 'name', type = 'string' },
+                    { name = 'age', type = 'number' },
+                    { name = 'bucket_id', type = 'unsigned' },
+                },
+                if_not_exists = true,
+            }
+    )
+
+    sample_user:create_index('name', { parts = { 'name' }, if_not_exists = true, })
+    sample_user:create_index('bucket_id', {
         parts = { 'bucket_id' },
         unique = false,
         if_not_exists = true,

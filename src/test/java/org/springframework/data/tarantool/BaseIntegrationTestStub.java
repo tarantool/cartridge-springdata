@@ -7,9 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.data.tarantool.core.mapping.Tuple;
-import org.springframework.data.tarantool.repository.BookRepositoryWithSchemaOnMethods;
 import org.springframework.data.tarantool.repository.TarantoolRepository;
 
 import javax.annotation.PostConstruct;
@@ -17,9 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +28,7 @@ import java.util.stream.Collectors;
  * your test without invoking testcontainers.
  *
  * @author Vladimir Rogach
+ * @author Artyom Dubinin
  */
 @SpringBootTest(classes = TestConfig.class,
         properties = {
@@ -52,16 +48,11 @@ public class BaseIntegrationTestStub {
     private TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> client;
 
     protected final static TarantoolContainerStub tarantoolContainer = new TarantoolContainerStub();
-    private final static List<Class<BookRepositoryWithSchemaOnMethods>> classesWithoutTupleAnnotation = Arrays.asList(
-            BookRepositoryWithSchemaOnMethods.class
-            //add new repositories here without @Tuple
-    );
 
     @PostConstruct
     private void initStub() {
         // wipe all data in cluster before running tests
-        availableRepos.stream()
-                .filter(classesWithoutTupleAnnotation::contains)
+        availableRepos
                 .forEach(TarantoolRepository::deleteAll);
 
         tarantoolContainer.setClient(this.client);

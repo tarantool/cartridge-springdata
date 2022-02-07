@@ -8,6 +8,7 @@ import org.springframework.data.tarantool.core.TarantoolOperations;
  * Represents query matched to a repository method that returns a tuple or list of tuples
  *
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
 public class TarantoolTupleRepositoryQuery implements RepositoryQuery {
 
@@ -21,7 +22,7 @@ public class TarantoolTupleRepositoryQuery implements RepositoryQuery {
 
     @Override
     public Object execute(Object[] parameters) {
-        return new TarantoolRepositoryTupleQueryExecutor(operations, queryMethod)
+        return new TarantoolTupleRepositoryQueryExecutor(operations, queryMethod)
                 .execute(parameters);
     }
 

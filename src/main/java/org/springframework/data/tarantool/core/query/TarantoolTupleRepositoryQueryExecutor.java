@@ -7,13 +7,14 @@ import org.springframework.data.tarantool.core.TarantoolOperations;
  * annotation and having result as tuple or list of tuples
  *
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
-public class TarantoolRepositoryTupleQueryExecutor implements TarantoolRepositoryExecutor {
+public class TarantoolTupleRepositoryQueryExecutor implements TarantoolRepositoryQueryExecutor {
 
     private final TarantoolOperations operations;
     private final TarantoolQueryMethod queryMethod;
 
-    public TarantoolRepositoryTupleQueryExecutor(final TarantoolOperations operations,
+    public TarantoolTupleRepositoryQueryExecutor(final TarantoolOperations operations,
                                                  final TarantoolQueryMethod queryMethod) {
         this.operations = operations;
         this.queryMethod = queryMethod;
@@ -28,8 +29,7 @@ public class TarantoolRepositoryTupleQueryExecutor implements TarantoolRepositor
     public Object execute(final Object[] parameters) {
         final Class<?> domainClass = queryMethod.getResultProcessor().getReturnedType().getDomainType();
 
-        String spaceName = queryMethod.getSpaceName()
-                .orElse(operations.getMappingContext().getRequiredPersistentEntity(domainClass).getSpaceName());
+        String spaceName = operations.getMappingContext().getRequiredPersistentEntity(domainClass).getSpaceName();
 
         if (queryMethod.isCollectionQuery()) {
             return operations.callForTupleList(queryMethod.getQueryFunctionName(), parameters, spaceName, domainClass);
