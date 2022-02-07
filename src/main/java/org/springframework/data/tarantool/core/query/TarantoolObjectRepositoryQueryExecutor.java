@@ -7,13 +7,14 @@ import org.springframework.data.tarantool.core.TarantoolOperations;
  * annotation and having result as object or list of objects
  *
  * @author Oleg Kuzentsov
+ * @author Artyom Dubinin
  */
-public class TarantoolRepositoryQueryObjectExecutor implements TarantoolRepositoryExecutor {
+public class TarantoolObjectRepositoryQueryExecutor implements TarantoolRepositoryQueryExecutor {
 
     private final TarantoolOperations operations;
     private final TarantoolQueryMethod queryMethod;
 
-    public TarantoolRepositoryQueryObjectExecutor(final TarantoolOperations operations,
+    public TarantoolObjectRepositoryQueryExecutor(final TarantoolOperations operations,
                                                   final TarantoolQueryMethod queryMethod) {
         this.operations = operations;
         this.queryMethod = queryMethod;

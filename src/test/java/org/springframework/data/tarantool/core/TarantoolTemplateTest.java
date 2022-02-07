@@ -14,7 +14,6 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Address;
 import org.springframework.data.tarantool.entities.Book;
-import org.springframework.data.tarantool.entities.BookNonEntity;
 import org.springframework.data.tarantool.entities.Customer;
 import org.springframework.data.tarantool.entities.SampleUser;
 
@@ -37,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
 @Tag("integration")
 class TarantoolTemplateTest extends BaseIntegrationTest {
@@ -72,16 +72,6 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
             .build();
 
     private static final Book book = Book.builder()
-            .id(4)
-            .name("Tales")
-            .uniqueKey("udf65")
-            .author("Grimm Brothers")
-            .year(1569)
-            .issuerAddress(Address.builder().city("Riga").street("Brivibas").number(13).build())
-            .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
-            .build();
-
-    private static final BookNonEntity bookNonEntity = BookNonEntity.builder()
             .id(4)
             .name("Tales")
             .uniqueKey("udf65")
@@ -197,7 +187,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         );
 
         //when
-        List<BookNonEntity> byIssuer = tarantoolOperations.callForObjectList("find_book_by_address", parameters, BookNonEntity.class);
+        List<Book> byIssuer = tarantoolOperations.callForObjectList("find_book_by_address", parameters, Book.class);
 
         //then
         assertTrue(byIssuer.size() > 0);
@@ -211,7 +201,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
         List<Book> parameters = Collections.singletonList(book);
 
         //when
-        List<BookNonEntity> byIssuer = tarantoolOperations.callForObjectList("find_book_by_book", parameters, BookNonEntity.class);
+        List<Book> byIssuer = tarantoolOperations.callForObjectList("find_book_by_book", parameters, Book.class);
 
         //then
         assertTrue(byIssuer.size() > 0);
@@ -331,10 +321,10 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     @Test
     public void test_callForObject_shouldReturnPredefinedUser() {
         //when
-        SampleUser actual = tarantoolOperations.callForObject("returning_sample_user_object", Collections.emptyList(), SampleUser.class);
+        SampleUser actual = tarantoolOperations.callForObject("get_predefined_user", Collections.emptyList(), SampleUser.class);
 
         //then
-        assertThat(actual).isEqualTo(SampleUser.builder().name("Vasya").lastName("Vasiliev").build());
+        assertThat(actual).isEqualTo(SampleUser.builder().name("John").age(46).build());
     }
 
     @Test

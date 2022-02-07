@@ -38,6 +38,7 @@ import java.util.Optional;
  * Mapping converter for Tarantool for reading objects from tuples
  *
  * @author Alexey Kuzin
+ * @author Artyom Dubinin
  */
 public class MappingTarantoolReadConverter implements EntityReader<Object, Object> {
 
@@ -106,7 +107,9 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
         } else if (source.getClass().equals(targetClass)) {
             return (R) source;
         } else {
-            throw new MappingException("Cannot read from object of type " + source.getClass());
+            throw new MappingException(
+                    String.format("Cannot map object of type %s to object of type %s", source.getClass(), targetClass)
+            );
         }
 
         TarantoolPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(typeToUse);

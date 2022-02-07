@@ -7,11 +7,12 @@ import org.springframework.data.tarantool.core.mapping.Tuple;
 
 /**
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 @Data
 @Tuple
 @Builder
 public class SampleUser {
     private String name;
-    private String lastName;
+    private Integer age;
 }
