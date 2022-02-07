@@ -7,9 +7,7 @@ import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
-import io.tarantool.driver.core.ProxyTarantoolClient;
 import io.tarantool.driver.core.tuple.TarantoolTupleImpl;
-import io.tarantool.driver.exceptions.TarantoolSpaceOperationException;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
@@ -21,11 +19,11 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity;
+import org.springframework.data.tarantool.exceptions.TarantoolMetadataMissingException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +44,7 @@ import static org.springframework.data.tarantool.core.TarantoolTemplateUtils.idQ
  *
  * @author Alexey Kuzin
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 abstract class BaseTarantoolTemplate implements TarantoolOperations {
 
@@ -356,8 +355,12 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
             SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
     getResultMapperForEntity(String spaceName, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
+        String name = StringUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName;
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
-                .getSpaceByName(StringUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName);
+                .getSpaceByName(name);
+        if (!spaceMetadata.isPresent() && !entityClass.equals(void.class)) {
+            throw new TarantoolMetadataMissingException(name);
+        }
         return tarantoolClient
                 .getResultMapperFactoryFactory()
                 .defaultTupleSingleResultMapperFactory()
