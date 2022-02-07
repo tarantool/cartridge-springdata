@@ -180,6 +180,25 @@ function returning_string()
     return "test string"
 end
 
+function returning_simple_array()
+    return { { nil, true, "abc", 123, 1.23 } }
+end
+
+function returning_simple_arrays()
+    return { { nil, true, "abc", 123, 1.23 }, { 1, false, "cba", 321, 3.21 } }
+end
+
+function returning_simple_map()
+    return { testId = nil, testBoolean = true, testString = "abc", testInteger = 123, testDouble = 1.23 }
+end
+
+function returning_simple_maps()
+    return {
+        { testId = nil, testBoolean = true, testString = "abc", testInteger = 123, testDouble = 1.23 },
+        { testId = 1, testBoolean = false, testString = "cba", testInteger = 321, testDouble = 3.21 },
+    }
+end
+
 function returning_object()
     return { test = "testString", testNumber = 4 }
 end

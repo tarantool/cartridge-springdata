@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.SampleUser;
-import org.springframework.data.tarantool.entities.TestSpace;
-import org.springframework.data.tarantool.repository.BookAsTestSpaceRepository;
 import org.springframework.data.tarantool.repository.SampleUserRepository;
 
 import java.util.List;
@@ -23,15 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Oleg Kuznetsov
+ * @author Artyom Dubinin
  */
 @Tag("integration")
-public class IntegrationWithoutTuplesTest extends BaseIntegrationTest {
+public class SampleUserIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private SampleUserRepository sampleUserRepository;
-
-    @Autowired
-    private BookAsTestSpaceRepository bookAsTestSpaceRepository;
 
     @BeforeAll
     public static void setUp() throws Exception {
@@ -108,21 +104,4 @@ public class IntegrationWithoutTuplesTest extends BaseIntegrationTest {
         assertThat(result).isEqualTo(user);
     }
 
-    @Test
-    void test_save_shouldSaveAndReturnBook_ifTestSpaceIsAClassName() {
-        //given
-        TestSpace entity = TestSpace.builder()
-                .id(111)
-                .name("Tales")
-                .uniqueKey("udf65")
-                .author("Grimm Brothers")
-                .year(1569)
-                .build();
-
-        //when
-        TestSpace saved = bookAsTestSpaceRepository.save(entity);
-
-        //then
-        assertThat(saved).isEqualTo(entity);
-    }
 }

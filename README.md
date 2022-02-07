@@ -104,19 +104,19 @@ public class Book {
 ```
 
 ```java
-public interface BookRepository extends TarantoolRepository<Book, Long> {
+public interface BookRepository extends CrudRepository<Book, Long> {
 }
 ```
 
-The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples.
-You can add `@Tuple` on the `@Query` annotated method that specifies the space name for a specific stored function call.
-Also, you can add `@Tuple` annotation to the repository - it acts as a shortcut for specifying the tuple return format and space name for all custom methods
-in this repository. The `@Field` annotations provide custom names for the fields. It is necessary to have at least 
+The `@Tuple` annotation allows to specify the space name which schema will be used for forming the data tuples to sending
+and for mapping the incoming tuple into an object.
+You can omit the `@Tuple` annotation, then the connector will take the class name converted to snake_case.
+The `@Field` annotations provide custom names for the fields. It is necessary to have at least 
 one field marked with the `@Id` annotation.
 
-Extending `CrudRepository` causes CRUD methods being pulled into the
+Extending `CrudRepository` causes basic CRUD methods being pulled into the
 interface so that you can easily save and find single entities and
-collections of them.
+collections of them. We can also use Tarantool specific interface `TarantoolRepository`.
 
 Let's assume that you have the [tarantool/crud](https://github.com/tarantool/crud) module installed in yor Cartridge
 application and there is an active 'crud-router' role on your router. Put the following settings in your application
@@ -190,11 +190,11 @@ public class MyService {
 }
 ```
 
-#### Proxy methods in repositories
+#### Proxy Tarantool functions in repositories
 
 Consider we need to write a complex query in Lua, working with sharded data in Tarantool Cartridge. In this case
 we can expose this query as a public API function and map that function on a repository method via the `@Query`
-annotation:
+annotation by specifying the functionName parameter:
 
 ```java
 public interface BookRepository extends CrudRepository<Book, Long> {
@@ -219,79 +219,57 @@ The corresponding function in on Tarantool Cartridge router may look like (uses 
 
 See more examples in the module tests.
 
-#### Call stored functions in Tarantool instance
-
-You can bind repository methods to calls of the stored functions in the Tarantool instance using the `@Query` annotation
-with the stored function name specified in the `functionName` parameter.
-For such methods, you can specify the stored function response format so that it will be parsed correctly. The response
-format may be either an object (and a list of objects) or a tuple (and a list of tuples).
-
-```java
-@Data
-@Tuple
-public class SampleUser {
-    private String name;
-    private String lastName;
-}
-```
+##### Specify output
+For such methods, you can specify the stored function response format so that it will be parsed correctly.
+The response format can be specified in the `@Query` annotation using the `output` parameter, see the examples below.
 
 ```java
 public interface SampleUserRepository extends TarantoolRepository<SampleUser, String> {
-    @Query(function = "returning_sample_user_object")
-    SampleUser returningSampleUserObject(String name);
+    @Query(function = "get_users_with_age_gt", output = TarantoolSerializationType.TUPLE)
+    List<SampleUser> usersWithAgeGreaterThen(Integer age);
 
-    @Query(function = "get_predefined_users")
-    List<SampleUser> getPredefinedUsers();
-}
-```
-
-```java
-@Tuple
-public class Book {
-  @Id
-  private Integer id;
-  private String name;
-}
-
-// Here, the space name is "another_space" for all @Query methods
-@Tuple("another_space") 
-public interface BookRepository extends TarantoolRepository<Book, Integer> {
-    
-    // The space name here overrides "another_space" to "test_space" for the current method
-    @Tuple("test_space") 
-    @Query(function = "do_something")
-    Optional<Book> doSomething(Book book);
-}
-```
-
-Here the space name is not specified neither in a `@Tuple` annotation on the repository interface, nor on the entity class, so it will be "book_entity" according to the entity class name, turned into "lower snake case".
-But for the "doSomething" method the space name will be overridden to "test_space".
-```java
-@Tuple
-public class BookEntity {
-  @Id
-  private Integer id;
-  private String name;
-}
-
-public interface BookRepository extends TarantoolRepository<BookEntity, Integer> {
-    
-    // The space name here overrides to "test_space" for the current method
-    @Tuple("test_space") 
-    @Query(function = "do_something")
-    void doSomething(Book book);
+    @Query(function = "get_predefined_user", output = TarantoolSerializationType.AUTO)
+    SampleUser predefinedUser();
 }
 ```
 
 ```lua
-function returning_sample_user_object()
-    return { name = "John", lastName = "Smith" }
+function get_users_with_gt_age(age)
+    return crud.select("sample_user", { { ">", "age", age } })
 end
 
-function get_predefined_users()
-    return { { name = "John", lastName = "Smith" }, { name = "Sam", lastName = "Smith" } }
+function get_predefined_user()
+    return { name = "John", age = 46 }
 end
 ```
+The first function returns users who are older than the specified age.
+In the Repository, we indicate that we expect `TUPLE`, because `crud.select` returns the result in compressed format, flatten tuples.
+The keys for mapping the result into a Java object are obtained from the space metadata determined by the class name in the method return type. If this class has a `@Tuple` annotation with a custom space name, this space will be used for getting the metadata.
+
+The second function returns a ready-made result with keys.
+So `TUPLE` will not work here, because it's not flatten structure, and we specify `AUTO`.
+Mapping happens by keys of table.
+
+Of course, the word `AUTO` means that we can accept any result, and therefore it can be specified in the first request as well.
+But we specify `TUPLE` because a different stack of converters is used and the conversion is faster.
+For ease of use and clarity, the **default output parameter** is `TarantoolSerializationType.AUTO`.
+
+We can also return primitive types if needed:
+```java
+@Query(function = "get_age_by_name", output = TarantoolSerializationType.AUTO)
+Optional<Integer> getAgeByName(String name);
+```
+
+```lua
+function get_age_by_name(name)
+    local user = crud.get("sample_user", name)
+    if user.rows[1] ~= nil then
+        return user.rows[1][2]
+    end
+    return nil
+end
+```
+
 
 ### Composite primary key
 
