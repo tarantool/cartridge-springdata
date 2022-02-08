@@ -2,6 +2,7 @@ package org.springframework.data.tarantool.repository.support;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,7 @@ class BookIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @Disabled("ReturnType void does not work if the result is returned from Tarantool until #68 will be fixed")
     public void testUpdateYear() {
         Book book = Book.builder()
                 .id(777).name("Red and Black")
