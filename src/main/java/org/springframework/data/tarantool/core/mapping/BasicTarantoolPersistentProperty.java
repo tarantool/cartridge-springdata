@@ -1,6 +1,5 @@
 package org.springframework.data.tarantool.core.mapping;
 
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
@@ -41,10 +40,18 @@ public class BasicTarantoolPersistentProperty extends AnnotationBasedPersistentP
 
     @Override
     public String getFieldName() {
-        Field annotationField = AnnotatedElementUtils.findMergedAnnotation(getField(), Field.class);
+        java.lang.reflect.Field field = getField();
+        Field annotationField = field.getAnnotation(Field.class);
 
-        if (annotationField != null && StringUtils.hasText(annotationField.value())) {
-            return annotationField.value();
+        if (annotationField != null) {
+            String value = annotationField.value();
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+            String name = annotationField.name();
+            if (StringUtils.hasText(name)) {
+                return name;
+            }
         }
 
         return fieldNamingStrategy.getFieldName(this);
