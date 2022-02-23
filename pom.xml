@@ -55,8 +55,8 @@
     <properties>
         <spring.version>5.2.13.RELEASE</spring.version>
         <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
-        <driver.version>0.6.0</driver.version>
-        <testcontainers.version>0.4.5</testcontainers.version>
+        <driver.version>0.7.0</driver.version>
+        <testcontainers.version>0.4.6</testcontainers.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <logging.config>${project.basedir}/src/test/resources/logback-test.xml</logging.config>
