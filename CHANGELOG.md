@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 2022-02-23
+## [0.5.0] - 2022-02-24
 
 ### Features
  - **Breaking change** Change Query methods API:
