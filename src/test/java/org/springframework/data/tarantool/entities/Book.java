@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.tarantool.core.mapping.Field;
 import org.springframework.data.tarantool.core.mapping.Tuple;
+import org.springframework.data.tarantool.repository.inheritance.AbstractEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 @Data
 @Builder
 @Tuple("test_space")
-public class Book {
+public class Book extends AbstractEntity {
     @Id
     private Integer id;
 

@@ -8,6 +8,7 @@ import org.springframework.data.tarantool.repository.Query;
 import org.springframework.data.tarantool.repository.TarantoolSerializationType;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * Represents a query method with Tarantool extensions
@@ -49,8 +50,9 @@ public class TarantoolQueryMethod extends QueryMethod {
      *
      * @return expected output structure
      */
-    public TarantoolSerializationType getQueryOutputType() {
-        return getQueryAnnotation().output();
+    public Optional<TarantoolSerializationType> getQueryOutputType() {
+        Query query = getQueryAnnotation();
+        return query == null ? Optional.empty() : Optional.of(query.output());
     }
 
     /**

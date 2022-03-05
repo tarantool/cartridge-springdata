@@ -11,6 +11,7 @@ import org.springframework.data.tarantool.repository.TarantoolSerializationType;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * Strategy for looking up fluent API queries implementation
@@ -37,15 +38,10 @@ public class TarantoolQueryLookupStrategy implements QueryLookupStrategy {
 
         TarantoolQueryMethod queryMethod = new TarantoolQueryMethod(method, metadata, projectionFactory);
 
-        if (isOutputExpectTuple(queryMethod)) {
+        Optional<TarantoolSerializationType> output = queryMethod.getQueryOutputType();
+        if (output.isPresent() && output.get().equals(TarantoolSerializationType.TUPLE)) {
             return new TarantoolTupleRepositoryQuery(operations, queryMethod);
         }
-
         return new TarantoolObjectRepositoryQuery(operations, queryMethod);
-    }
-
-    private boolean isOutputExpectTuple(TarantoolQueryMethod method) {
-        TarantoolSerializationType output = method.getQueryOutputType();
-        return output.equals(TarantoolSerializationType.TUPLE);
     }
 }
