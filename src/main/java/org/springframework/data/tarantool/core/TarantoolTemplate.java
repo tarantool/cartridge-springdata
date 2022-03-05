@@ -90,6 +90,9 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
     @Override
     public <T> T callForObject(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityConverter, "Entity converter must not be null!");
         return executeSync(() -> tarantoolClient.callForSingleResult(
                 functionName, mapParameters(parameters), getMessagePackMapper(), entityConverter)
         );
@@ -97,6 +100,9 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
     @Override
     public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
                         .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
@@ -138,6 +144,10 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
     @Override
     public <T> T callForObject(String functionName, List<?> parameters, Class<T> entityClass, String spaceName) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
+
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
         CallResultMapper<T, SingleValueCallResult<T>> resultMapper
@@ -160,6 +170,9 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     @Override
     public <T> List<T> callForObjectList(String functionName, List<?> parameters,
                                          Class<T> entityClass, String spaceName) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
         CallResultMapper<T, SingleValueCallResult<T>> resultMapper
@@ -190,6 +203,9 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
     @Override
     public <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass) {
+        Assert.hasText(functionName, "Function name must not be null or empty!");
+        Assert.notNull(parameters, "Parameters must not be null!");
+        Assert.notNull(entityClass, "Entity class must not be null!");
         return executeSync(() -> tarantoolClient.callForSingleResult(functionName,
                 mapParameters(parameters), getMessagePackMapper(), getListValueConverter(entityClass))
         );
