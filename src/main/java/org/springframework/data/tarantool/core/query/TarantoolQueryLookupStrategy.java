@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.tarantool.core.TarantoolOperations;
+import org.springframework.data.tarantool.repository.Query;
 import org.springframework.data.tarantool.repository.TarantoolSerializationType;
 import org.springframework.data.tarantool.repository.config.TarantoolRepositoryOperationsMapping;
 
@@ -37,15 +38,10 @@ public class TarantoolQueryLookupStrategy implements QueryLookupStrategy {
 
         TarantoolQueryMethod queryMethod = new TarantoolQueryMethod(method, metadata, projectionFactory);
 
-        if (isOutputExpectTuple(queryMethod)) {
+        Query query = queryMethod.getQueryAnnotation();
+        if (query != null && TarantoolSerializationType.TUPLE.equals(query.output())) {
             return new TarantoolTupleRepositoryQuery(operations, queryMethod);
         }
-
         return new TarantoolObjectRepositoryQuery(operations, queryMethod);
-    }
-
-    private boolean isOutputExpectTuple(TarantoolQueryMethod method) {
-        TarantoolSerializationType output = method.getQueryOutputType();
-        return output.equals(TarantoolSerializationType.TUPLE);
     }
 }

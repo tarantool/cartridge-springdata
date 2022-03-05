@@ -5,7 +5,6 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.tarantool.repository.Query;
-import org.springframework.data.tarantool.repository.TarantoolSerializationType;
 
 import java.lang.reflect.Method;
 
@@ -45,20 +44,14 @@ public class TarantoolQueryMethod extends QueryMethod {
     }
 
     /**
-     * Returns the response structure that the connector will expect from Tarantool specified in Query annotation
-     *
-     * @return expected output structure
-     */
-    public TarantoolSerializationType getQueryOutputType() {
-        return getQueryAnnotation().output();
-    }
-
-    /**
      * Return the callable function name specified in Query annotation
      *
      * @return API function name
      */
     public String getQueryFunctionName() {
+        if (getQueryAnnotation() == null) {
+            return null;
+        }
         return getQueryAnnotation().function();
     }
 }
