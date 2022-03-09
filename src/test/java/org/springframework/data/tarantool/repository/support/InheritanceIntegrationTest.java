@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.Book;
 import org.springframework.data.tarantool.repository.inheritance.CustomBookRepository;
+import org.springframework.data.tarantool.repository.inheritance.CustomTestRepository;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -21,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InheritanceIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private CustomBookRepository customBookRepository;
+    @Autowired
+    private CustomTestRepository customTestRepository;
 
     @BeforeEach
     public void setUp() {
@@ -45,8 +49,15 @@ class InheritanceIntegrationTest extends BaseIntegrationTest {
         Optional<Book> firstBook = customBookRepository.findById(1);
         assertTrue(firstBook.isPresent());
 
-        Optional<List<Book>> otherTwoBook = customBookRepository.find( ">", "id", 1);
+        Optional<List<Book>> otherTwoBook = customBookRepository.find(">", "id", 1);
         assertTrue(otherTwoBook.isPresent());
 
+    }
+
+    @Test
+    public void test_shouldReturnSampleString() {
+        final String sampleString = customTestRepository.getSampleString();
+        
+        assertEquals("test string", sampleString);
     }
 }

@@ -51,8 +51,7 @@ public class TarantoolQueryMethod extends QueryMethod {
      * @return expected output structure
      */
     public Optional<TarantoolSerializationType> getQueryOutputType() {
-        Query query = getQueryAnnotation();
-        return query == null ? Optional.empty() : Optional.of(query.output());
+        return Optional.ofNullable(getQueryAnnotation().output());
     }
 
     /**
