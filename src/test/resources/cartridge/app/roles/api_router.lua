@@ -223,10 +223,32 @@ function insert_book_with_custom_type(book_id, issue_date)
     return crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
 end
 
+function save_book(book)
+    return crud.insert_object('test_space', book)
+end
+
+function find_book_by_id(book_id)
+    return crud.select('test_space', { { '=', 'id', book_id } })
+end
+
+local function create_restricted_user()
+    box.schema.func.create("returning_simple_map", { if_not_exists = true, setuid = true })
+    box.schema.func.create("returning_simple_maps", { if_not_exists = true, setuid = true })
+    box.schema.func.create("returning_simple_array", { if_not_exists = true, setuid = true })
+    box.schema.func.create("returning_simple_arrays", { if_not_exists = true, setuid = true })
+
+    box.schema.user.create('restricted_user', { if_not_exists = true, password = 'restricted_secret' })
+    box.schema.user.grant("restricted_user", "execute", "function", "returning_simple_map", { if_not_exists = true })
+    box.schema.user.grant("restricted_user", "execute", "function", "returning_simple_maps", { if_not_exists = true })
+    box.schema.user.grant("restricted_user", "execute", "function", "returning_simple_array", { if_not_exists = true })
+    box.schema.user.grant("restricted_user", "execute", "function", "returning_simple_arrays", { if_not_exists = true })
+end
+
 local function init(opts)
     if opts.is_master then
     end
 
+    create_restricted_user()
     rawset(_G, 'ddl', { get_schema = get_schema })
 
     return true
