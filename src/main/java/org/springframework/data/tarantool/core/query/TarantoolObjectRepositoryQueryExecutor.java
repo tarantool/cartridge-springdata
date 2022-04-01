@@ -1,5 +1,7 @@
 package org.springframework.data.tarantool.core.query;
 
+import io.tarantool.driver.exceptions.TarantoolAccessDeniedException;
+import io.tarantool.driver.exceptions.TarantoolClientException;
 import org.springframework.data.tarantool.core.TarantoolOperations;
 
 /**
@@ -25,10 +27,17 @@ public class TarantoolObjectRepositoryQueryExecutor implements TarantoolReposito
         final Class<?> returnedType = queryMethod.getResultProcessor().getReturnedType().getReturnedType();
         if (operations.getMappingContext().hasPersistentEntityFor(returnedType)) {
             String spaceName = operations.getMappingContext().getRequiredPersistentEntity(returnedType).getSpaceName();
-            if (queryMethod.isCollectionQuery()) {
-                return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+            try {
+                if (queryMethod.isCollectionQuery()) {
+                    return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+                }
+                return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+            } catch (TarantoolClientException ex) {
+                Throwable cause = ex.getCause();
+                if (!(cause instanceof TarantoolAccessDeniedException)) {
+                    throw ex;
+                }
             }
-            return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
         }
 
         if (queryMethod.isCollectionQuery()) {
