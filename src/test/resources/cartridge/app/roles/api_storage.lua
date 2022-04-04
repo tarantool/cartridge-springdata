@@ -209,11 +209,6 @@ local function init_space()
     box.schema.space.create("dropped_space")
 end
 
-local function storage_get_space_format()
-    local ddl = require('ddl')
-    return ddl.get_schema()
-end
-
 local function find_books_by_name(names)
     local books = {}
     for _, name in pairs(names) do
@@ -259,7 +254,6 @@ local function init(opts)
         box.schema.func.create('storage_get_space_format', { if_not_exists = true })
     end
 
-    rawset(_G, 'storage_get_space_format', storage_get_space_format)
     rawset(_G, 'find_books_by_name', find_books_by_name)
     rawset(_G, 'find_customer_by_address', find_customer_by_address)
     rawset(_G, 'find_customer_by_book', find_customer_by_book)
@@ -275,7 +269,6 @@ return {
     role_name = 'app.roles.api_storage',
     init = init,
     utils = {
-        storage_get_space_format = storage_get_space_format,
         find_books_by_name = find_books_by_name,
         find_customer_by_address = find_customer_by_address,
     },
