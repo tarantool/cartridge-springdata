@@ -14,7 +14,16 @@ public interface BookRepository extends CrudRepository<Book, Integer> {
     List<Book> findByYearGreaterThenProxy(Integer year);
 
     @Query(function = "find_by_entity", output = TarantoolSerializationType.TUPLE)
-    List<Book> findByBook(Book book);
+    List<Book> findByBookWithTupleOutput(Book book);
+
+    @Query(function = "find_by_entity", output = TarantoolSerializationType.TUPLE)
+    Book findByBookWithTupleOutputAndNonListReturnType(Book book);
+
+    @Query(function = "find_by_entity", output = TarantoolSerializationType.AUTO)
+    List<Book> findByBookWithAutoOutput(Book book);
+
+    @Query(function = "find_by_entity", output = TarantoolSerializationType.AUTO)
+    Book findByBookWithAutoOutputAndNonListReturnType(Book book);
 
     @Query(function = "update_by_complex_query", output = TarantoolSerializationType.TUPLE)
     Book updateYear(Integer id, Integer year);

@@ -39,6 +39,18 @@ public interface SimpleObjectRepository extends TarantoolRepository<SimpleObject
     @Query(function = "returning_simple_arrays", output = TarantoolSerializationType.AUTO)
     List<SimpleObjectWithIncorrectMetadata> getSimpleTuplesWithAutoValidationAndIncorrectMetadata();
 
+    @Query(function = "returning_crud_response_one_tuple", output = TarantoolSerializationType.TUPLE)
+    SimpleObject getCrudResponseOneObjectWithTupleValidation();
+
+    @Query(function = "returning_crud_response_one_tuple", output = TarantoolSerializationType.AUTO)
+    SimpleObject getCrudResponseOneObjectWithAutoValidation();
+
+    @Query(function = "returning_crud_response_two_tuples", output = TarantoolSerializationType.AUTO)
+    List<SimpleObject> getCrudResponseTwoObjectsWithAutoValidation();
+
+    @Query(function = "returning_crud_response_two_tuples", output = TarantoolSerializationType.TUPLE)
+    List<SimpleObject> getCrudResponseTwoObjectsWithTupleValidation();
+
     @Query(function = "returning_simple_map", output = TarantoolSerializationType.TUPLE)
     SimpleObject getSimpleMapWithTupleValidation();
 

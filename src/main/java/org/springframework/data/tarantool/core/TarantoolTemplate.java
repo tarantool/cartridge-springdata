@@ -12,6 +12,7 @@ import io.tarantool.driver.mappers.DefaultTarantoolTupleValueConverter;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.ValueConverter;
 import org.msgpack.value.ArrayValue;
+import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mappers.TarantoolAutoResultConverter;
@@ -121,6 +122,13 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
                                            Optional<TarantoolSpaceMetadata> spaceMetadata) {
         customMapper.registerValueConverter(
                 ArrayValue.class,
+                TarantoolTuple.class,
+                new TarantoolAutoResultConverter<>(
+                        new DefaultTarantoolTupleValueConverter(customMapper,
+                                spaceMetadata.orElse(null)),
+                        spaceMetadata.orElse(null)));
+        customMapper.registerValueConverter(
+                MapValue.class,
                 TarantoolTuple.class,
                 new TarantoolAutoResultConverter<>(
                         new DefaultTarantoolTupleValueConverter(customMapper,

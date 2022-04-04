@@ -188,6 +188,14 @@ function returning_simple_arrays()
     return { { nil, true, "abc", 123, 1.23 }, { 1, false, "cba", 321, 3.21 } }
 end
 
+function returning_crud_response_one_tuple()
+    return { metadata = {}, rows = { { nil, true, "abc", 123, 1.23 } } }
+end
+
+function returning_crud_response_two_tuples()
+    return { metadata = {}, rows = { { nil, true, "abc", 123, 1.23 }, { 1, false, "cba", 321, 3.21 } } }
+end
+
 function returning_simple_map()
     return { testId = nil, testBoolean = true, testString = "abc", testInteger = 123, testDouble = 1.23 }
 end
