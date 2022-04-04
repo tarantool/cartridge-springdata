@@ -169,10 +169,6 @@ function get_age_by_name(name)
     return nil
 end
 
-function returning_book()
-    return { id = 4, book_name = "Tales", unique_key = "udf65", author = "Grimm Brothers", year = 1569 }
-end
-
 function returning_nothing()
 end
 
@@ -217,14 +213,6 @@ end
 
 function insert_book_with_custom_type(book_id, issue_date)
     return crud.insert('test_space', { book_id, nil, 'ghj556', 'Hitchicker\'s Guide to the Galaxy', 'Douglas Adams', 1981, nil, nil, nil, issue_date })
-end
-
-function save_book(book)
-    return crud.insert_object('test_space', book)
-end
-
-function find_book_by_id(book_id)
-    return crud.select('test_space', { { '=', 'id', book_id } })
 end
 
 local function init(opts)
