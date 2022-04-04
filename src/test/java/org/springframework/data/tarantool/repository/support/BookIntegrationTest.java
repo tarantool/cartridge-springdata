@@ -115,12 +115,37 @@ class BookIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testFindByEntity() {
+    public void testFindByEntityWithTupleOutput() {
         Optional<Book> book = bookRepository.findById(3);
         assertThat(book.isPresent()).isTrue();
-        List<Book> books = bookRepository.findByBook(book.get());
+        List<Book> books = bookRepository.findByBookWithTupleOutput(book.get());
         assertThat(books.size()).isEqualTo(1);
         assertThat(books.get(0).getName()).isEqualTo("War and Peace");
+    }
+
+    @Test
+    public void testFindByEntityWithTupleOutputAndNonListReturnType() {
+        Optional<Book> expectedBook = bookRepository.findById(3);
+        assertThat(expectedBook.isPresent()).isTrue();
+        Book book = bookRepository.findByBookWithTupleOutputAndNonListReturnType(expectedBook.get());
+        assertThat(book.getName()).isEqualTo("War and Peace");
+    }
+
+    @Test
+    public void testFindByEntityWithAutoOutput() {
+        Optional<Book> book = bookRepository.findById(3);
+        assertThat(book.isPresent()).isTrue();
+        List<Book> books = bookRepository.findByBookWithAutoOutput(book.get());
+        assertThat(books.size()).isEqualTo(1);
+        assertThat(books.get(0).getName()).isEqualTo("War and Peace");
+    }
+
+    @Test
+    public void testFindByEntityWithAutoOutputAndNonListReturnType() {
+        Optional<Book> expectedBook = bookRepository.findById(3);
+        assertThat(expectedBook.isPresent()).isTrue();
+        Book book = bookRepository.findByBookWithAutoOutputAndNonListReturnType(expectedBook.get());
+        assertThat(book.getName()).isEqualTo("War and Peace");
     }
 
     @Test
