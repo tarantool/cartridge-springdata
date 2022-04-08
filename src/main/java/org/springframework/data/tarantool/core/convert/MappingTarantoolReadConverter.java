@@ -216,8 +216,6 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                         conversions.hasCustomReadTarget(customTargetClass.get(), propClass) &&
                         ((TarantoolTuple) source).canGetObject(fieldName, customTargetClass.get())) {
                     value = ((TarantoolTuple) source).getObject(fieldName, customTargetClass.get()).orElse(null);
-                } else if (((TarantoolTuple) source).canGetObject(fieldName, Map.class)) {
-                    value = convertCustomType((Map<String, Object>) ((TarantoolTuple) source).getMap(fieldName), propType);
                 } else if (((TarantoolTuple) source).canGetObject(fieldName, propClass)) {
                     value = ((TarantoolTuple) source).getObject(fieldName, propClass).orElse(null);
                 } else
