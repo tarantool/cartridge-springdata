@@ -1,6 +1,6 @@
 package org.springframework.data.tarantool.core;
 
-import io.tarantool.driver.mappers.ValueConverter;
+import io.tarantool.driver.mappers.converters.ValueConverter;
 import org.msgpack.value.Value;
 import org.springframework.lang.Nullable;
 
