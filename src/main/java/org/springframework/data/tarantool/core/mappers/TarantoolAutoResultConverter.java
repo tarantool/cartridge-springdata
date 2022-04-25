@@ -2,8 +2,8 @@ package org.springframework.data.tarantool.core.mappers;
 
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
-import io.tarantool.driver.mappers.TarantoolResultConverter;
-import io.tarantool.driver.mappers.ValueConverter;
+import io.tarantool.driver.mappers.converters.ValueConverter;
+import io.tarantool.driver.mappers.converters.value.custom.TarantoolResultConverter;
 import org.msgpack.value.ArrayValue;
 import org.msgpack.value.StringValue;
 import org.msgpack.value.Value;

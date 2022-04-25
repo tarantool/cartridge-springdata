@@ -8,12 +8,15 @@ import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.DefaultMessagePackMapperFactory;
 import io.tarantool.driver.mappers.DefaultResultMapperFactoryFactory;
-import io.tarantool.driver.mappers.DefaultTarantoolTupleValueConverter;
 import io.tarantool.driver.mappers.MessagePackMapper;
-import io.tarantool.driver.mappers.ValueConverter;
+import io.tarantool.driver.mappers.converters.ValueConverter;
+import io.tarantool.driver.mappers.converters.value.custom.TarantoolTupleConverter;
 import org.msgpack.value.ArrayValue;
 import org.msgpack.value.MapValue;
 import org.msgpack.value.Value;
+import org.msgpack.value.ValueType;
+import org.msgpack.value.impl.ImmutableArrayValueImpl;
+import org.msgpack.value.impl.ImmutableMapValueImpl;
 import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mappers.TarantoolAutoResultConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
@@ -121,17 +124,17 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     private void registerTupleResultMapper(MessagePackMapper customMapper,
                                            Optional<TarantoolSpaceMetadata> spaceMetadata) {
         customMapper.registerValueConverter(
-                ArrayValue.class,
+                ValueType.ARRAY,
                 TarantoolTuple.class,
                 new TarantoolAutoResultConverter<>(
-                        new DefaultTarantoolTupleValueConverter(customMapper,
+                        new TarantoolTupleConverter(customMapper,
                                 spaceMetadata.orElse(null)),
                         spaceMetadata.orElse(null)));
         customMapper.registerValueConverter(
-                MapValue.class,
+                ValueType.MAP,
                 TarantoolTuple.class,
                 new TarantoolAutoResultConverter<>(
-                        new DefaultTarantoolTupleValueConverter(customMapper,
+                        new TarantoolTupleConverter(customMapper,
                                 spaceMetadata.orElse(null)),
                         spaceMetadata.orElse(null)));
     }

@@ -11,7 +11,7 @@ import io.tarantool.driver.core.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
-import io.tarantool.driver.mappers.ValueConverter;
+import io.tarantool.driver.mappers.converters.ValueConverter;
 import io.tarantool.driver.protocol.TarantoolIndexQuery;
 import org.msgpack.value.Value;
 import org.springframework.dao.DataAccessException;
