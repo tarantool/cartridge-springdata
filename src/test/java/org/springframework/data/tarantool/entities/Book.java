@@ -2,6 +2,7 @@ package org.springframework.data.tarantool.entities;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.tarantool.core.mapping.Field;
 import org.springframework.data.tarantool.core.mapping.Tuple;
@@ -14,6 +15,7 @@ import java.util.List;
  * @author Alexey Kuzin
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Builder
 @Tuple("test_space")
 public class Book extends AbstractEntity {
