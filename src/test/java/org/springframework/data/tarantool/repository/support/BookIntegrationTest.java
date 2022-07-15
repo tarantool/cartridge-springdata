@@ -111,7 +111,7 @@ class BookIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testFindByYear() {
         List<Book> books = bookRepository.findByYearGreaterThenProxy(1000);
-        assertThat(books.size()).isGreaterThan(0);
+        assertThat(books.size()).isPositive();
     }
 
     @Test
