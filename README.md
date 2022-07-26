@@ -15,15 +15,15 @@ Tarantool database driver.
 
 ## Spring Boot compatibility
 
-|`spring-data-tarantool` Version | Spring Boot Version
-| :----------- | :----: |
-|0.x.x | 2.2.x
+| `spring-data-tarantool` Version | Spring Boot Version |
+|:--------------------------------|:-------------------:|
+| 0.x.x                           |        2.2.x        |
 
 ## Tarantool compatibility
 
-|`spring-data-tarantool` Version | Tarantool Version
-| :----------- | :----: |
-| 0.x.x | 1.10.x, 2.x
+| `spring-data-tarantool` Version | Tarantool Version |
+|:--------------------------------|:-----------------:|
+| 0.x.x                           |    1.10.x, 2.x    |
 
 ## References
 
@@ -122,12 +122,12 @@ Let's assume that you have the [tarantool/crud](https://github.com/tarantool/cru
 application and there is an active 'crud-router' role on your router. Put the following settings in your application
 properties:
 
-| Property name      | Example value | Description
-| :----------------  | :-----------  | :---------
-| tarantool.host     | localhost            | Cartridge router host
-| tarantool.port     | 3301                 | Cartridge router port
-| tarantool.username | admin                | Default username for API access, may be different
-| tarantool.password | myapp-cluster-cookie | Password for API access, see you Cartridge application configuration
+| Property name      | Example value        | Description                                                          |
+|:-------------------|:---------------------|:---------------------------------------------------------------------|
+| tarantool.host     | localhost            | Cartridge router host                                                |
+| tarantool.port     | 3301                 | Cartridge router port                                                |
+| tarantool.username | admin                | Default username for API access, may be different                    |
+| tarantool.password | myapp-cluster-cookie | Password for API access, see you Cartridge application configuration |
 
 Than you can have Spring automatically create a proxy for the repository interface by using the following JavaConfig:
 
