@@ -179,8 +179,9 @@ class BookIntegrationTest extends BaseIntegrationTest {
                 assertThrows(DataRetrievalFailureException.class,
                         () -> bookRepository.updateYearIncorrectReturnType(777, 2000));
         assertTrue(exception.getCause() instanceof MappingException);
-        assertTrue(exception.getCause().getMessage()
-                .contains("Cannot map object of type class io.tarantool.driver.core.tuple.TarantoolTupleImpl to object of type void"));
+        assertTrue(exception.getCause().getMessage().contains("Cannot map object of type class " +
+                        "io.tarantool.driver.core.tuple.TarantoolTupleImpl to object of type void")
+        );
     }
 
     @Test

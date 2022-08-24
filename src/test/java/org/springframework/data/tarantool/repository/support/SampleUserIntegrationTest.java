@@ -34,7 +34,6 @@ public class SampleUserIntegrationTest extends BaseIntegrationTest {
         tarantoolContainer.executeScript("test_setup.lua").get();
     }
 
-
     @BeforeEach
     @SneakyThrows
     void setUpTest() {

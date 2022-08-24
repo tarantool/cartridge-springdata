@@ -74,6 +74,9 @@ class SimpleMapIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void test_maps_shouldThrowException_withTupleValidation() {
-        assertThrows(InvalidDataAccessResourceUsageException.class, () -> repository.getSimpleMapsWithTupleValidation());
+        assertThrows(
+                InvalidDataAccessResourceUsageException.class,
+                () -> repository.getSimpleMapsWithTupleValidation()
+        );
     }
 }

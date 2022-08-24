@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 
 import java.util.concurrent.Callable;
 
-public class TestUtils {
+public final class TestUtils {
 
     /**
      * Its helps for hacking problems with weak test containers in github CI

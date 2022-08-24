@@ -25,10 +25,11 @@ import java.util.Set;
 public abstract class TarantoolConfigurationSupport {
 
     /**
-     * Returns the base packages to scan for entities mapped to Tarantool spaces at startup. Will return the package name of the
-     * configuration class' (the concrete class, not this one here) by default. So if you have a
-     * {@code com.acme.AppConfig} extending {@link TarantoolConfigurationSupport} the base package will be considered
-     * {@code com.acme} unless the method is overridden to implement alternate behavior.
+     * Returns the base packages to scan for entities mapped to Tarantool spaces at startup.
+     * Will return the package name of the configuration class' (the concrete class, not this one here) by default.
+     * So if you have a {@code com.acme.AppConfig} extending {@link TarantoolConfigurationSupport}
+     * the base package will be considered {@code com.acme}
+     * unless the method is overridden to implement alternate behavior.
      *
      * @return the base packages to scan for mapped {@link Tuple} classes or an empty collection to not enable scanning
      * for entities.

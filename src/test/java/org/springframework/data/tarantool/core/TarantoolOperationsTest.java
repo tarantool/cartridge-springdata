@@ -78,7 +78,9 @@ class TarantoolOperationsTest extends BaseIntegrationTest {
             .author("Grimm Brothers")
             .year(1569)
             .issuerAddress(Address.builder().city("Riga").street("Brivibas").number(13).build())
-            .storeAddresses(Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build()))
+            .storeAddresses(
+                    Collections.singletonList(Address.builder().city("Riga").street("Brivibas").number(13).build())
+            )
             .build();
 
     @BeforeAll
@@ -259,7 +261,11 @@ class TarantoolOperationsTest extends BaseIntegrationTest {
 
     @Test
     void testNonEntityAsReturnType() {
-        List<Address> addresses = tarantoolOperations.callForObjectList("get_customer_addresses", Collections.emptyList(), Address.class);
+        List<Address> addresses = tarantoolOperations.callForObjectList(
+                "get_customer_addresses",
+                Collections.emptyList(),
+                Address.class
+        );
         assertTrue(addresses != null && addresses.size() > 0);
     }
 
@@ -310,7 +316,11 @@ class TarantoolOperationsTest extends BaseIntegrationTest {
         String issueDate = LocalDate.now().toString();
 
         //when
-        Book newBook = tarantoolOperations.callForTuple("insert_book_with_custom_type", Arrays.asList(bookId, issueDate), Book.class);
+        Book newBook = tarantoolOperations.callForTuple(
+                "insert_book_with_custom_type",
+                Arrays.asList(bookId, issueDate),
+                Book.class
+        );
 
         //then
         assertThat(newBook).isNotNull();
@@ -321,7 +331,11 @@ class TarantoolOperationsTest extends BaseIntegrationTest {
     @Test
     public void test_callForObject_shouldReturnPredefinedUser() {
         //when
-        SampleUser actual = tarantoolOperations.callForObject("get_predefined_user", Collections.emptyList(), SampleUser.class);
+        SampleUser actual = tarantoolOperations.callForObject(
+                "get_predefined_user",
+                Collections.emptyList(),
+                SampleUser.class
+        );
 
         //then
         assertThat(actual).isEqualTo(SampleUser.builder().name("John").age(46).build());

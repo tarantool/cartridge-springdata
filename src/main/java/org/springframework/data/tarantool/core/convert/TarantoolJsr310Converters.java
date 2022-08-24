@@ -70,8 +70,9 @@ public class TarantoolJsr310Converters {
 
         @Override
         public Long convert(LocalDateTime source) {
-            return source == null ? null
-                    : DateConverters.DateToLongConverter.INSTANCE.convert(Date.from(source.atZone(systemDefault()).toInstant()));
+            return source == null ? null : DateConverters.DateToLongConverter.INSTANCE.convert(
+                            Date.from(source.atZone(systemDefault()).toInstant())
+            );
         }
     }
 
@@ -82,8 +83,8 @@ public class TarantoolJsr310Converters {
 
         @Override
         public LocalDate convert(Number source) {
-            return source == null ? null
-                    : ofInstant(ofEpochMilli(DateConverters.SerializedObjectToDateConverter.INSTANCE.convert(source).getTime()),
+            return source == null ? null : ofInstant(
+                    ofEpochMilli(DateConverters.SerializedObjectToDateConverter.INSTANCE.convert(source).getTime()),
                     systemDefault()).toLocalDate();
         }
     }
@@ -108,8 +109,8 @@ public class TarantoolJsr310Converters {
 
         @Override
         public LocalTime convert(Number source) {
-            return source == null ? null
-                    : ofInstant(ofEpochMilli(DateConverters.SerializedObjectToDateConverter.INSTANCE.convert(source).getTime()),
+            return source == null ? null : ofInstant(
+                    ofEpochMilli(DateConverters.SerializedObjectToDateConverter.INSTANCE.convert(source).getTime()),
                     systemDefault()).toLocalTime();
         }
     }
@@ -146,8 +147,9 @@ public class TarantoolJsr310Converters {
 
         @Override
         public Long convert(Instant source) {
-            return source == null ? null
-                    : DateConverters.DateToLongConverter.INSTANCE.convert(Date.from(source.atZone(systemDefault()).toInstant()));
+            return source == null ? null : DateConverters.DateToLongConverter.INSTANCE.convert(
+                    Date.from(source.atZone(systemDefault()).toInstant())
+            );
         }
     }
 

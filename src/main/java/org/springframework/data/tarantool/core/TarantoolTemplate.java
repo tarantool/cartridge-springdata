@@ -72,7 +72,8 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     }
 
     @Override
-    public <T> List<T> callForTupleList(String functionName, List<?> parameters, String spaceName, Class<T> entityClass) {
+    public <T> List<T> callForTupleList(String functionName, List<?> parameters,
+                                        String spaceName, Class<T> entityClass) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityClass, "Entity class must not be null!");
@@ -109,7 +110,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         Assert.notNull(entityClass, "Entity class must not be null!");
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), entityClass)
-                        .thenApply((value) -> value == null ? null : mapToEntity(value, entityClass))
+                        .thenApply(value -> value == null ? null : mapToEntity(value, entityClass))
         );
     }
 
@@ -166,7 +167,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
-                        .thenApply((value) -> {
+                        .thenApply(value -> {
                             if (value == null) {
                                 return null;
                             }
@@ -203,7 +204,8 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     }
 
     @Override
-    public <T> List<T> callForObjectList(String functionName, List<?> parameters, ValueConverter<Value, T> entityConverter) {
+    public <T> List<T> callForObjectList(String functionName, List<?> parameters,
+                                         ValueConverter<Value, T> entityConverter) {
         Assert.hasText(functionName, "Function name must not be null or empty!");
         Assert.notNull(parameters, "Parameters must not be null!");
         Assert.notNull(entityConverter, "Entity converter must not be null!");
@@ -287,7 +289,8 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     }
 
     @Override
-    public <T> List<T> callForTupleList(String functionName, Object[] parameters, String spaceName, Class<T> entityType) {
+    public <T> List<T> callForTupleList(String functionName, Object[] parameters,
+                                        String spaceName, Class<T> entityType) {
         return callForTupleList(functionName, Arrays.asList(parameters), spaceName, entityType);
     }
 
@@ -327,12 +330,14 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
     }
 
     @Override
-    public <T> List<T> callForObjectList(String functionName, Object[] parameters, Class<T> entityClass, String spaceName) {
+    public <T> List<T> callForObjectList(String functionName, Object[] parameters,
+                                         Class<T> entityClass, String spaceName) {
         return callForObjectList(functionName, Arrays.asList(parameters), entityClass, spaceName);
     }
 
     @Override
-    public <T> List<T> callForObjectList(String functionName, Object[] parameters, ValueConverter<Value, T> entityConverter) {
+    public <T> List<T> callForObjectList(String functionName, Object[] parameters,
+                                         ValueConverter<Value, T> entityConverter) {
         return callForObjectList(functionName, Arrays.asList(parameters), entityConverter);
     }
 

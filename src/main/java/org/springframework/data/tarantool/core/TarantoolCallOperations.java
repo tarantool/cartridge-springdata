@@ -75,7 +75,6 @@ public interface TarantoolCallOperations {
     @Nullable
     <T> T callForObject(String functionName, List<?> parameters, Class<T> entityType);
 
-
     /**
      * Call a function defined in Tarantool instance API which returns one object
      * in query method result format.
@@ -153,7 +152,6 @@ public interface TarantoolCallOperations {
      * @return function call result
      */
     <T> List<T> callForObjectList(String functionName, List<?> parameters, Class<T> entityClass);
-
 
     /**
      * Call a function defined in Tarantool instance API which returns one entity as result.

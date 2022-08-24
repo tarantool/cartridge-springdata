@@ -17,7 +17,7 @@ import java.util.Optional;
  *
  * @author Oleg Kuznetsov
  */
-public class TarantoolTemplateUtils {
+public final class TarantoolTemplateUtils {
 
     /**
      * Return Conditions class for field id

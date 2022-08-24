@@ -133,10 +133,14 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
         return new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider, null);
     }
 
-    private ConvertingPropertyAccessor<?> getConvertingPropertyAccessor(TarantoolPersistentEntity<?> entity,
-                                                                        TarantoolPropertyValueProvider propertyValueProvider) {
+    private ConvertingPropertyAccessor<?> getConvertingPropertyAccessor(
+            TarantoolPersistentEntity<?> entity,
+            TarantoolPropertyValueProvider propertyValueProvider
+    ) {
         EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-        ParameterValueProvider<TarantoolPersistentProperty> provider = getParameterProvider(entity, propertyValueProvider);
+        ParameterValueProvider<TarantoolPersistentProperty> provider = getParameterProvider(
+                entity, propertyValueProvider
+        );
         Object instance = instantiator.createInstance(entity, provider);
         PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(instance);
 
@@ -183,7 +187,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
         private ConversionService conversionService;
         private final TypeMapper<Map<String, Object>> mapTypeMapper;
 
-        public TarantoolPropertyValueProvider(Object source,
+        TarantoolPropertyValueProvider(Object source,
                                               CustomConversions conversions,
                                               ConversionService conversionService) {
             this.source = source;
@@ -218,8 +222,9 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                     value = ((TarantoolTuple) source).getObject(fieldName, customTargetClass.get()).orElse(null);
                 } else if (((TarantoolTuple) source).canGetObject(fieldName, propClass)) {
                     value = ((TarantoolTuple) source).getObject(fieldName, propClass).orElse(null);
-                } else
+                } else {
                     value = ((TarantoolTuple) source).getObject(fieldName).orElse(null);
+                }
                 return readValue(value, propType);
             } else if (source instanceof Map) {
                 return readValue(((Map<String, Object>) source).get(fieldName), propType);
@@ -236,8 +241,9 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             }
 
             Class<?> targetClass = propertyType.getType();
-            if (conversions.hasCustomReadTarget(source.getClass(), targetClass) ||
-                    conversions.isSimpleType(targetClass) && conversionService.canConvert(source.getClass(), targetClass)) {
+            if (conversions.hasCustomReadTarget(source.getClass(), targetClass)
+                    || conversions.isSimpleType(targetClass)
+                    && conversionService.canConvert(source.getClass(), targetClass)) {
                 return (R) conversionService.convert(source, targetClass);
             } else if (propertyType.isCollectionLike()) {
                 return convertCollection(asCollection(source), propertyType);
@@ -264,17 +270,20 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             if (shouldDefaultToMap(source, entity)) {
                 return (R) source;
             }
-            PropertyValueProvider<TarantoolPersistentProperty> propertyValueProvider = new PropertyValueProvider<TarantoolPersistentProperty>() {
-                @Override
-                public <T> T getPropertyValue(TarantoolPersistentProperty property) {
-                    TypeInformation<?> propType = property.getTypeInformation();
-                    return readValue(source.get(property.getFieldName()), propType);
-                }
-            };
+            PropertyValueProvider<TarantoolPersistentProperty> propertyValueProvider =
+                    new PropertyValueProvider<TarantoolPersistentProperty>() {
+                        @Override
+                        public <T> T getPropertyValue(TarantoolPersistentProperty property) {
+                            TypeInformation<?> propType = property.getTypeInformation();
+                            return readValue(source.get(property.getFieldName()), propType);
+                        }
+                    };
             EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-            ParameterValueProvider<TarantoolPersistentProperty> provider = new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider, null);
+            ParameterValueProvider<TarantoolPersistentProperty> provider =
+                    new PersistentEntityParameterValueProvider<>(entity, propertyValueProvider, null);
             Object instance = instantiator.createInstance(entity, provider);
-            PersistentPropertyAccessor<?> propertyAccessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(instance), conversionService);
+            PersistentPropertyAccessor<?> propertyAccessor =
+                    new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(instance), conversionService);
             entity.doWithProperties((PropertyHandler<TarantoolPersistentProperty>) property -> {
                 if (entity.isConstructorArgument(property)) {
                     return;

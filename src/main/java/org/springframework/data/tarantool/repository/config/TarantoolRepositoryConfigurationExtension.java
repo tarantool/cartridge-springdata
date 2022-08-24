@@ -15,7 +15,8 @@ import org.springframework.data.tarantool.repository.support.TarantoolRepository
 import org.w3c.dom.Element;
 
 /**
- * Tarantool specific implementation of {@link org.springframework.data.repository.config.RepositoryConfigurationExtension}
+ * Tarantool specific implementation of
+ * {@link org.springframework.data.repository.config.RepositoryConfigurationExtension}
  * for different configuration options.
  *
  * @author Alexey Kuzin

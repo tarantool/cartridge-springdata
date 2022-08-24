@@ -7,5 +7,5 @@ package org.springframework.data.tarantool.core.query;
  */
 public interface TarantoolRepositoryQueryExecutor {
 
-    Object execute(final Object[] parameters);
+    Object execute(Object[] parameters);
 }
