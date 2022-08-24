@@ -29,9 +29,11 @@ public class TarantoolObjectRepositoryQueryExecutor implements TarantoolReposito
             String spaceName = operations.getMappingContext().getRequiredPersistentEntity(returnedType).getSpaceName();
             try {
                 if (queryMethod.isCollectionQuery()) {
-                    return operations.callForObjectList(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+                    return operations.callForObjectList(queryMethod.getQueryFunctionName(),
+                            parameters, returnedType, spaceName);
                 }
-                return operations.callForObject(queryMethod.getQueryFunctionName(), parameters, returnedType, spaceName);
+                return operations.callForObject(queryMethod.getQueryFunctionName(),
+                        parameters, returnedType, spaceName);
             } catch (TarantoolClientException ex) {
                 Throwable cause = ex.getCause();
                 if (!(cause instanceof TarantoolAccessDeniedException)) {

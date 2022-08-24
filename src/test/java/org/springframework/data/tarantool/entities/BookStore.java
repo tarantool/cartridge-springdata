@@ -36,6 +36,6 @@ public class BookStore {
     @Field(value = "received_at")
     private LocalDateTime receivedAt;
 
-    @Field(value="store_number")
+    @Field(value = "store_number")
     private Integer storeNumber;
 }

@@ -30,7 +30,6 @@ class RestrictedUserIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private SimpleObjectRepository repository;
 
-
     @Test
     public void test_map_shouldThrowException_withTupleValidation_andAccessDeniedToMetadata() {
         TarantoolClientException exception
@@ -47,8 +46,10 @@ class RestrictedUserIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void test_tuple_shouldThrowException_withAutoValidation_andAccessDeniedToMetadata() {
-        DataRetrievalFailureException exception
-                = assertThrows(DataRetrievalFailureException.class, () -> repository.getSimpleTupleWithAutoValidation());
+        DataRetrievalFailureException exception = assertThrows(
+                DataRetrievalFailureException.class,
+                () -> repository.getSimpleTupleWithAutoValidation()
+        );
         assertTrue(exception.getCause() instanceof MappingException);
         assertTrue(exception.getCause().getMessage()
                 .contains("Cannot map object of type class java.util.ArrayList to object"));
@@ -56,8 +57,10 @@ class RestrictedUserIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void test_tuples_shouldThrowException_withAutoValidation_andAccessDeniedToMetadata() {
-        DataRetrievalFailureException exception
-                = assertThrows(DataRetrievalFailureException.class, () -> repository.getSimpleTuplesWithAutoValidation());
+        DataRetrievalFailureException exception = assertThrows(
+                DataRetrievalFailureException.class,
+                () -> repository.getSimpleTuplesWithAutoValidation()
+        );
         // because we use mapper.fromValue(v, Map.class)
         assertTrue(exception.getCause() instanceof MessagePackValueMapperException);
     }

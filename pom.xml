@@ -68,6 +68,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <logging.config>${project.basedir}/src/test/resources/logback-test.xml</logging.config>
         <logging.logLevel>debug</logging.logLevel>
+        <checkstyle.config>${project.basedir}/src/test/resources/io/tarantool/driver/checkstyle.xml</checkstyle.config>
+        <checkstyle.suppressions>${project.basedir}/src/test/resources/io/tarantool/driver/suppressions.xml</checkstyle.suppressions>
     </properties>
 
     <dependencies>
@@ -237,6 +239,40 @@
                     <indentSize>4</indentSize>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>check-style</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>validate</phase>
+                        <configuration>
+                            <consoleOutput>true</consoleOutput>
+                            <logViolationsToConsole>true</logViolationsToConsole>
+                            <failsOnError>true</failsOnError>
+                            <failOnViolation>true</failOnViolation>
+                            <configLocation>${checkstyle.config}</configLocation>
+                            <suppressionsLocation>${checkstyle.suppressions}</suppressionsLocation>
+                            <propertyExpansion>project.basedir=${project.basedir}</propertyExpansion>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                            </sourceDirectories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.31</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

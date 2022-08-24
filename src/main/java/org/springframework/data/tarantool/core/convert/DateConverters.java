@@ -26,7 +26,12 @@ public class DateConverters {
         List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
 
         boolean useISOStringConverterForDate = Boolean
-                .parseBoolean(System.getProperty("org.springframework.data.couchbase.useISOStringConverterForDate", "false"));
+                .parseBoolean(
+                        System.getProperty(
+                                "org.springframework.data.couchbase.useISOStringConverterForDate",
+                                "false"
+                        )
+                );
 
         if (useISOStringConverterForDate) {
             converters.add(DateToStringConverter.INSTANCE);

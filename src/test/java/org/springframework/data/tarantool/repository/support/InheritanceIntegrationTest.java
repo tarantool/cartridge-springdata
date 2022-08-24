@@ -63,7 +63,6 @@ class InheritanceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void test_nonQueryMethod_shouldReturnSampleString() {
         final String sampleString = customTestRepository.getSampleString();
-        
         assertEquals("test string", sampleString);
     }
 

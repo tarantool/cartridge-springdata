@@ -57,7 +57,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
     protected final ForkJoinPool queryExecutors;
     protected final MessagePackMapper mapper;
 
-    public BaseTarantoolTemplate(
+    BaseTarantoolTemplate(
             TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
             TarantoolMappingContext mappingContext,
             TarantoolConverter converter,
@@ -72,7 +72,6 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
         this.exceptionTranslator = new DefaultTarantoolExceptionTranslator();
         this.mapper = tarantoolClient.getConfig().getMessagePackMapper();
     }
-
 
     @Override
     public <T> T findOne(Conditions query, Class<T> entityClass) {
