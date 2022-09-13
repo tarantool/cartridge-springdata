@@ -29,8 +29,8 @@ public @interface Query {
 
     /**
      * Specify the response structure that the connector will expect from Tarantool by this parameter.
-     * This restriction can narrow the range of errors, for this purpose the parameter acts as a validation of the result.
-     * It can also help with performance by only expecting certain structures,
+     * This restriction can narrow the range of errors, for this purpose the parameter acts
+     * as a validation of the result. It can also help with performance by only expecting certain structures,
      * because we do not check the result for belonging to another structure.
      *
      * @return expected output structure

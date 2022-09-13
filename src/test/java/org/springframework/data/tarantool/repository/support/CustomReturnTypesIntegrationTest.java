@@ -118,7 +118,6 @@ class CustomReturnTypesIntegrationTest extends BaseIntegrationTest {
         expected.add(expectedItem);
         expected.add(expectedItem2);
 
-
         //when
         List<TestObject> actual = testDoubleRepository.getNonEntityObjectList();
 

@@ -41,7 +41,9 @@ public class TarantoolRepositoryFactory extends RepositoryFactorySupport {
     protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
         TarantoolOperations tarantoolOperations = operationsMapping.resolve(
                 repositoryInformation.getRepositoryInterface(), repositoryInformation.getDomainType());
-        TarantoolEntityInformation<?, Object> entityInformation = getEntityInformation(repositoryInformation.getDomainType());
+        TarantoolEntityInformation<?, Object> entityInformation = getEntityInformation(
+                repositoryInformation.getDomainType()
+        );
         return getTargetRepositoryViaReflection(repositoryInformation, entityInformation, tarantoolOperations);
     }
 

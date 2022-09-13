@@ -63,7 +63,9 @@ public class BasicTarantoolPersistentEntity<T>
     }
 
     @Override
-    protected TarantoolPersistentProperty returnPropertyIfBetterIdPropertyCandidateOrNull(TarantoolPersistentProperty property) {
+    protected TarantoolPersistentProperty returnPropertyIfBetterIdPropertyCandidateOrNull(
+            TarantoolPersistentProperty property
+    ) {
         if (hasTarantoolIdClassAnnotation()) {
             return property.isIdProperty() ? property : null;
         }
@@ -104,7 +106,6 @@ public class BasicTarantoolPersistentEntity<T>
         private final BasicTarantoolPersistentEntity<?> entity;
         private final Object bean;
         private final PersistentPropertyAccessor<Object> propertyAccessor;
-
 
         TarantoolCompositeIdentifierAccessor(BasicTarantoolPersistentEntity<?> entity, Object bean) {
             super(bean);

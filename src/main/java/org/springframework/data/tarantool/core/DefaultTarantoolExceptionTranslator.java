@@ -20,7 +20,7 @@ public class DefaultTarantoolExceptionTranslator implements TarantoolExceptionTr
     public DataAccessException translateExceptionIfPossible(RuntimeException cause) {
         if (cause instanceof TarantoolException) {
             // TODO Superclass in driver for metadata exceptions
-            if (cause instanceof TarantoolClientException|| cause instanceof TarantoolFunctionCallException) {
+            if (cause instanceof TarantoolClientException || cause instanceof TarantoolFunctionCallException) {
                 return new InvalidDataAccessResourceUsageException(cause.getMessage(), cause);
             }
             if (cause instanceof TarantoolInternalException) {

@@ -85,7 +85,9 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
             throw new MappingException("No mapping metadata found for entity ".concat(source.getClass().getName()));
         }
 
-        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
+        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(
+                entity.getPropertyAccessor(source), conversionService
+        );
 
         Map<String, Object> convertedProperties = convertProperties(entity, accessor);
         convertedProperties.forEach(target::putObject);
@@ -174,7 +176,6 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
         return basicTargetType
                 .map(aClass -> (Object) conversionService.convert(value, aClass))
                 .orElseGet(() -> convertCustomType(value, type));
-
     }
 
     private static Collection<?> asCollection(final Object source) {
@@ -231,7 +232,9 @@ public class MappingTarantoolWriteConverter implements EntityWriter<Object, Obje
             throw new MappingException("No mapping metadata found for entity ".concat(source.getClass().getName()));
         }
 
-        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), conversionService);
+        ConvertingPropertyAccessor<?> accessor = new ConvertingPropertyAccessor<>(
+                entity.getPropertyAccessor(source), conversionService
+        );
         result = convertProperties(entity, accessor);
 
         return result;
