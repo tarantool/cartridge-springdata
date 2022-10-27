@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2022-10-27
+
+### Security
+- Bump cartridge-java version to 0.9.1 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump spring to 5.3.23.RELEASE ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump spring-boot to 2.6.3 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+
 ## [0.5.1] - 2022-05-20
 
 ### Bugfixes

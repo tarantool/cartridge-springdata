@@ -100,6 +100,11 @@ public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, 
     }
 
     @Override
+    public void deleteAllById(Iterable<? extends ID> ids) {
+        throw new UnsupportedOperationException("Delete by multiple ids is not supported in the driver yet");
+    }
+
+    @Override
     public void deleteAll(Iterable<? extends T> iterable) {
         throw new UnsupportedOperationException("Delete by multiple ids is not supported in the driver yet");
     }
