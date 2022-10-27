@@ -18,6 +18,8 @@ Tarantool database driver.
 | `spring-data-tarantool` Version | Spring Boot Version |
 |:--------------------------------|:-------------------:|
 | 0.x.x                           |        2.2.x        |
+| 0.3.x                           |        2.3.2        |
+| 0.5.2                           |        2.6.3        |
 
 ## Tarantool compatibility
 
@@ -56,7 +58,7 @@ Add the Maven dependency:
 <dependency>
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
-    <version>0.5.1</version>
+    <version>0.5.2</version>
 </dependency>
 ```
 
