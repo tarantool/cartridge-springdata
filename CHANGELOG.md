@@ -2,12 +2,14 @@
 
 ## [Unreleased]
 
-## [0.5.2] - 2022-10-27
+## [0.5.2] - 2022-10-31
 
 ### Security
 - Bump cartridge-java version to 0.9.1 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
-- Bump spring to 5.3.23.RELEASE ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
-- Bump spring-boot to 2.6.3 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump testcontainers-java-tarantool to 0.5.1 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump spring-data-commons to 2.7.3 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump spring to 5.3.23 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
+- Bump logback-classic to 1.2.9 ([#113](https://github.com/tarantool/cartridge-springdata/issues/113))
 
 ## [0.5.1] - 2022-05-20
 
