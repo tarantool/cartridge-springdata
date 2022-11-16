@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.5.3] - 2022-11-16
+- Add dependency management
+- Add slf4j-api 1.7.36 ([#118](https://github.com/tarantool/cartridge-springdata/issues/119))
+- Bump cartridge-java to 0.9.2 ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))
+- Bump testcontainers-java-tarantool to 0.5.3 ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))
+- Bump logback-classic to 1.2.11 ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))
+- Bump lombok to 1.8.24 ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))
+- Remove org.junit.jupiter:junit-jupiter ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))
+
 ## [0.5.2] - 2022-10-31
 
 ### Security
