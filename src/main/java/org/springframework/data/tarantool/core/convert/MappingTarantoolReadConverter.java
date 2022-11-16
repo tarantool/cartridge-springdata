@@ -151,7 +151,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
                                     TarantoolPropertyValueProvider propertyValueProvider,
                                     PersistentPropertyAccessor<?> propertyAccessor) {
         entity.doWithProperties((PropertyHandler<TarantoolPersistentProperty>) property -> {
-            if (entity.isConstructorArgument(property)) {
+            if (entity.isCreatorArgument(property)) {
                 return;
             }
             setProperty(property, propertyValueProvider, propertyAccessor);
@@ -285,7 +285,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             PersistentPropertyAccessor<?> propertyAccessor =
                     new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(instance), conversionService);
             entity.doWithProperties((PropertyHandler<TarantoolPersistentProperty>) property -> {
-                if (entity.isConstructorArgument(property)) {
+                if (entity.isCreatorArgument(property)) {
                     return;
                 }
                 Object propValue = propertyValueProvider.getPropertyValue(property);

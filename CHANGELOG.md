@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.5.3] - 2022-11-16
+## [0.5.3] - 2022-11-17
 - Add dependency management
 - Add slf4j-api 1.7.36 ([#118](https://github.com/tarantool/cartridge-springdata/issues/119))
 - Bump cartridge-java to 0.9.2 ([#118](https://github.com/tarantool/cartridge-springdata/issues/118))

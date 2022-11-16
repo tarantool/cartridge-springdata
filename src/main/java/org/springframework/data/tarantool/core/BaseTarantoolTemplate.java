@@ -354,7 +354,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
             SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
     getResultMapperForEntity(String spaceName, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        String name = StringUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName;
+        String name = StringUtils.hasText(spaceName) ? spaceName : entityMetadata.getSpaceName();
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
                 .getSpaceByName(name);
         if (!spaceMetadata.isPresent() && !entityClass.equals(void.class)) {
