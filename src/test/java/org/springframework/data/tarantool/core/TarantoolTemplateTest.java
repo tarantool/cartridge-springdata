@@ -38,9 +38,10 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void test_fieldNames_shouldGettingCorrectly_withInheritance() {
-        HashMap<String, ?> result
-                = (HashMap<String, ?>) tarantoolTemplate.mapParameters(Collections.singletonList(entity)).get(0);
+        HashMap<String, ?> result =
+            (HashMap<String, ?>) tarantoolTemplate.mapParameters(Collections.singletonList(entity)).get(0);
 
         assertTrue(result.containsKey("id"));
         assertTrue(result.containsKey("key_from_parent"));
@@ -49,6 +50,7 @@ class TarantoolTemplateTest extends BaseIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void test_fieldNames_shouldGettingCorrectly_withoutInheritance() {
         HashMap<String, ?> result
                 = (HashMap<String, ?>) tarantoolTemplate.mapParameters(Collections.singletonList(entityParent)).get(0);

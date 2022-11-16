@@ -22,7 +22,7 @@ import org.springframework.data.tarantool.core.mapping.TarantoolPersistentEntity
 import org.springframework.data.tarantool.exceptions.TarantoolMetadataMissingException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -354,7 +354,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
             SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
     getResultMapperForEntity(String spaceName, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
-        String name = StringUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName;
+        String name = ObjectUtils.isEmpty(spaceName) ? entityMetadata.getSpaceName() : spaceName;
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata()
                 .getSpaceByName(name);
         if (!spaceMetadata.isPresent() && !entityClass.equals(void.class)) {
