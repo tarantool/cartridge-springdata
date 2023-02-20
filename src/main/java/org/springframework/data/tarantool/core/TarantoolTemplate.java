@@ -56,7 +56,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         Assert.notNull(entityClass, "Entity class must not be null!");
 
         List<T> result = callForTupleList(functionName, parameters, spaceName, entityClass);
-        return result != null && result.size() > 0 ? result.get(0) : null;
+        return result != null && !result.isEmpty() ? result.get(0) : null;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         Assert.notNull(entityConverter, "Entity converter must not be null!");
 
         List<T> result = callForTupleList(functionName, parameters, entityConverter);
-        return result != null && result.size() > 0 ? result.get(0) : null;
+        return result != null && !result.isEmpty() ? result.get(0) : null;
     }
 
     @Override
