@@ -9,9 +9,13 @@ import io.tarantool.driver.api.tuple.TarantoolTuple;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
 import io.tarantool.driver.core.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.mappers.CallResultMapper;
+import io.tarantool.driver.mappers.DefaultMessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.MessagePackObjectMapper;
 import io.tarantool.driver.mappers.converters.ValueConverter;
+import io.tarantool.driver.mappers.factories.DefaultMessagePackMapperFactory;
+import io.tarantool.driver.mappers.factories.ResultMapperFactoryFactory;
+import io.tarantool.driver.mappers.factories.ResultMapperFactoryFactoryImpl;
 import io.tarantool.driver.protocol.TarantoolIndexQuery;
 import org.msgpack.value.Value;
 import org.springframework.dao.DataAccessException;
@@ -56,6 +60,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
     protected final TarantoolExceptionTranslator exceptionTranslator;
     protected final ForkJoinPool queryExecutors;
     protected final MessagePackMapper mapper;
+    protected final ResultMapperFactoryFactory mapperFactoryFactory;
 
     BaseTarantoolTemplate(
             TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
@@ -71,6 +76,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
         );
         this.exceptionTranslator = new DefaultTarantoolExceptionTranslator();
         this.mapper = tarantoolClient.getConfig().getMessagePackMapper();
+        this.mapperFactoryFactory = new ResultMapperFactoryFactoryImpl();
     }
 
     @Override
@@ -360,10 +366,15 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
         if (!spaceMetadata.isPresent() && !entityClass.equals(void.class)) {
             throw new TarantoolMetadataMissingException(name);
         }
-        return tarantoolClient
-                .getResultMapperFactoryFactory()
-                .defaultTupleSingleResultMapperFactory()
-                .withDefaultTupleValueConverter(mapper, spaceMetadata.orElse(null));
+
+        return mapperFactoryFactory.createMapper(mapper)
+                       .withSingleValueConverter(
+                               mapperFactoryFactory.createMapper(mapper, spaceMetadata.orElse(null))
+                                       .withArrayValueToTarantoolTupleResultConverter()
+                                       .withRowsMetadataToTarantoolTupleResultConverter()
+                                       .buildCallResultMapper(
+                                               DefaultMessagePackMapperFactory.getInstance().emptyMapper()))
+                       .buildCallResultMapper(DefaultMessagePackMapperFactory.getInstance().emptyMapper());
     }
 
     protected <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {
