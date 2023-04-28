@@ -1,5 +1,6 @@
 package org.springframework.data.tarantool.repository.support;
 
+import io.tarantool.driver.api.conditions.Conditions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Alexey Kuzin
  * @author Artyom Dubinin
+ * @author Ivan Dneprov
  */
 @Tag("integration")
 class BookIntegrationTest extends BaseIntegrationTest {
@@ -225,5 +227,80 @@ class BookIntegrationTest extends BaseIntegrationTest {
 
         //then
         assertThat(saved).isEqualTo(entity);
+    }
+
+    @Test
+    void test_update_shouldUpdateOneRecord() {
+        //given
+        int id = 1;
+        int year = 1569;
+
+        TestSpace entity = TestSpace.builder()
+            .id(id)
+            .name("Tales")
+            .uniqueKey("udf65")
+            .author("Grimm Brothers")
+            .year(1570)
+            .build();
+
+        bookAsTestSpaceRepository.save(entity);
+
+        Conditions query = Conditions.equals("id", id);
+        TestSpace entityForUpdate = TestSpace.builder()
+            .year(year)
+            .build();
+
+        //when
+        List<TestSpace> saved = bookAsTestSpaceRepository.update(query, entityForUpdate);
+
+        //then
+        assertThat(saved.get(0).getYear()).isEqualTo(year);
+    }
+
+    @Test
+    void test_update_shouldUpdateMultipleRecords() {
+        //given
+        String author = "Mikhail Bulgakov";
+        int year = 2023;
+
+        TestSpace theMasterAndMargarita = TestSpace.builder()
+            .id(0)
+            .name("The Master and Margarita")
+            .uniqueKey("uniqueKey0")
+            .author(author)
+            .year(1972)
+            .build();
+        bookAsTestSpaceRepository.save(theMasterAndMargarita);
+
+        TestSpace dogsHeart = TestSpace.builder()
+            .id(1)
+            .name("Dog's Heart")
+            .uniqueKey("uniqueKey1")
+            .author(author)
+            .year(1976)
+            .build();
+        bookAsTestSpaceRepository.save(dogsHeart);
+
+        TestSpace flowersForAlgernon = TestSpace.builder()
+            .id(2)
+            .name("Flowers for Algernon")
+            .uniqueKey("uniqueKey2")
+            .author("Daniel Keyes")
+            .year(1959)
+            .build();
+        bookAsTestSpaceRepository.save(flowersForAlgernon);
+
+        Conditions query = Conditions.equals("author", author);
+        TestSpace entityForUpdate = TestSpace.builder()
+            .year(year)
+            .build();
+
+        //when
+        List<TestSpace> saved = bookAsTestSpaceRepository.update(query, entityForUpdate);
+
+        //then
+        assertThat(saved.get(0).getYear()).isEqualTo(year);
+        assertThat(saved.get(1).getYear()).isEqualTo(year);
+        assertThat(saved.size()).isEqualTo(2);
     }
 }
