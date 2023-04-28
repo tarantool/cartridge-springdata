@@ -104,7 +104,7 @@ public class MappingTarantoolReadConverter implements EntityReader<Object, Objec
             TarantoolTuple tuple = (TarantoolTuple) source;
             if (!tuple.hasMetadata()) {
                 throw new MappingException(
-                    "Cannot map object to entity without metadata"
+                    "Cannot map tuple without field metadata to an entity of type " + targetClass
                 );
             }
             typeToUse = typeMapper.readType(tuple, ClassTypeInformation.from(targetClass));
