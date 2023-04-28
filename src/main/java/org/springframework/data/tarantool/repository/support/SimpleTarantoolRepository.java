@@ -1,5 +1,7 @@
 package org.springframework.data.tarantool.repository.support;
 
+import io.tarantool.driver.api.conditions.Conditions;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +19,7 @@ import java.util.Optional;
  * @param <T>  entity type
  * @param <ID> entity identifier (primary key) type
  * @author Alexey Kuzin
+ * @author Ivan Dneprov
  */
 public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, ID> {
 
@@ -112,5 +115,12 @@ public class SimpleTarantoolRepository<T, ID> implements TarantoolRepository<T, 
     @Override
     public void deleteAll() {
         tarantoolOperations.truncate(entityInformation.getSpaceName());
+    }
+
+    @Override
+    public List<T> update(Conditions query, T entity) {
+        Assert.notNull(entity, "The given entity must not be null");
+
+        return tarantoolOperations.update(query, entity, entityInformation.getJavaType());
     }
 }

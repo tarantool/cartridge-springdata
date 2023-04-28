@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Add update method for SimpleTarantoolRepository class
 
 ## [0.5.3] - 2022-11-17
 - Add dependency management
