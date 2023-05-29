@@ -12,15 +12,13 @@ import org.springframework.data.tarantool.core.convert.TarantoolConverter;
 import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
 import org.springframework.util.Assert;
 
-import io.tarantool.driver.api.SingleValueCallResult;
 import io.tarantool.driver.api.TarantoolClient;
 import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
-import io.tarantool.driver.mappers.CallResultMapper;
+import io.tarantool.driver.mappers.DefaultSingleAnyValueResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
 import io.tarantool.driver.mappers.converters.ValueConverter;
-import io.tarantool.driver.mappers.factories.DefaultMessagePackMapperFactory;
 
 /**
  * This class contains call operations for invoking stored functions in Tarantool instance
@@ -104,16 +102,15 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         );
     }
 
-    private <T> CallResultMapper<T, SingleValueCallResult<T>>
+    private DefaultSingleAnyValueResultMapper
     getAutoResultMapper(Optional<TarantoolSpaceMetadata> spaceMetadata) {
         MessagePackMapper copiedMapper = mapper.copy();
         return mapperFactoryFactory.createMapper(mapper)
-                   .withSingleValueConverter(
-                       mapperFactoryFactory.createMapper(mapper, spaceMetadata.orElse(null))
-                           .withArrayValueToTarantoolTupleResultConverter()
-                           .withRowsMetadataToTarantoolTupleResultConverter()
-                           .buildCallResultMapper(copiedMapper))
-                   .buildCallResultMapper(DefaultMessagePackMapperFactory.getInstance().emptyMapper());
+                .buildSingleAnyValueResultMapper(
+                        mapperFactoryFactory.createMapper(mapper, spaceMetadata.orElse(null))
+                                .withArrayValueToTarantoolTupleResultConverter()
+                                .withRowsMetadataToTarantoolTupleResultConverter()
+                                .buildCallResultMapper(copiedMapper));
     }
 
     @Override
@@ -124,8 +121,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
-        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
-                = getAutoResultMapper(spaceMetadata);
+        DefaultSingleAnyValueResultMapper resultMapper = getAutoResultMapper(spaceMetadata);
 
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
@@ -149,7 +145,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         Assert.notNull(entityClass, "Entity class must not be null!");
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
-        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
+        DefaultSingleAnyValueResultMapper resultMapper
                 = getAutoResultMapper(spaceMetadata);
 
         return executeSync(
