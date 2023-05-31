@@ -31,8 +31,8 @@ import io.tarantool.driver.api.TarantoolResult;
 import io.tarantool.driver.api.conditions.Conditions;
 import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
 import io.tarantool.driver.api.tuple.TarantoolTuple;
-import io.tarantool.driver.api.tuple.TarantoolTupleResult;
 import io.tarantool.driver.api.tuple.operations.TupleOperations;
+import io.tarantool.driver.core.TarantoolTupleResultImpl;
 import io.tarantool.driver.core.tuple.TarantoolTupleImpl;
 import io.tarantool.driver.mappers.CallResultMapper;
 import io.tarantool.driver.mappers.MessagePackMapper;
@@ -356,8 +356,8 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
                 .collect(Collectors.toList());
     }
 
-    protected <T> CallResultMapper<TarantoolResult<TarantoolTuple>,
-            SingleValueCallResult<TarantoolResult<TarantoolTuple>>>
+    protected <T> CallResultMapper<TarantoolTupleResultImpl,
+            SingleValueCallResult<TarantoolTupleResultImpl>>
     getResultMapperForEntity(String spaceName, Class<T> entityClass) {
         TarantoolPersistentEntity<?> entityMetadata = mappingContext.getRequiredPersistentEntity(entityClass);
         String name = StringUtils.hasText(spaceName) ? spaceName : entityMetadata.getSpaceName();
@@ -374,7 +374,7 @@ abstract class BaseTarantoolTemplate implements TarantoolOperations {
                                 .withRowsMetadataToTarantoolTupleResultConverter()
                                 .buildCallResultMapper(
                                         DefaultMessagePackMapperFactory.getInstance().emptyMapper()),
-                        (Class<TarantoolResult<TarantoolTuple>>) (Class<?>) TarantoolTupleResult.class);
+                        TarantoolTupleResultImpl.class);
     }
 
     protected <T> T mapFirstToEntity(TarantoolResult<TarantoolTuple> tuples, Class<T> entityClass) {
