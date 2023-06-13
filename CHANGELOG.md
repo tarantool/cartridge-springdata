@@ -2,8 +2,8 @@
 
 ## [Unreleased]
 
-## [0.6.0] - 2023-04-13
-- Bump cartridge-java version to 0.11.0 ([#123](https://github.com/tarantool/cartridge-springdata/issues/123))
+## [0.6.0] - 2023-06-13
+- Bump cartridge-java version to 0.12.0 ([#123](https://github.com/tarantool/cartridge-springdata/issues/123))
 
 ## [0.5.3] - 2022-11-17
 - Add dependency management
