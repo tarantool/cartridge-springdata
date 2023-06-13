@@ -3,6 +3,7 @@ package org.springframework.data.tarantool.repository.support;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.data.tarantool.BaseIntegrationTest;
 import org.springframework.data.tarantool.entities.SimpleObject;
@@ -42,7 +43,7 @@ class SimpleMapIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void test_map_shouldThrowException_withTupleValidation() {
-        assertThrows(InvalidDataAccessResourceUsageException.class, () -> repository.getSimpleMapWithTupleValidation());
+        assertThrows(DataRetrievalFailureException.class, () -> repository.getSimpleMapWithTupleValidation());
     }
 
     @Test
@@ -75,7 +76,7 @@ class SimpleMapIntegrationTest extends BaseIntegrationTest {
     @Test
     public void test_maps_shouldThrowException_withTupleValidation() {
         assertThrows(
-                InvalidDataAccessResourceUsageException.class,
+                DataRetrievalFailureException.class,
                 () -> repository.getSimpleMapsWithTupleValidation()
         );
     }

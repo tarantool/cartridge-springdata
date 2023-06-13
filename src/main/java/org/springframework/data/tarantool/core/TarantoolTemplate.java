@@ -1,33 +1,25 @@
 package org.springframework.data.tarantool.core;
 
-import io.tarantool.driver.api.SingleValueCallResult;
-import io.tarantool.driver.api.TarantoolClient;
-import io.tarantool.driver.api.TarantoolResult;
-import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
-import io.tarantool.driver.api.tuple.TarantoolTuple;
-import io.tarantool.driver.mappers.CallResultMapper;
-import io.tarantool.driver.mappers.DefaultMessagePackMapperFactory;
-import io.tarantool.driver.mappers.DefaultResultMapperFactoryFactory;
-import io.tarantool.driver.mappers.MessagePackMapper;
-import io.tarantool.driver.mappers.converters.ValueConverter;
-import io.tarantool.driver.mappers.converters.value.custom.TarantoolTupleConverter;
-import org.msgpack.value.ArrayValue;
-import org.msgpack.value.MapValue;
-import org.msgpack.value.Value;
-import org.msgpack.value.ValueType;
-import org.msgpack.value.impl.ImmutableArrayValueImpl;
-import org.msgpack.value.impl.ImmutableMapValueImpl;
-import org.springframework.data.tarantool.core.convert.TarantoolConverter;
-import org.springframework.data.tarantool.core.mappers.TarantoolAutoResultConverter;
-import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
-import org.springframework.util.Assert;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 import java.util.stream.Collectors;
+
+import org.msgpack.value.Value;
+import org.springframework.data.tarantool.core.convert.TarantoolConverter;
+import org.springframework.data.tarantool.core.mapping.TarantoolMappingContext;
+import org.springframework.util.Assert;
+
+import io.tarantool.driver.api.SingleValueCallResult;
+import io.tarantool.driver.api.TarantoolClient;
+import io.tarantool.driver.api.TarantoolResult;
+import io.tarantool.driver.api.metadata.TarantoolSpaceMetadata;
+import io.tarantool.driver.api.tuple.TarantoolTuple;
+import io.tarantool.driver.mappers.CallResultMapper;
+import io.tarantool.driver.mappers.MessagePackMapper;
+import io.tarantool.driver.mappers.converters.ValueConverter;
 
 /**
  * This class contains call operations for invoking stored functions in Tarantool instance
@@ -38,15 +30,12 @@ import java.util.stream.Collectors;
  */
 public class TarantoolTemplate extends BaseTarantoolTemplate {
 
-    private final DefaultResultMapperFactoryFactory mapperFactoryFactory;
-
     public TarantoolTemplate(
             TarantoolClient<TarantoolTuple, TarantoolResult<TarantoolTuple>> tarantoolClient,
             TarantoolMappingContext mappingContext,
             TarantoolConverter converter,
             ForkJoinWorkerThreadFactory queryExecutorsFactory) {
         super(tarantoolClient, mappingContext, converter, queryExecutorsFactory);
-        this.mapperFactoryFactory = new DefaultResultMapperFactoryFactory();
     }
 
     @Override
@@ -114,44 +103,16 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         );
     }
 
-    private MessagePackMapper getDefaultComplexTypesMapper() {
-        // FIXME: https://github.com/tarantool/cartridge-java/issues/166
-        // return tarantoolClient.getConfig().getMessagePackMapper().copy();
-        return DefaultMessagePackMapperFactory
-                .getInstance()
-                .defaultComplexTypesMapper();
-    }
-
-    private void registerTupleResultMapper(MessagePackMapper customMapper,
-                                           Optional<TarantoolSpaceMetadata> spaceMetadata) {
-        customMapper.registerValueConverter(
-                ValueType.ARRAY,
-                TarantoolTuple.class,
-                new TarantoolAutoResultConverter<>(
-                        new TarantoolTupleConverter(customMapper,
-                                spaceMetadata.orElse(null)),
-                        spaceMetadata.orElse(null)));
-        customMapper.registerValueConverter(
-                ValueType.MAP,
-                TarantoolTuple.class,
-                new TarantoolAutoResultConverter<>(
-                        new TarantoolTupleConverter(customMapper,
-                                spaceMetadata.orElse(null)),
-                        spaceMetadata.orElse(null)));
-    }
-
-    private <T> CallResultMapper<T, SingleValueCallResult<T>>
-    withDefaultSingleValueMapper(MessagePackMapper customMapper,
-                                 Class<T> entityClass) {
-        return mapperFactoryFactory
-                .getDefaultSingleValueMapper(customMapper, entityClass);
-    }
-
-    private <T> CallResultMapper<T, SingleValueCallResult<T>>
-    getAutoResultMapper(Class<T> entityClass, Optional<TarantoolSpaceMetadata> spaceMetadata) {
-        MessagePackMapper customMapper = getDefaultComplexTypesMapper();
-        registerTupleResultMapper(customMapper, spaceMetadata);
-        return withDefaultSingleValueMapper(customMapper, entityClass);
+    private CallResultMapper<Object, SingleValueCallResult<Object>>
+    getAutoResultMapper(Optional<TarantoolSpaceMetadata> spaceMetadata) {
+        MessagePackMapper copiedMapper = mapper.copy();
+        return mapperFactoryFactory.createMapper(mapper)
+                .buildSingleValueResultMapper(
+                        mapperFactoryFactory.createMapper(mapper, spaceMetadata.orElse(null))
+                                .withArrayValueToTarantoolTupleResultConverter()
+                                .withRowsMetadataToTarantoolTupleResultConverter()
+                                .buildCallResultMapper(copiedMapper),
+                        Object.class);
     }
 
     @Override
@@ -162,8 +123,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
 
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
-        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
-                = getAutoResultMapper(entityClass, spaceMetadata);
+        CallResultMapper<Object, SingleValueCallResult<Object>> resultMapper = getAutoResultMapper(spaceMetadata);
 
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
@@ -187,8 +147,7 @@ public class TarantoolTemplate extends BaseTarantoolTemplate {
         Assert.notNull(entityClass, "Entity class must not be null!");
         Optional<TarantoolSpaceMetadata> spaceMetadata = tarantoolClient.metadata().getSpaceByName(spaceName);
 
-        CallResultMapper<T, SingleValueCallResult<T>> resultMapper
-                = getAutoResultMapper(entityClass, spaceMetadata);
+        CallResultMapper<Object, SingleValueCallResult<Object>> resultMapper = getAutoResultMapper(spaceMetadata);
 
         return executeSync(
                 () -> tarantoolClient.callForSingleResult(functionName, mapParameters(parameters), resultMapper)
