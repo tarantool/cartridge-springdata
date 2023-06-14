@@ -1,10 +1,12 @@
 # Changelog
 
 ## [Unreleased]
-- Add update method for SimpleTarantoolRepository class
 
-## [0.6.0] - 2023-06-13
+
+## [0.6.0] - 2023-06-14
 - Bump cartridge-java version to 0.12.0 ([#123](https://github.com/tarantool/cartridge-springdata/issues/123))
+- Add update method for SimpleTarantoolRepository class ([#122](https://github.com/tarantool/cartridge-springdata/issues/122))
+- Use isEmpty instead of compare size
 
 ## [0.5.3] - 2022-11-17
 - Add dependency management
