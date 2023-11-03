@@ -248,7 +248,7 @@ public abstract class AbstractTarantoolDataConfiguration extends TarantoolConfig
         @Override
         public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
             ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-            worker.setName("TarantoolTemplateQueryExecutor-" + id);
+            worker.setName("TarantoolTemplateQueryExecutor-" + id.incrementAndGet());
             return worker;
         }
     }
