@@ -31,19 +31,19 @@ public class SampleUserIntegrationTest extends BaseIntegrationTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        tarantoolContainer.executeScript("test_setup.lua").get();
+        tarantoolContainer.executeScript("test_setup.lua");
     }
 
     @BeforeEach
     @SneakyThrows
     void setUpTest() {
-        tarantoolContainer.executeScript("test_teardown.lua").join();
+        tarantoolContainer.executeScript("test_teardown.lua");
     }
 
     @AfterAll
     @SneakyThrows
     public static void tearDown() {
-        tarantoolContainer.executeScript("test_teardown.lua").join();
+        tarantoolContainer.executeScript("test_teardown.lua");
     }
 
     @Test
