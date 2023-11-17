@@ -1,7 +1,8 @@
 # Changelog
 
 ## [Unreleased]
-
+- Bump cartridge-driver version to 0.13.0
+- Bump testcontainers-java-tarantool version to 1.0.1
 
 ## [0.6.0] - 2023-06-14
 - Bump cartridge-java version to 0.12.0 ([#123](https://github.com/tarantool/cartridge-springdata/issues/123))

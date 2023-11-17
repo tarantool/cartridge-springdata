@@ -75,7 +75,7 @@
             <dependency>
                 <groupId>io.tarantool</groupId>
                 <artifactId>cartridge-driver</artifactId>
-                <version>0.12.0</version>
+                <version>0.13.0</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -158,7 +158,7 @@
         <dependency>
             <groupId>io.tarantool</groupId>
             <artifactId>testcontainers-java-tarantool</artifactId>
-            <version>0.5.3</version>
+            <version>1.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
