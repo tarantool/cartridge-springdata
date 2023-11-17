@@ -58,7 +58,7 @@ Add the Maven dependency:
 <dependency>
     <groupId>io.tarantool</groupId>
     <artifactId>spring-data-tarantool</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
 </dependency>
 ```
 
