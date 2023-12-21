@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Bump spring version version to 5.3.31 ([#136](https://github.com/orgs/tarantool/projects/75/views/4?pane=issue&itemId=44971242))
+- Bump spring-boot version version to 2.7.5 ([#136](https://github.com/orgs/tarantool/projects/75/views/4?pane=issue&itemId=44971242))
+- Bump jackson-annotations version to 2.16.0 ([#136](https://github.com/orgs/tarantool/projects/75/views/4?pane=issue&itemId=44971242))
+- Bump snakeyaml version to 2.2 ([#136](https://github.com/orgs/tarantool/projects/75/views/4?pane=issue&itemId=44971242))
+- Bump testcontainers version to 1.18.0 ([#136](https://github.com/orgs/tarantool/projects/75/views/4?pane=issue&itemId=44971242))
+
 ## [0.6.1] - 2023-11-17
 - Bump cartridge-driver version to 0.13.0 ([#133](https://github.com/tarantool/cartridge-springdata/issues/133))
 - Bump testcontainers-java-tarantool version to 1.0.1 ([#133](https://github.com/tarantool/cartridge-springdata/issues/133))
