@@ -20,6 +20,8 @@ Tarantool database driver.
 | 0.x.x                           |        2.2.x        |
 | 0.3.x                           |        2.3.2        |
 | 0.5.2                           |        2.6.3        |
+| 0.5.3                           |        2.7.5        |
+| 0.6.x                           |        2.7.5        |
 
 ## Tarantool compatibility
 
